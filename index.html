@@ -344,7 +344,7 @@
   .chart-legend { display:flex; gap:16px; font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace; flex-wrap:wrap; }
   .leg { display:flex; align-items:center; gap:5px; }
   .leg-sw { width:22px; height:3px; border-radius:1px; }
-  canvas#elevChart { flex:1; width:100% !important; cursor:crosshair; }
+  canvas#elevChart { flex:1; min-height:0; width:100% !important; cursor:crosshair; }
 
   /* ── LOADING ── */
   .loading-overlay {
@@ -440,7 +440,7 @@
     padding: 0;
     -webkit-tap-highlight-color: transparent;
   }
-  .mob-tab-icon { font-size: 26px; line-height: 1; }
+  .mob-tab-icon { font-size: 22px; line-height: 1; }
   .mob-tab.active {
     color: #0a7a47;
     background: rgba(61,255,160,0.18);
@@ -685,6 +685,10 @@
       <span class="mob-tab-icon">🗺️</span>
       Map
     </button>
+    <button class="mob-tab" id="mobTabProfile" onclick="switchMobileTab('profile')">
+      <span class="mob-tab-icon">📈</span>
+      Profile
+    </button>
     <button class="mob-tab" id="mobTabControls" onclick="switchMobileTab('controls')">
       <span class="mob-tab-icon">⚙️</span>
       Controls
@@ -713,40 +717,35 @@ let _mobTab = 'map';
 function isMobile() { return window.innerWidth <= MOB_BREAK; }
 
 function applyMobileLayout() {
-  const header   = document.querySelector('.header');
-  const main     = document.querySelector('.main');
-  const panel    = document.querySelector('.panel');
-  const mapWrap  = document.getElementById('map-wrap');
-  const chartWrap= document.querySelector('.chart-wrap');
-  const tabbar   = document.getElementById('mobTabbar');
+  const header    = document.querySelector('.header');
+  const main      = document.querySelector('.main');
+  const panel     = document.querySelector('.panel');
+  const mapWrap   = document.getElementById('map-wrap');
+  const chartWrap = document.querySelector('.chart-wrap');
+  const tabbar    = document.getElementById('mobTabbar');
 
-  const TAB_H    = 72;   // must match CSS height above
+  const TAB_H = 72;  // must match CSS .mob-tabbar height
 
-  // Show tab bar first so header.offsetHeight is stable
+  // Show tab bar first
   tabbar.style.display = 'flex';
 
-  // Compact header FIRST, then measure its actual height
-  header.style.padding   = '8px 12px';
-  header.style.gap       = '10px';
-  const h1 = header.querySelector('h1');
-  const hp = header.querySelector('p');
-  const ico= header.querySelector('.header-icon');
-  if (h1)  h1.style.fontSize = '13px';
-  if (hp)  hp.style.fontSize = '10px';
-  if (ico) { ico.style.width = '34px'; ico.style.height = '34px'; }
+  // Compact header
+  header.style.padding = '8px 12px';
+  header.style.gap     = '10px';
+  const h1  = header.querySelector('h1');
+  const hp  = header.querySelector('p');
+  const ico = header.querySelector('.header-icon');
   const svg = ico ? ico.querySelector('svg') : null;
+  if (h1)  h1.style.fontSize   = '13px';
+  if (hp)  hp.style.fontSize   = '10px';
+  if (ico) { ico.style.width = '34px'; ico.style.height = '34px'; }
   if (svg) { svg.setAttribute('width','22'); svg.setAttribute('height','22'); }
 
-  // Measure header height AFTER compacting it
+  // Measure header after compacting
   const headerH = header.offsetHeight;
+  const mainH   = window.innerHeight - headerH - TAB_H;
 
-  // Total available space between header bottom and tab bar top
-  const mainH = window.innerHeight - headerH - TAB_H;
-
-  // Chart gets 38% of mainH, minimum 210px — leaves 62% for map
-  const CHART_H = Math.max(210, Math.round(mainH * 0.38));
-
-  // .main: block container, exact height, no overflow
+  // .main: exact pixel height, relative positioning context
   main.style.cssText = `
     display: block !important;
     position: relative !important;
@@ -756,37 +755,24 @@ function applyMobileLayout() {
     grid-template-rows: unset !important;
   `;
 
-  // Chart strip pinned to bottom of .main
-  chartWrap.style.cssText = `
-    position: absolute !important;
-    left: 0; right: 0; bottom: 0;
-    height: ${CHART_H}px !important;
-    display: flex !important;
-    flex-direction: column;
-  `;
+  // All three content panes fill the full mainH — tabs switch between them
+  const pane = 'position:absolute !important; top:0; left:0; right:0; bottom:0;';
 
-  // Map fills everything above the chart
-  mapWrap.style.cssText = `
-    position: absolute !important;
-    top: 0; left: 0; right: 0;
-    bottom: ${CHART_H}px !important;
-    display: block !important;
-    overflow: hidden;
-  `;
+  mapWrap.style.cssText   = pane + ' display:block !important; overflow:hidden;';
+  chartWrap.style.cssText = pane + ' display:none !important; flex-direction:column; background:var(--surface);';
+  panel.style.cssText     = pane + ` display:none !important;
+    overflow-y:auto !important; overflow-x:hidden !important;
+    -webkit-overflow-scrolling:touch; background:var(--surface); z-index:5;`;
 
-  // Panel: absolute, fills all of main, scrollable, hidden by default
-  panel.style.cssText = `
-    position: absolute !important;
-    top: 0; left: 0; right: 0; bottom: 0;
-    display: none !important;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch;
-    background: var(--surface);
-    z-index: 5;
-  `;
+  // Compact chart header for Profile tab
+  const chartHeader = document.querySelector('.chart-header');
+  const chartLegend = document.querySelector('.chart-legend');
+  const chartTitle  = document.querySelector('.chart-title');
+  if (chartHeader) chartHeader.style.cssText  = 'margin-bottom:6px; flex-shrink:0; padding:8px 10px 0; flex-wrap:wrap; row-gap:4px;';
+  if (chartLegend) chartLegend.style.cssText  = 'font-size:10px; gap:8px; flex-wrap:wrap;';
+  if (chartTitle)  chartTitle.style.cssText   = 'font-size:11px;';
 
-  // Compact layer switcher to horizontal row on mobile
+  // Compact layer switcher → horizontal row
   const ls = document.getElementById('layerSwitcher');
   if (ls) {
     ls.style.cssText = 'flex-direction:row; top:8px; right:6px; left:6px; gap:4px;';
@@ -798,36 +784,45 @@ function applyMobileLayout() {
     });
   }
 
-  // Activate current tab
   _applyMobTab(_mobTab);
 }
 
 function _applyMobTab(tab) {
-  const panel    = document.querySelector('.panel');
-  const mapWrap  = document.getElementById('map-wrap');
-  const chartWrap= document.querySelector('.chart-wrap');
+  const panel     = document.querySelector('.panel');
+  const mapWrap   = document.getElementById('map-wrap');
+  const chartWrap = document.querySelector('.chart-wrap');
 
-  // Update active tab button
+  // Update active button
   document.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('active'));
-  const activeBtn = document.getElementById('mobTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
+  const btnId = 'mobTab' + tab.charAt(0).toUpperCase() + tab.slice(1);
+  const activeBtn = document.getElementById(btnId);
   if (activeBtn) activeBtn.classList.add('active');
 
+  // Hide all panes first
+  mapWrap.style.display   = 'none';
+  chartWrap.style.display = 'none';
+  panel.style.display     = 'none';
+
   if (tab === 'map') {
-    mapWrap.style.display   = 'block';
-    chartWrap.style.display = 'flex';
-    panel.style.display     = 'none';
+    mapWrap.style.display = 'block';
     setTimeout(() => { if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 80);
 
+  } else if (tab === 'profile') {
+    chartWrap.style.display = 'flex';
+    // Redraw chart at new dimensions after display:flex takes effect
+    setTimeout(() => {
+      if (typeof chartState !== 'undefined' && chartState) {
+        const { dists, terrain, losLine, blocked, points } = chartState;
+        drawChart(dists, terrain, losLine, blocked, points);
+      }
+    }, 80);
+
   } else if (tab === 'controls') {
-    mapWrap.style.display   = 'none';
-    chartWrap.style.display = 'none';
-    panel.style.display     = 'block';
+    panel.style.display = 'block';
     panel.scrollTop = 0;
 
   } else if (tab === 'results') {
-    mapWrap.style.display   = 'none';
-    chartWrap.style.display = 'none';
-    panel.style.display     = 'block';
+    panel.style.display = 'block';
     setTimeout(() => {
       const rs = document.getElementById('resultsSection');
       if (rs) rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -862,6 +857,14 @@ function resetDesktopLayout() {
   if (svg) { svg.setAttribute('width','32'); svg.setAttribute('height','32'); }
   const mapEl = document.getElementById('map');
   if (mapEl) mapEl.removeAttribute('style');
+  // Restore chart header
+  const ch  = document.querySelector('.chart-header');
+  const cl  = document.querySelector('.chart-legend');
+  const ct  = document.querySelector('.chart-title');
+  if (ch) ch.removeAttribute('style');
+  if (cl) cl.removeAttribute('style');
+  if (ct) ct.removeAttribute('style');
+
   // Restore layer switcher
   const ls = document.getElementById('layerSwitcher');
   if (ls) {
@@ -1760,8 +1763,8 @@ function initChartInteractivity() {
     ctx.fillStyle = accentCol; ctx.fill();
     ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
 
-    // ── Tooltip box ──
-    const distMi   = dist * M_TO_MI;
+    // ── Tooltip box — scales up on mobile ──
+    const distMi    = dist * M_TO_MI;
     const distLabel = distMi >= 0.1 ? distMi.toFixed(2)+' mi' : Math.round(dist*M_TO_FT)+' ft';
     const clearFt   = Math.round(clearance * M_TO_FT);
     const clearSign = clearance >= 0 ? '+' : '';
@@ -1770,31 +1773,38 @@ function initChartInteractivity() {
       { label: 'Terrain',   val: fmtFt(terrElev) },
       { label: 'LOS Ray',   val: fmtFt(losElev) },
       { label: 'Clearance', val: clearSign+clearFt+' ft', col: isBlocked ? '#ff6b35' : '#69ff47' },
-      { label: '',          val: isBlocked ? '⛔ BLOCKED' : '✅ CLEAR', col: isBlocked ? '#ff6b35' : '#69ff47' },
+      { label: '',          val: isBlocked ? 'BLOCKED' : 'CLEAR', col: isBlocked ? '#ff6b35' : '#69ff47' },
     ];
 
-    const boxW = 148, lineH = 16, boxPad = 10;
-    const boxH = lines.length * lineH + boxPad * 2;
-    let bx = xPx + 10;
-    if (bx + boxW > W - 4) bx = xPx - boxW - 10;
-    const by = pad.t + 6;
+    const mob    = isMobile();
+    const ttFont = mob ? 13 : 10;  // px
+    const boxW   = mob ? Math.min(W - 20, 210) : 148;
+    const lineH  = mob ? 22 : 16;
+    const boxPad = mob ? 14 : 10;
+    const boxH   = lines.length * lineH + boxPad * 2;
 
-    ctx.fillStyle   = 'rgba(13,17,23,0.92)';
+    // Position: prefer right of crosshair, flip left if needed, always within canvas
+    let bx = xPx + (mob ? 14 : 10);
+    if (bx + boxW > W - 4) bx = xPx - boxW - (mob ? 14 : 10);
+    bx = Math.max(4, bx);
+    const by = Math.max(pad.t + 4, Math.min(pad.t + pH - boxH - 4, pad.t + 6));
+
+    ctx.fillStyle   = 'rgba(13,17,23,0.94)';
     ctx.strokeStyle = accentCol;
-    ctx.lineWidth   = 1;
+    ctx.lineWidth   = mob ? 1.5 : 1;
     ctx.beginPath();
-    ctx.roundRect(bx, by, boxW, boxH, 5);
+    ctx.roundRect(bx, by, boxW, boxH, mob ? 8 : 5);
     ctx.fill(); ctx.stroke();
 
-    ctx.font = '10px "Share Tech Mono",monospace';
+    ctx.font = `${mob ? 'bold ' : ''}${ttFont}px "Share Tech Mono",monospace`;
     lines.forEach((ln, i) => {
-      const y = by + boxPad + i * lineH + 10;
-      ctx.fillStyle = 'rgba(125,133,144,0.9)';
+      const y = by + boxPad + i * lineH + (mob ? 13 : 10);
+      ctx.fillStyle = 'rgba(160,170,160,0.9)';
       ctx.textAlign = 'left';
-      ctx.fillText(ln.label, bx+8, y);
+      ctx.fillText(ln.label, bx + (mob ? 10 : 8), y);
       ctx.fillStyle = ln.col || '#e6edf3';
       ctx.textAlign = 'right';
-      ctx.fillText(ln.val, bx+boxW-8, y);
+      ctx.fillText(ln.val, bx + boxW - (mob ? 10 : 8), y);
     });
     ctx.restore();
 
@@ -1825,6 +1835,93 @@ function initChartInteractivity() {
   });
 
   canvas.addEventListener('mouseleave', clearCrosshair);
+
+  // ── Touch support for mobile profile tab ──
+  function handleTouch(e) {
+    if (!chartState) return;
+    e.preventDefault();
+    const touch = e.touches[0] || e.changedTouches[0];
+    if (!touch) return;
+    // Synthesize a mousemove-style event
+    const rect = canvas.getBoundingClientRect();
+    const fakeEvent = {
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    };
+    // Reuse the mousemove handler logic inline
+    const mouseX = (fakeEvent.clientX - rect.left) * (canvas.width  / rect.width);
+    const mouseY = (fakeEvent.clientY - rect.top)  * (canvas.height / rect.height);
+    const { dists, terrain, losLine, blocked, points,
+            maxD, minE, rng, W, H, baseImage } = chartState;
+    const pad = CHART_PAD;
+    const pW = W-pad.l-pad.r, pH = H-pad.t-pad.b;
+    if (mouseX < pad.l || mouseX > pad.l+pW || mouseY < pad.t || mouseY > pad.t+pH) {
+      clearCrosshair(); return;
+    }
+    const fraction = (mouseX - pad.l) / pW;
+    const idx = Math.max(0, Math.min(dists.length-1, Math.round(fraction*(dists.length-1))));
+    const xS = d => pad.l + (d/maxD)*pW;
+    const yS = e_ => pad.t + pH - ((e_-minE)/rng)*pH;
+    const dist      = dists[idx];
+    const terrElev  = terrain[idx];
+    const losElev   = losLine[idx];
+    const clearance = losElev - terrElev;
+    const isBlocked = blocked[idx];
+    const xPx       = xS(dist);
+    const accentCol = isBlocked ? '#ff6b35' : '#69ff47';
+    const ctx2 = canvas.getContext('2d', { willReadFrequently: true });
+    ctx2.putImageData(baseImage, 0, 0);
+    ctx2.save();
+    ctx2.strokeStyle = accentCol; ctx2.lineWidth = 2; ctx2.setLineDash([4,3]);
+    ctx2.globalAlpha = 0.8;
+    ctx2.beginPath(); ctx2.moveTo(xPx, pad.t); ctx2.lineTo(xPx, pad.t+pH); ctx2.stroke();
+    ctx2.setLineDash([]); ctx2.globalAlpha = 1;
+    ctx2.beginPath(); ctx2.arc(xPx, yS(terrElev), 5, 0, Math.PI*2);
+    ctx2.fillStyle='#718096'; ctx2.fill(); ctx2.strokeStyle='#fff'; ctx2.lineWidth=1.5; ctx2.stroke();
+    ctx2.beginPath(); ctx2.arc(xPx, yS(losElev), 5, 0, Math.PI*2);
+    ctx2.fillStyle=accentCol; ctx2.fill(); ctx2.strokeStyle='#fff'; ctx2.lineWidth=1.5; ctx2.stroke();
+    // Tooltip
+    const distMi    = dist * M_TO_MI;
+    const distLabel = distMi >= 0.1 ? distMi.toFixed(2)+' mi' : Math.round(dist*M_TO_FT)+' ft';
+    const clearFt   = Math.round(clearance * M_TO_FT);
+    const clearSign = clearance >= 0 ? '+' : '';
+    const lines = [
+      { label:'Distance',  val:distLabel },
+      { label:'Terrain',   val:fmtFt(terrElev) },
+      { label:'LOS Ray',   val:fmtFt(losElev) },
+      { label:'Clearance', val:clearSign+clearFt+' ft', col:isBlocked?'#ff6b35':'#69ff47' },
+      { label:'',          val:isBlocked?'BLOCKED':'CLEAR',  col:isBlocked?'#ff6b35':'#69ff47' },
+    ];
+    const boxW = Math.min(W - 20, 210), lineH = 22, boxPad = 14;
+    const boxH = lines.length * lineH + boxPad * 2;
+    let bx = xPx + 14;
+    if (bx + boxW > W - 4) bx = xPx - boxW - 14;
+    bx = Math.max(4, bx);
+    const by = Math.max(pad.t + 4, pad.t + 6);
+    ctx2.fillStyle='rgba(13,17,23,0.94)'; ctx2.strokeStyle=accentCol; ctx2.lineWidth=1.5;
+    ctx2.beginPath(); ctx2.roundRect(bx, by, boxW, boxH, 8); ctx2.fill(); ctx2.stroke();
+    ctx2.font='bold 13px "Share Tech Mono",monospace';
+    lines.forEach((ln, i) => {
+      const y = by + boxPad + i*lineH + 13;
+      ctx2.fillStyle='rgba(160,170,160,0.9)'; ctx2.textAlign='left';
+      ctx2.fillText(ln.label, bx+10, y);
+      ctx2.fillStyle=ln.col||'#e6edf3'; ctx2.textAlign='right';
+      ctx2.fillText(ln.val, bx+boxW-10, y);
+    });
+    ctx2.restore();
+    // Map crosshair
+    const ll = points[idx];
+    if (ll && typeof map !== 'undefined' && map) {
+      const icon = L.divIcon({ className:'',
+        html:`<div style="width:16px;height:16px;background:${accentCol};border:2px solid #fff;border-radius:50%;box-shadow:0 0 10px 3px ${accentCol};pointer-events:none;"></div>`,
+        iconSize:[16,16], iconAnchor:[8,8] });
+      if (!crosshairMarker) crosshairMarker = L.marker(ll,{icon,interactive:false,zIndexOffset:500}).addTo(map);
+      else { crosshairMarker.setLatLng(ll); crosshairMarker.setIcon(icon); }
+    }
+  }
+  canvas.addEventListener('touchstart',  handleTouch, { passive: false });
+  canvas.addEventListener('touchmove',   handleTouch, { passive: false });
+  canvas.addEventListener('touchend',    clearCrosshair);
 }
 
 function clearCrosshair() {
@@ -1910,6 +2007,10 @@ async function _doAnalysis() {
     drawSegmentedPath(points.map(p=>[p[0],p[1]]), blocked);
     map.fitBounds(L.latLngBounds([a.lat,a.lng],[b.lat,b.lng]).pad(0.3));
     drawChart(dists, elev, losLine, blocked, points);
+    // Mobile: flip to Profile tab automatically so user sees the chart
+    if (isMobile() && (_mobTab === 'map' || _mobTab === 'profile')) {
+      switchMobileTab('profile');
+    }
 
     // ── Status card ──
     const bear = bearing(a.lat,a.lng,b.lat,b.lng);
