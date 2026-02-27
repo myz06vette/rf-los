@@ -755,11 +755,17 @@ function applyMobileLayout() {
     grid-template-rows: unset !important;
   `;
 
-  // All three content panes fill the full mainH — tabs switch between them
+  // All three content panes — map & panel fill full mainH, chart capped to landscape ratio
   const pane = 'position:absolute !important; top:0; left:0; right:0; bottom:0;';
 
+  // Cap chart height so it stays landscape on portrait phones (screen-width × 0.68)
+  // e.g. 390px wide → 265px tall — a ~1.47:1 ratio, readable and not distorted
+  window._mobChartH = Math.round(Math.min(mainH, window.innerWidth * 0.68));
+
   mapWrap.style.cssText   = pane + ' display:block !important; overflow:hidden;';
-  chartWrap.style.cssText = pane + ' display:none !important; flex-direction:column; background:var(--surface);';
+  chartWrap.style.cssText = `position:absolute !important; top:0; left:0; right:0;
+    height:${window._mobChartH}px !important;
+    display:none !important; flex-direction:column; background:var(--surface);`;
   panel.style.cssText     = pane + ` display:none !important;
     overflow-y:auto !important; overflow-x:hidden !important;
     -webkit-overflow-scrolling:touch; background:var(--surface); z-index:5;`;
@@ -1614,11 +1620,19 @@ function drawSegmentedPath(points, blocked) {
 // ELEVATION CHART
 // ═══════════════════════════════════════════════
 
-// Shared padding constant used by chart draw + interactivity
-const CHART_PAD = { l:52, r:16, t:14, b:28 };
+// Chart padding — scales up on mobile to fit larger axis labels
+function getChartPad() {
+  return isMobile()
+    ? { l:72, r:18, t:16, b:38 }   // mobile: 13px font needs more room
+    : { l:52, r:16, t:14, b:28 };  // desktop: 9px font
+}
+// Legacy alias so existing code using CHART_PAD directly still works
+const CHART_PAD = { l:52, r:16, t:14, b:28 };  // desktop fallback
 
 function drawChartBase(ctx, W, H, dists, terrain, losLine, blocked) {
-  const pad = CHART_PAD;
+  const pad  = getChartPad();
+  const mob  = isMobile();
+  const axisFont = `${mob ? 12 : 9}px "Share Tech Mono",monospace`;
   const pW = W-pad.l-pad.r, pH = H-pad.t-pad.b;
   if (pW <= 0 || pH <= 0) return;
 
@@ -1634,18 +1648,18 @@ function drawChartBase(ctx, W, H, dists, terrain, losLine, blocked) {
   for (let i=0; i<=4; i++) {
     const y = pad.t + (i/4)*pH;
     ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+pW,y); ctx.stroke();
-    ctx.fillStyle='rgba(125,133,144,0.8)'; ctx.font='9px "Share Tech Mono",monospace';
+    ctx.fillStyle='rgba(125,133,144,0.8)'; ctx.font=axisFont;
     ctx.textAlign='right';
     ctx.fillText(Math.round((maxE-(i/4)*rng)*M_TO_FT).toLocaleString()+'ft', pad.l-4, y+3);
   }
   for (let i=0; i<=5; i++) {
     const x = pad.l + (i/5)*pW;
     ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+pH); ctx.stroke();
-    ctx.fillStyle='rgba(125,133,144,0.8)'; ctx.font='9px "Share Tech Mono",monospace';
+    ctx.fillStyle='rgba(125,133,144,0.8)'; ctx.font=axisFont;
     ctx.textAlign='center';
     const d = (i/5)*maxD;
     const dMi = d * M_TO_MI;
-    ctx.fillText(dMi>=0.1?dMi.toFixed(2)+'mi':Math.round(d*M_TO_FT)+'ft', x, pad.t+pH+14);
+    ctx.fillText(dMi>=0.1?dMi.toFixed(2)+'mi':Math.round(d*M_TO_FT)+'ft', x, pad.t+pH+(mob?20:14));
   }
 
   // Terrain fill
@@ -1731,7 +1745,7 @@ function initChartInteractivity() {
 
     const { dists, terrain, losLine, blocked, points,
             maxD, minE, rng, W, H, baseImage } = chartState;
-    const pad = CHART_PAD;
+    const pad = getChartPad();
     const pW = W-pad.l-pad.r, pH = H-pad.t-pad.b;
 
     // Clamp to plot area
@@ -1875,7 +1889,7 @@ function initChartInteractivity() {
     const mouseY = (fakeEvent.clientY - rect.top)  * (canvas.height / rect.height);
     const { dists, terrain, losLine, blocked, points,
             maxD, minE, rng, W, H, baseImage } = chartState;
-    const pad = CHART_PAD;
+    const pad = getChartPad();
     const pW = W-pad.l-pad.r, pH = H-pad.t-pad.b;
     if (mouseX < pad.l || mouseX > pad.l+pW || mouseY < pad.t || mouseY > pad.t+pH) {
       clearCrosshair(); return;
