@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RF Line of Sight Calculator</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --border: #21262d;
+    --accent-a: #3DFFA0;
+    --accent-b: #69ff47;
+    --accent-warn: #ff6b35;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --grid: rgba(255,255,255,0.03);
+    --panel-w: 520px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    position: relative; z-index: 20;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(13,17,23,0.97);
+    backdrop-filter: blur(10px);
+    display: flex; align-items: center; gap: 20px;
+    flex-shrink: 0;
+  }
+  .header-icon {
+    width: 48px; height: 48px;
+    background: rgba(61,255,160,0.06);
+    border: 1px solid rgba(61,255,160,0.25);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .header p  { font-size: 14px; color: var(--muted); font-family: 'Share Tech Mono', monospace; }
+  .status-badge { margin-left: auto; }
+  .badge {
+    padding: 5px 14px; border-radius: 5px; border: 1px solid;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px;
+    font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .badge-excellent { border-color:#3DFFA0; color:#3DFFA0; background:rgba(61,255,160,0.08); }
+  .badge-good      { border-color:#69ff47; color:#69ff47; background:rgba(105,255,71,0.08); }
+  .badge-fair      { border-color:#ffe066; color:#ffe066; background:rgba(255,224,102,0.08); }
+  .badge-poor      { border-color:#ff9f43; color:#ff9f43; background:rgba(255,159,67,0.08); }
+  .badge-unlikely  { border-color:#ff6b35; color:#ff6b35; background:rgba(255,107,53,0.08); }
+  .badge-idle      { border-color:var(--muted); color:var(--muted); background:transparent; }
+
+  /* ── MAIN LAYOUT ── */
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: var(--panel-w) 1fr;
+    grid-template-rows: 1fr 260px;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── PANEL ── */
+  .panel {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex; flex-direction: column;
+    position: relative;
+    z-index: 10;
+    min-width: 0;
+  }
+  .panel::-webkit-scrollbar { width: 6px; }
+  .panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .section { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+
+  .section-title {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  /* ── SITE BLOCK ── */
+  .site-block {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 15px; margin-bottom: 12px;
+  }
+  .site-block:last-child { margin-bottom: 0; }
+  .site-header { display:flex; align-items:center; gap:10px; margin-bottom:13px; }
+  .site-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+  .site-dot-a { background:#3DFFA0; box-shadow:0 0 8px #3DFFA0; }
+  .site-dot-b { background:var(--accent-b); box-shadow:0 0 8px var(--accent-b); }
+  .site-label { font-size:16px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
+  .label-a { color:#3DFFA0; }
+  .label-b { color:var(--accent-b); }
+
+  /* Action buttons */
+  .action-row { display:flex; gap:8px; margin-bottom:12px; }
+  .icon-btn {
+    flex:1; padding:9px 8px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border); border-radius:6px;
+    color:var(--muted); font-size:14px; font-weight:600;
+    font-family:'Barlow',sans-serif; letter-spacing:0.03em;
+    cursor:pointer; transition:all 0.16s;
+    display:flex; align-items:center; justify-content:center; gap:6px;
+    white-space:nowrap; min-width:0;
+  }
+  .icon-btn:hover { color:var(--text); border-color:var(--muted); background:rgba(255,255,255,0.06); }
+  .icon-btn.active-a { color:#3DFFA0; border-color:#3DFFA0; background:rgba(61,255,160,0.08); box-shadow:0 0 6px rgba(61,255,160,0.15); }
+  .icon-btn.active-b { color:var(--accent-b); border-color:var(--accent-b); background:rgba(105,255,71,0.08); box-shadow:0 0 6px rgba(105,255,71,0.15); }
+  .icon-btn:disabled { opacity:0.35; cursor:not-allowed; }
+
+  /* Address */
+  .address-row { position:relative; margin-bottom:7px; }
+  .address-row input[type="text"] {
+    width:100%; background:var(--bg); border:1px solid var(--border);
+    border-radius:5px; color:var(--text);
+    font-family:'Share Tech Mono',monospace; font-size:14px;
+    padding:9px 40px 9px 12px; outline:none; transition:border-color 0.2s;
+  }
+  .address-row input[type="text"]::placeholder { color:var(--muted); opacity:0.55; }
+  .address-row input[type="text"]:focus { border-color:#3DFFA0; }
+  .addr-btn {
+    position:absolute; right:8px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:var(--muted);
+    cursor:pointer; font-size:16px; padding:3px 4px; transition:color 0.15s;
+    line-height:1;
+  }
+  .addr-btn:hover { color:var(--text); }
+  .addr-status {
+    font-size:13px; font-family:'Share Tech Mono',monospace;
+    color:var(--muted); min-height:18px; margin-bottom:11px;
+    line-height:1.4; word-break:break-word;
+  }
+  .addr-status.ok  { color:var(--accent-b); }
+  .addr-status.err { color:var(--accent-warn); }
+  .addr-status.inf { color:var(--muted); }
+
+  /* Coords */
+  .coord-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+  .field-group label {
+    display:block; font-size:12px; color:var(--muted);
+    font-family:'Share Tech Mono',monospace; letter-spacing:0.07em;
+    text-transform:uppercase; margin-bottom:5px;
+  }
+  .field-group input[type="number"] {
+    width:100%; background:var(--bg); border:1px solid var(--border);
+    border-radius:5px; color:var(--text);
+    font-family:'Share Tech Mono',monospace; font-size:15px;
+    padding:8px 10px; outline:none; transition:border-color 0.2s;
+    -moz-appearance:textfield;
+  }
+  .field-group input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; }
+  .field-group input[type="number"]:focus { border-color:#3DFFA0; }
+
+  /* Height */
+  .height-row { display:flex; align-items:center; gap:10px; }
+  .height-row input[type="range"] {
+    flex:1; -webkit-appearance:none; height:6px;
+    border-radius:3px; background:var(--border); outline:none; cursor:pointer;
+  }
+  .height-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:18px; height:18px;
+    border-radius:50%; background:#3DFFA0; cursor:pointer;
+    box-shadow:0 0 6px #3DFFA0;
+  }
+  .height-b input[type="range"]::-webkit-slider-thumb {
+    background:var(--accent-b); box-shadow:0 0 6px var(--accent-b);
+  }
+  .height-val { font-family:'Share Tech Mono',monospace; font-size:15px; color:var(--text); min-width:64px; text-align:right; }
+
+  /* Map-click mode bar */
+  .mapclick-bar {
+    display:flex; align-items:stretch;
+    border:1px solid var(--border); border-radius:7px; overflow:hidden;
+    background:rgba(255,255,255,0.02);
+  }
+  .mapclick-label {
+    font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace;
+    padding:0 12px; border-right:1px solid var(--border);
+    display:flex; align-items:center; white-space:nowrap; flex-shrink:0;
+  }
+  .mc-opt {
+    flex:1; padding:10px 6px; border:none; background:none;
+    font-family:'Barlow',sans-serif; font-size:14px; font-weight:700;
+    letter-spacing:0.05em; text-transform:uppercase;
+    cursor:pointer; color:var(--muted); transition:all 0.14s;
+  }
+  .mc-opt:not(:last-child) { border-right:1px solid var(--border); }
+  .mc-opt:hover { color:var(--text); background:rgba(255,255,255,0.04); }
+  .mc-opt.sel-off { background:rgba(255,255,255,0.05); color:var(--text); }
+  .mc-opt.sel-a   { background:rgba(61,255,160,0.12); color:#3DFFA0; }
+  .mc-opt.sel-b   { background:rgba(105,255,71,0.10); color:var(--accent-b); }
+  .esc-hint { font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace; text-align:center; margin-top:7px; min-height:18px; }
+
+  /* Calc button */
+  .calc-btn {
+    width:100%; padding:15px;
+    background:linear-gradient(135deg,rgba(61,255,160,0.15),rgba(0,112,243,0.15));
+    border:1px solid #3DFFA0; border-radius:8px;
+    color:#3DFFA0; font-family:'Barlow',sans-serif;
+    font-size:17px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase;
+    cursor:pointer; transition:all 0.2s;
+    display:flex; align-items:center; justify-content:center; gap:10px;
+  }
+  .calc-btn:hover { background:linear-gradient(135deg,rgba(61,255,160,0.24),rgba(0,112,243,0.24)); box-shadow:0 0 18px rgba(61,255,160,0.18); }
+  .calc-btn:active { transform:scale(0.98); }
+  .calc-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+  .tip { font-size:13px; color:var(--muted); font-style:italic; text-align:center; padding:7px 0 0; }
+
+  /* Results */
+  .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .stat-card { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; padding:13px 15px; }
+  .stat-card.full { grid-column:1/-1; }
+  .stat-label { font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; font-family:'Share Tech Mono',monospace; }
+  .stat-value { font-family:'Share Tech Mono',monospace; font-size:18px; color:var(--text); }
+  .sv-a    { color:#3DFFA0; }
+  .sv-b    { color:var(--accent-b); }
+  .sv-warn { color:var(--accent-warn); }
+
+  .los-card { border-radius:10px; padding:16px 18px; display:flex; align-items:center; gap:16px; margin-bottom:12px; }
+  .los-excellent { background:rgba(61,255,160,0.06);  border:1px solid rgba(61,255,160,0.35); }
+  .los-good      { background:rgba(105,255,71,0.06);  border:1px solid rgba(105,255,71,0.35); }
+  .los-fair      { background:rgba(255,224,102,0.06); border:1px solid rgba(255,224,102,0.35); }
+  .los-poor      { background:rgba(255,159,67,0.06);  border:1px solid rgba(255,159,67,0.35); }
+  .los-unlikely  { background:rgba(255,107,53,0.06);  border:1px solid rgba(255,107,53,0.35); }
+  .los-idle      { background:rgba(255,255,255,0.02); border:1px solid var(--border); }
+  .los-icon { font-size:28px; }
+  .los-text h3 { font-size:18px; font-weight:700; margin-bottom:3px; }
+  .los-text p  { font-size:13px; color:var(--muted); line-height:1.4; }
+  .los-excellent .los-text h3 { color:#3DFFA0; }
+  .los-good      .los-text h3 { color:#69ff47; }
+  .los-fair      .los-text h3 { color:#ffe066; }
+  .los-poor      .los-text h3 { color:#ff9f43; }
+  .los-unlikely  .los-text h3 { color:#ff6b35; }
+
+  /* Link quality meter bar */
+  .link-meter { margin-top:11px; }
+  .link-meter-label { font-size:12px; color:var(--muted); font-family:'Share Tech Mono',monospace; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px; }
+  .link-meter-track { height:9px; background:var(--border); border-radius:4px; overflow:hidden; }
+  .link-meter-fill  { height:100%; border-radius:4px; transition:width 0.4s ease, background 0.4s ease; }
+  .link-diffraction { margin-top:8px; font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace; line-height:1.6; }
+
+  /* Freq band selector */
+  .freq-bar {
+    display:flex; align-items:stretch;
+    border:1px solid var(--border); border-radius:7px; overflow:hidden;
+    background:rgba(255,255,255,0.02); margin-bottom:14px;
+  }
+  .freq-label {
+    font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace;
+    padding:0 12px; border-right:1px solid var(--border);
+    display:flex; align-items:center; white-space:nowrap; flex-shrink:0;
+  }
+  .freq-opt {
+    flex:1; padding:10px 4px; border:none; background:none;
+    font-family:'Barlow',sans-serif; font-size:13px; font-weight:700;
+    letter-spacing:0.04em; text-transform:uppercase;
+    cursor:pointer; color:var(--muted); transition:all 0.14s; text-align:center;
+  }
+  .freq-opt:not(:last-child) { border-right:1px solid var(--border); }
+  .freq-opt:hover { color:var(--text); background:rgba(255,255,255,0.04); }
+  .freq-opt.freq-sel { background:rgba(61,255,160,0.12); color:#3DFFA0; }
+
+  /* ── MAP ── */
+  #map-wrap {
+    grid-column: 2; grid-row: 1;
+    position: relative;
+    min-width: 0; min-height: 0;
+    overflow: hidden;
+  }
+  #map {
+    width: 100%; height: 100%;
+    position: absolute; inset: 0;
+  }
+  #map.clickmode-a,
+  #map.clickmode-b { cursor: crosshair !important; }
+
+  #map.clickmode-a .leaflet-container,
+  #map.clickmode-b .leaflet-container { cursor: crosshair !important; }
+
+  .map-hint {
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+    background:rgba(13,17,23,0.92); border:1px solid var(--border);
+    border-radius:24px; padding:9px 22px;
+    font-size:15px; font-family:'Share Tech Mono',monospace;
+    color:var(--text); z-index:900; pointer-events:none;
+    white-space:nowrap; transition:opacity 0.2s;
+  }
+  .map-hint.hidden  { opacity:0; }
+  .map-hint.hint-a  { border-color:#3DFFA0; color:#3DFFA0; }
+  .map-hint.hint-b  { border-color:var(--accent-b); color:var(--accent-b); }
+
+  /* ── CHART ── */
+  .chart-wrap {
+    grid-column: 2; grid-row: 2;
+    background: var(--surface); border-top: 1px solid var(--border);
+    padding: 12px 18px 16px;
+    display: flex; flex-direction: column;
+    min-width: 0; min-height: 0;
+    overflow: hidden;
+  }
+  .chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; flex-shrink:0; }
+  .chart-title  { font-size:13px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .chart-legend { display:flex; gap:16px; font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace; flex-wrap:wrap; }
+  .leg { display:flex; align-items:center; gap:5px; }
+  .leg-sw { width:22px; height:3px; border-radius:1px; }
+  canvas#elevChart { flex:1; width:100% !important; cursor:crosshair; }
+
+  /* ── LOADING ── */
+  .loading-overlay {
+    position:fixed; inset:0; background:rgba(13,17,23,0.85);
+    z-index:9999; display:flex; align-items:center; justify-content:center;
+    flex-direction:column; gap:18px;
+    font-family:'Share Tech Mono',monospace; font-size:16px; color:#3DFFA0;
+  }
+  .spinner { width:48px; height:48px; border:3px solid var(--border); border-top-color:#3DFFA0; border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-overlay.hidden { display:none; }
+
+  .info-note { font-size:13px; color:var(--muted); line-height:1.8; font-family:'Share Tech Mono',monospace; }
+  .api-note  { font-size:13px; color:var(--muted); line-height:1.7; font-family:'Share Tech Mono',monospace; background:rgba(255,107,53,0.06); border:1px solid rgba(255,107,53,0.2); border-radius:6px; padding:11px 13px; margin-top:8px; }
+
+  /* ── LAYER SWITCHER ── */
+  .layer-switcher {
+    position: absolute;
+    top: 12px; right: 12px;
+    z-index: 800;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    pointer-events: all;
+  }
+  .ls-btn {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 14px;
+    background: rgba(13,17,23,0.88);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--muted);
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px; font-weight: 600;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    cursor: pointer; transition: all 0.16s;
+    white-space: nowrap;
+    backdrop-filter: blur(6px);
+  }
+  .ls-btn:hover { color: var(--text); border-color: var(--muted); }
+  .ls-btn.active { color: #3DFFA0; border-color: #3DFFA0; background: rgba(61,255,160,0.1); }
+  .ls-swatch {
+    width: 18px; height: 18px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.2); flex-shrink: 0;
+  }
+
+  /* ── GOOGLE KEY SECTION ── */
+  .gkey-row { display: flex; gap: 7px; margin-top: 9px; }
+  .gkey-row input[type="text"] {
+    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 5px; color: var(--text);
+    font-family: 'Share Tech Mono', monospace; font-size: 14px;
+    padding: 8px 12px; outline: none; transition: border-color 0.2s;
+  }
+  .gkey-row input[type="text"]::placeholder { color: var(--muted); opacity: 0.5; }
+  .gkey-row input[type="text"]:focus { border-color: #3DFFA0; }
+  .gkey-apply {
+    padding: 8px 15px;
+    background: rgba(61,255,160,0.08); border: 1px solid #3DFFA0;
+    border-radius: 5px; color: #3DFFA0;
+    font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.04em; cursor: pointer; transition: all 0.16s;
+    white-space: nowrap;
+  }
+  .gkey-apply:hover { background: rgba(61,255,160,0.16); }
+  .gkey-status { font-size: 13px; font-family: 'Share Tech Mono', monospace; color: var(--muted); margin-top: 6px; min-height: 18px; }
+  .gkey-status.ok  { color: var(--accent-b); }
+  .gkey-status.err { color: var(--accent-warn); }
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-icon">
+      <svg width="32" height="32" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 2 38 L 8 28 L 14 32 L 20 20 L 26 28 L 32 22 L 38 26 L 42 38 Z" fill="#3DFFA0" opacity="0.07"/>
+        <path d="M 2 38 L 8 28 L 14 32 L 20 20 L 26 28 L 32 22 L 38 26 L 42 38" stroke="#7d8590" stroke-width="1.5" fill="none" stroke-linejoin="round" opacity="0.6"/>
+        <path d="M 4 14 C 7 10, 10 18, 13 14 C 16 10, 19 18, 22 14 C 25 10, 28 18, 31 14 C 34 10, 37 18, 40 14" stroke="#3DFFA0" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <circle cx="4" cy="14" r="3" fill="#3DFFA0"/>
+        <circle cx="40" cy="14" r="3" fill="#3DFFA0"/>
+        <line x1="4"  y1="17" x2="4"  y2="28" stroke="#3DFFA0" stroke-width="1.2" opacity="0.4" stroke-dasharray="2 2"/>
+        <line x1="40" y1="17" x2="40" y2="26" stroke="#3DFFA0" stroke-width="1.2" opacity="0.4" stroke-dasharray="2 2"/>
+      </svg>
+    </div>
+    <div>
+      <h1>Mike's RF Line of Sight Tool</h1>
+      <p>Developed by N4MXB</p>
+    </div>
+    <div class="status-badge">
+      <span id="headerBadge" class="badge badge-idle">IDLE</span>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main">
+
+    <!-- ══ PANEL ══ -->
+    <div class="panel">
+
+      <!-- Map click mode -->
+      <div class="section">
+        <div class="section-title">Map Click — Place Sites</div>
+        <div class="mapclick-bar">
+          <span class="mapclick-label">📍 Click sets</span>
+          <button class="mc-opt sel-off" id="modeOff" onclick="setMapMode('off')">Off</button>
+          <button class="mc-opt"         id="modeA"   onclick="setMapMode('a')">Site A</button>
+          <button class="mc-opt"         id="modeB"   onclick="setMapMode('b')">Site B</button>
+        </div>
+        <div class="esc-hint" id="escHint"></div>
+      </div>
+
+      <!-- Site A -->
+      <div class="section">
+        <div class="section-title">Site A — Transmitter</div>
+        <div class="site-block">
+          <div class="site-header">
+            <div class="site-dot site-dot-a"></div>
+            <span class="site-label label-a">Site Alpha</span>
+          </div>
+          <div class="action-row">
+            <button class="icon-btn" id="gpsA" onclick="useMyLocation('a')">🎯 My Location</button>
+            <button class="icon-btn" id="mapBtnA" onclick="setMapMode('a')">🗺 Pick on Map</button>
+          </div>
+          <div class="address-row">
+            <input type="text" id="addrA" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('a')">
+            <button class="addr-btn" onclick="geocode('a')" title="Search">🔍</button>
+          </div>
+          <div class="addr-status" id="addrStatusA"></div>
+          <div class="coord-row">
+            <div class="field-group"><label>Latitude</label><input type="number" id="latA" step="0.0001" value="33.7490"></div>
+            <div class="field-group"><label>Longitude</label><input type="number" id="lngA" step="0.0001" value="-84.3880"></div>
+          </div>
+          <div class="field-group">
+            <label>Antenna Height (ft AGL)</label>
+            <div class="height-row height-a">
+              <input type="range" id="heightRangeA" min="0" max="500" value="33" step="1">
+              <span class="height-val" id="heightValA">33 ft</span>
+            </div>
+            <input type="number" id="heightA" value="33" min="0" max="1640" step="1" style="margin-top:5px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Site B -->
+      <div class="section">
+        <div class="section-title">Site B — Receiver</div>
+        <div class="site-block">
+          <div class="site-header">
+            <div class="site-dot site-dot-b"></div>
+            <span class="site-label label-b">Site Bravo</span>
+          </div>
+          <div class="action-row">
+            <button class="icon-btn" id="gpsB" onclick="useMyLocation('b')">🎯 My Location</button>
+            <button class="icon-btn" id="mapBtnB" onclick="setMapMode('b')">🗺 Pick on Map</button>
+          </div>
+          <div class="address-row">
+            <input type="text" id="addrB" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('b')">
+            <button class="addr-btn" onclick="geocode('b')" title="Search">🔍</button>
+          </div>
+          <div class="addr-status" id="addrStatusB"></div>
+          <div class="coord-row">
+            <div class="field-group"><label>Latitude</label><input type="number" id="latB" step="0.0001" value="34.1015"></div>
+            <div class="field-group"><label>Longitude</label><input type="number" id="lngB" step="0.0001" value="-84.5194"></div>
+          </div>
+          <div class="field-group">
+            <label>Antenna Height (ft AGL)</label>
+            <div class="height-row height-b">
+              <input type="range" id="heightRangeB" min="0" max="500" value="33" step="1">
+              <span class="height-val" id="heightValB">33 ft</span>
+            </div>
+            <input type="number" id="heightB" value="33" min="0" max="1640" step="1" style="margin-top:5px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Calculate -->
+      <div class="section">
+        <button class="calc-btn" id="calcBtn" onclick="runAnalysis()">
+          <span>⚡</span> Calculate Line of Sight
+        </button>
+        <p class="tip">Drag markers · click map · enter address · or use GPS</p>
+      </div>
+
+      <!-- Frequency Band -->
+      <div class="section">
+        <div class="section-title">RF Band</div>
+        <div class="freq-bar">
+          <span class="freq-label">📻 Band</span>
+          <button class="freq-opt" id="fVLow"  onclick="setFreqBand('vhf-low')"  title="VHF Low: 30–88 MHz">VHF Lo</button>
+          <button class="freq-opt freq-sel" id="fVHigh" onclick="setFreqBand('vhf-high')" title="VHF High: 136–174 MHz">VHF Hi</button>
+          <button class="freq-opt" id="fULow"  onclick="setFreqBand('uhf-low')"  title="UHF Low: 400–512 MHz">UHF Lo</button>
+          <button class="freq-opt" id="fUHigh" onclick="setFreqBand('uhf-high')" title="UHF High: 700–900 MHz">UHF Hi</button>
+        </div>
+        <p class="info-note" id="freqDesc">VHF High (136–174 MHz) · λ≈1.8 m</p>
+      </div>
+
+      <!-- Results -->
+      <div class="section" id="resultsSection" style="display:none;">
+        <div class="section-title">Results</div>
+        <div id="losCard" class="los-card los-idle">
+          <div class="los-icon" id="losIcon">—</div>
+          <div class="los-text">
+            <h3 id="losTitle">Calculating...</h3>
+            <p id="losDesc">Running elevation analysis</p>
+          </div>
+        </div>
+        <!-- Link quality meter -->
+        <div class="link-meter" id="linkMeter" style="display:none;">
+          <div class="link-meter-label">Link Quality Estimate</div>
+          <div class="link-meter-track">
+            <div class="link-meter-fill" id="linkMeterFill" style="width:0%;background:#69ff47;"></div>
+          </div>
+          <div class="link-diffraction" id="linkDiffInfo"></div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-label">Path Distance</div><div class="stat-value" id="statDist">—</div></div>
+          <div class="stat-card"><div class="stat-label">Bearing</div><div class="stat-value" id="statBearing">—</div></div>
+          <div class="stat-card"><div class="stat-label">Elev at A</div><div class="stat-value sv-a" id="statElevA">—</div></div>
+          <div class="stat-card"><div class="stat-label">Elev at B</div><div class="stat-value sv-b" id="statElevB">—</div></div>
+          <div class="stat-card"><div class="stat-label">Max Terrain</div><div class="stat-value" id="statMaxT">—</div></div>
+          <div class="stat-card"><div class="stat-label">Earth Bulge</div><div class="stat-value" id="statBulge">—</div></div>
+          <div class="stat-card full"><div class="stat-label">Min Clearance</div><div class="stat-value" id="statClear">—</div></div>
+          <div class="stat-card full" id="diffrCard" style="display:none;"><div class="stat-label">Diffraction Loss (est.)</div><div class="stat-value" id="statDiffr">—</div></div>
+        </div>
+      </div>
+
+      <!-- Map / Google Key -->
+      <div class="section">
+        <div class="section-title">Google Maps (optional)</div>
+        <p class="info-note" style="margin-bottom:8px;">
+          Default satellite uses <strong style="color:var(--text)">Esri World Imagery</strong> — free, no key.<br>
+          Paste a Google Maps API key below to enable Google Satellite tiles.
+        </p>
+        <div class="gkey-row">
+          <input type="text" id="googleApiKey" placeholder="AIza… (Google Maps API key)">
+          <button class="gkey-apply" onclick="applyGoogleKey()">Apply</button>
+        </div>
+        <div class="gkey-status" id="gkeyStatus"></div>
+      </div>
+
+      <!-- About -->
+      <div class="section">
+        <div class="section-title">About</div>
+        <p class="info-note">
+          Earth curvature (k=4/3) applied.<br>
+          Buildings &amp; vegetation not included.<br>
+          Elevation: Open-Meteo (SRTM 90m).<br>
+          Geocoding: ArcGIS → Photon → Nominatim.<br>
+          GPS: browser Geolocation API.
+        </p>
+      </div>
+
+    </div><!-- /panel -->
+
+    <!-- ══ MAP ══ -->
+    <div id="map-wrap">
+      <div id="map"></div>
+      <div class="map-hint hidden" id="mapHint">Click to place site</div>
+      <!-- Layer switcher -->
+      <div class="layer-switcher" id="layerSwitcher">
+        <button class="ls-btn" id="lsEsriSat" onclick="switchLayer('esri-sat')">
+          <span class="ls-swatch" style="background:linear-gradient(135deg,#4a7c3f,#8b6914,#5a8a5a);"></span>
+          Satellite
+        </button>
+        <button class="ls-btn" id="lsEsriHybrid" onclick="switchLayer('esri-hybrid')">
+          <span class="ls-swatch" style="background:linear-gradient(135deg,#4a7c3f,#8b6914,#5a8a5a); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.3);"></span>
+          Hybrid
+        </button>
+        <button class="ls-btn" id="lsGoogleSat" onclick="switchLayer('google-sat')" title="Requires Google Maps API key (see panel)">
+          <span class="ls-swatch" style="background:linear-gradient(135deg,#1a6b35,#4a9e4a);"></span>
+          Google Sat
+        </button>
+        <button class="ls-btn" id="lsDark" onclick="switchLayer('dark')">
+          <span class="ls-swatch" style="background:#161b22; border-color:rgba(255,255,255,0.3);"></span>
+          Dark
+        </button>
+      </div>
+    </div>
+
+    <!-- ══ CHART ══ -->
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title">Elevation Profile</span>
+        <div class="chart-legend">
+          <div class="leg"><div class="leg-sw" style="background:#4a5568;"></div> Terrain</div>
+          <div class="leg"><div class="leg-sw" style="background:#00e5ff;"></div> Site A</div>
+          <div class="leg"><div class="leg-sw" style="background:#69ff47;"></div> Site B</div>
+          <div class="leg"><div class="leg-sw" style="background:#69ff47; opacity:.5;"></div> Clear</div>
+          <div class="leg"><div class="leg-sw" style="background:#ff6b35;"></div> Blocked</div>
+        </div>
+      </div>
+      <canvas id="elevChart"></canvas>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /app-shell -->
+
+<!-- Loading overlay -->
+<div class="loading-overlay hidden" id="loadingOverlay">
+  <div class="spinner"></div>
+  <div id="loadingText">Fetching elevation data…</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+'use strict';
+// ═══════════════════════════════════════════════
+// CONSTANTS
+// ═══════════════════════════════════════════════
+const EARTH_R    = 6371000;  // metres
+const K          = 4 / 3;   // effective Earth radius factor
+const N_SAMPLES  = 99;       // gives 100 points total (0..99), fits Open-Meteo limit of 100
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let map, markerA, markerB, pathLayer = null;
+let mapClickMode    = 'off';
+let ghostMarker     = null;
+let crosshairMarker = null;   // live map marker synced to chart hover
+let chartState      = null;   // populated after each analysis
+const geoCache      = {};
+
+// Debounce guard: collapses rapid consecutive runAnalysis() calls into one
+let _analysisTimer  = null;
+let _analysisRunning = false;
+
+// ═══════════════════════════════════════════════
+// MARKER ICONS
+// ═══════════════════════════════════════════════
+const mkIcon = (fill, glow) => L.divIcon({
+  className: '',
+  html: `<div style="width:14px;height:14px;background:${fill};border:2px solid #fff;border-radius:50%;box-shadow:0 0 8px ${glow};cursor:grab;"></div>`,
+  iconSize: [14,14], iconAnchor: [7,7]
+});
+const mkGhost = (fill) => L.divIcon({
+  className: '',
+  html: `<div style="width:22px;height:22px;background:${fill};opacity:.45;border:2px dashed #fff;border-radius:50%;pointer-events:none;"></div>`,
+  iconSize: [22,22], iconAnchor: [11,11]
+});
+const ICON_A = mkIcon('#00e5ff','#00e5ff');
+const ICON_B = mkIcon('#69ff47','#69ff47');
+
+// ═══════════════════════════════════════════════
+// MAP INIT
+// ═══════════════════════════════════════════════
+// ═══════════════════════════════════════════════
+// LAYER DEFINITIONS & SWITCHER
+// ═══════════════════════════════════════════════
+let activeBaseLayer = null;
+let googleApiKey    = '';
+
+const LAYERS = {
+  'esri-sat': () => L.tileLayer(
+    'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    { attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics', maxZoom: 20 }
+  ),
+  'esri-hybrid': () => {
+    // Esri satellite + Esri reference labels on top
+    const sat = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { attribution: 'Tiles &copy; Esri', maxZoom: 20 }
+    );
+    const labels = L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+      { attribution: '', maxZoom: 20, opacity: 0.9 }
+    );
+    return L.layerGroup([sat, labels]);
+  },
+  'google-sat': () => {
+    if (!googleApiKey) return null;
+    // Google Maps requires their JS API for proper legal use.
+    // We use the Maps Static tile endpoint via a proxy-compatible URL.
+    return L.tileLayer(
+      `https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}`,
+      { attribution: 'Map data &copy; Google', maxZoom: 21, subdomains: ['mt0','mt1','mt2','mt3'] }
+    );
+  },
+  'dark': () => L.tileLayer(
+    'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    { attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 19 }
+  ),
+};
+
+function switchLayer(id) {
+  if (id === 'google-sat' && !googleApiKey) {
+    document.getElementById('gkeyStatus').textContent = '⚠ Enter a Google Maps API key first.';
+    document.getElementById('gkeyStatus').className   = 'gkey-status err';
+    // Scroll panel to key field
+    document.getElementById('googleApiKey').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  const newLayer = LAYERS[id] ? LAYERS[id]() : null;
+  if (!newLayer) return;
+
+  if (activeBaseLayer) {
+    if (activeBaseLayer.eachLayer) activeBaseLayer.eachLayer(l => map.removeLayer(l));
+    else map.removeLayer(activeBaseLayer);
+  }
+
+  if (newLayer.eachLayer) newLayer.eachLayer(l => l.addTo(map));
+  else newLayer.addTo(map);
+  activeBaseLayer = newLayer;
+
+  // Update button states
+  document.querySelectorAll('.ls-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('ls' + id.split('-').map(s=>s[0].toUpperCase()+s.slice(1)).join(''));
+  if (btn) btn.classList.add('active');
+
+  // Ensure markers, path, and crosshair stay on top of new tile layer
+  if (pathLayer) {
+    if (pathLayer.eachLayer) pathLayer.eachLayer(l => { if(l.bringToFront) l.bringToFront(); });
+    else if (pathLayer.bringToFront) pathLayer.bringToFront();
+  }
+  [markerA, markerB, crosshairMarker].forEach(m => { if(m?.bringToFront) m.bringToFront(); });
+}
+
+function applyGoogleKey() {
+  const key = document.getElementById('googleApiKey').value.trim();
+  const statusEl = document.getElementById('gkeyStatus');
+  if (!key) {
+    statusEl.textContent = '⚠ Please paste your API key.'; statusEl.className = 'gkey-status err'; return;
+  }
+  if (!key.startsWith('AIza')) {
+    statusEl.textContent = '⚠ Key should start with "AIza…"'; statusEl.className = 'gkey-status err'; return;
+  }
+  googleApiKey = key;
+  statusEl.textContent = '✓ Key saved — switching to Google Satellite…'; statusEl.className = 'gkey-status ok';
+  switchLayer('google-sat');
+}
+
+function initMap() {
+  map = L.map('map', { zoomControl: true }).setView([33.9252, -84.4537], 10);
+
+  // Default: Esri satellite (free, no key, great quality)
+  switchLayer('esri-hybrid');
+
+  const llA = [+v('latA'), +v('lngA')];
+  const llB = [+v('latB'), +v('lngB')];
+
+  markerA = L.marker(llA, { icon: ICON_A, draggable: true, title: 'Site A' }).addTo(map);
+  markerB = L.marker(llB, { icon: ICON_B, draggable: true, title: 'Site B' }).addTo(map);
+
+  markerA.on('dragend', () => { copyMarkerToInputs('a'); runAnalysis(); });
+  markerB.on('dragend', () => { copyMarkerToInputs('b'); runAnalysis(); });
+
+  map.on('click', e => {
+    if (mapClickMode === 'off') return;
+    setCoords(mapClickMode, e.latlng.lat, e.latlng.lng);
+    syncMarkerFromInputs(mapClickMode);
+    dropGhost();
+    setMapMode('off');
+    runAnalysis();
+  });
+
+  map.on('mousemove', e => {
+    if (mapClickMode === 'off') return;
+    const fill = mapClickMode === 'a' ? '#00e5ff' : '#69ff47';
+    if (!ghostMarker) ghostMarker = L.marker(e.latlng, { icon: mkGhost(fill), interactive: false, zIndexOffset: -200 }).addTo(map);
+    else ghostMarker.setLatLng(e.latlng);
+  });
+
+  map.on('mouseout', dropGhost);
+
+  drawPlaceholderPath(llA, llB);
+}
+
+function dropGhost() {
+  if (ghostMarker) { map.removeLayer(ghostMarker); ghostMarker = null; }
+}
+
+function copyMarkerToInputs(site) {
+  const ll = site === 'a' ? markerA.getLatLng() : markerB.getLatLng();
+  setCoords(site, ll.lat, ll.lng);
+}
+
+// ═══════════════════════════════════════════════
+// MAP CLICK MODE
+// ═══════════════════════════════════════════════
+function setMapMode(mode) {
+  mapClickMode = mode;
+  const mapEl  = document.getElementById('map');
+  const hint   = document.getElementById('mapHint');
+  const escEl  = document.getElementById('escHint');
+
+  // Reset all toggle states
+  ['modeOff','modeA','modeB'].forEach(id => document.getElementById(id).className = 'mc-opt');
+  ['mapBtnA','mapBtnB'].forEach(id => document.getElementById(id).classList.remove('active-a','active-b'));
+  mapEl.className = '';
+  hint.className  = 'map-hint hidden';
+  escEl.textContent = '';
+
+  if (mode === 'a') {
+    document.getElementById('modeA').classList.add('sel-a');
+    document.getElementById('mapBtnA').classList.add('active-a');
+    mapEl.classList.add('clickmode-a');
+    hint.textContent = '📍 Click to place Site A';
+    hint.className   = 'map-hint hint-a';
+    escEl.textContent = 'Press Esc to cancel';
+  } else if (mode === 'b') {
+    document.getElementById('modeB').classList.add('sel-b');
+    document.getElementById('mapBtnB').classList.add('active-b');
+    mapEl.classList.add('clickmode-b');
+    hint.textContent = '📍 Click to place Site B';
+    hint.className   = 'map-hint hint-b';
+    escEl.textContent = 'Press Esc to cancel';
+  } else {
+    document.getElementById('modeOff').classList.add('sel-off');
+    dropGhost();
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && mapClickMode !== 'off') setMapMode('off');
+});
+
+// ═══════════════════════════════════════════════
+// COORDINATE HELPERS
+// ═══════════════════════════════════════════════
+const v   = id => document.getElementById(id).value;
+const set = (id, val) => { document.getElementById(id).value = val; };
+
+function setCoords(site, lat, lng) {
+  const S = site.toUpperCase();
+  set('lat'+S, (+lat).toFixed(5));
+  set('lng'+S, (+lng).toFixed(5));
+}
+
+function getCoords(site) {
+  const S = site.toUpperCase();
+  return { lat: parseFloat(v('lat'+S)), lng: parseFloat(v('lng'+S)) };
+}
+
+function syncMarkerFromInputs(site) {
+  const { lat, lng } = getCoords(site);
+  if (isNaN(lat) || isNaN(lng)) return;
+  (site === 'a' ? markerA : markerB).setLatLng([lat, lng]);
+}
+
+function syncAllMarkers() {
+  syncMarkerFromInputs('a');
+  syncMarkerFromInputs('b');
+}
+
+['latA','lngA','latB','lngB'].forEach(id => {
+  document.getElementById(id).addEventListener('change', syncAllMarkers);
+});
+
+// ═══════════════════════════════════════════════
+// ANTENNA HEIGHT SYNC
+// ═══════════════════════════════════════════════
+['A','B'].forEach(S => {
+  const range = document.getElementById('heightRange'+S);
+  const num   = document.getElementById('height'+S);
+  const disp  = document.getElementById('heightVal'+S);
+  range.addEventListener('input', () => { num.value = range.value; disp.textContent = range.value + ' ft'; });
+  num.addEventListener('input',   () => { range.value = Math.min(500, Math.max(0, +num.value)); disp.textContent = num.value + ' ft'; });
+});
+
+// Helper: antenna height in METERS from ft input (used in analysis)
+function getAntennaMeters(site) {
+  const ft = parseFloat(document.getElementById('height'+site.toUpperCase()).value) || 0;
+  return ft * 0.3048;
+}
+
+// ═══════════════════════════════════════════════
+// GEOLOCATION  — with Permissions API pre-check
+// ═══════════════════════════════════════════════
+async function useMyLocation(site) {
+  const S   = site.toUpperCase();
+  const btn = document.getElementById('gps'+S);
+
+  if (!('geolocation' in navigator)) {
+    setAddrStatus(site, '⚠ Geolocation not supported by this browser.', 'err');
+    return;
+  }
+
+  // ── Pre-check permission state if Permissions API available ──
+  if ('permissions' in navigator) {
+    try {
+      const perm = await navigator.permissions.query({ name: 'geolocation' });
+      if (perm.state === 'denied') {
+        setAddrStatus(site,
+          '⚠ Location permission is blocked. To fix: click the 🔒 icon in the browser address bar → Site settings → Location → Allow, then reload.',
+          'err');
+        return;
+      }
+      // state === 'prompt' or 'granted' — proceed normally
+    } catch(e) { /* Permissions API not fully supported — proceed anyway */ }
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ …';
+  setAddrStatus(site, 'Requesting position — check for a browser prompt…', 'inf');
+
+  const reset = () => { btn.disabled = false; btn.textContent = '🎯 My Location'; };
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+      setCoords(site, lat, lng);
+      syncMarkerFromInputs(site);
+      map.setView([lat, lng], Math.max(map.getZoom(), 14));
+      setAddrStatus(site, `✓ Located · ±${Math.round(accuracy)} m accuracy`, 'ok');
+      reset();
+      runAnalysis();
+    },
+    err => {
+      const msgs = {
+        1: 'Permission denied — click the 🔒 in the address bar, set Location → Allow, then reload.',
+        2: 'Position unavailable — your device may not have location hardware.',
+        3: 'Request timed out — try again or check that location services are enabled in Windows Settings → Privacy → Location.'
+      };
+      setAddrStatus(site, '⚠ ' + (msgs[err.code] || 'Unknown location error (code '+err.code+')'), 'err');
+      reset();
+    },
+    // Use lower accuracy first (faster), fallback gracefully
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 }
+  );
+}
+
+// ═══════════════════════════════════════════════
+// GEOCODING  — Multi-source cascade
+//
+//  1. ArcGIS World Geocoder — best US street-level coverage, free, no key,
+//                             proper CORS, returns a confidence score
+//  2. Photon / Komoot       — international, CORS-safe, OSM-based
+//  3. Nominatim / OSM       — last resort
+//
+//  Each source is tried in order; the first HIGH-CONFIDENCE result wins.
+// ═══════════════════════════════════════════════
+
+// ── Source 1: ArcGIS World Geocoder ──────────────────────────────────────────
+// Free for basic use, no API key, excellent US + global coverage,
+// returns a 0-100 match score — we reject anything below 70 to avoid bad fuzzy matches
+async function geocodeViaArcGIS(query) {
+  const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`
+            + `?SingleLine=${encodeURIComponent(query)}`
+            + `&f=json&outFields=Match_addr,Addr_type&outSR=4326&maxLocations=3`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('ArcGIS HTTP ' + resp.status);
+  const json = await resp.json();
+  if (!json.candidates || json.candidates.length === 0) return null;
+
+  // Sort by score descending, pick best candidate above threshold
+  const candidates = json.candidates.sort((a,b) => b.score - a.score);
+  const best = candidates[0];
+  console.debug(`ArcGIS best match: "${best.attributes?.Match_addr}" score=${best.score}`);
+
+  if (best.score < 70) {
+    console.warn('ArcGIS: best score', best.score, '< 70, skipping');
+    return null;
+  }
+  return {
+    lat:   best.location.y,
+    lng:   best.location.x,
+    label: best.attributes?.Match_addr || query,
+    score: best.score
+  };
+}
+
+// ── Source 2: Photon (Komoot) ─────────────────────────────────────────────────
+// International, CORS *, free, OSM-based — good for cities/landmarks
+async function geocodeViaPhoton(query) {
+  const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=3&lang=en`;
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error('Photon HTTP ' + resp.status);
+  const geojson = await resp.json();
+  if (!geojson.features || geojson.features.length === 0) return null;
+
+  // Prefer results that have a house number (more specific)
+  const feats = geojson.features;
+  const withNum = feats.find(f => f.properties.housenumber);
+  const feat    = withNum || feats[0];
+  const [lng, lat] = feat.geometry.coordinates;
+  const p = feat.properties;
+
+  // Build label — include house number + street if present
+  const addrPart = p.housenumber && p.street ? `${p.housenumber} ${p.street}` : (p.street || p.name || '');
+  const parts = [addrPart, p.city || p.town || p.county, p.state, p.country].filter(Boolean);
+  return { lat, lng, label: parts.slice(0, 4).join(', ') };
+}
+
+// ── Source 3: Nominatim (OSM) ─────────────────────────────────────────────────
+async function geocodeViaNominatim(query) {
+  const url = `https://nominatim.openstreetmap.org/search`
+            + `?format=json&limit=1&q=${encodeURIComponent(query)}&addressdetails=1`;
+  const resp = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+  if (!resp.ok) throw new Error('Nominatim HTTP ' + resp.status);
+  const data = await resp.json();
+  if (!data.length) return null;
+  const d = data[0];
+  const a = d.address || {};
+  const addrPart = a.house_number ? `${a.house_number} ${a.road||''}`.trim() : (a.road || d.display_name.split(',')[0]);
+  const parts = [addrPart, a.city || a.town || a.village || a.county, a.state, a.country].filter(Boolean);
+  return { lat: parseFloat(d.lat), lng: parseFloat(d.lon), label: parts.slice(0,3).join(', ') };
+}
+
+// ── Main geocode entry point ──────────────────────────────────────────────────
+async function geocode(site) {
+  const S     = site.toUpperCase();
+  const query = document.getElementById('addr'+S).value.trim();
+  if (!query) { setAddrStatus(site, 'Enter an address or place name first.', 'err'); return; }
+
+  const key = query.toLowerCase();
+  if (geoCache[key]) { applyGeocode(site, geoCache[key]); return; }
+
+  setAddrStatus(site, '🔍 Searching…', 'inf');
+
+  const errors  = [];
+  const sources = [
+    { name: 'ArcGIS',    fn: geocodeViaArcGIS },
+    { name: 'Photon',    fn: geocodeViaPhoton },
+    { name: 'Nominatim', fn: geocodeViaNominatim },
+  ];
+
+  for (const src of sources) {
+    try {
+      setAddrStatus(site, `🔍 Trying ${src.name}…`, 'inf');
+      const result = await src.fn(query);
+      if (result) {
+        result.label = result.label || query;
+        geoCache[key] = result;
+        applyGeocode(site, result);
+        return;
+      }
+      errors.push(`${src.name}: no results`);
+    } catch(err) {
+      console.warn(`Geocode [${src.name}] failed:`, err.message);
+      errors.push(`${src.name}: ${err.message}`);
+    }
+  }
+
+  console.error('All geocode sources failed:', errors);
+  setAddrStatus(site,
+    '⚠ Address not found in any source. Try: full address with city & state, or use "Pick on Map".',
+    'err');
+}
+
+function applyGeocode(site, result, silent = false) {
+  setCoords(site, result.lat, result.lng);
+  syncMarkerFromInputs(site);
+  setAddrStatus(site, '✓ ' + result.label, 'ok');
+  map.setView([result.lat, result.lng], Math.max(map.getZoom(), 13));
+  if (!silent) runAnalysis();
+}
+
+// Geocode a site only if its address field has unconfirmed text.
+// "Unconfirmed" means the field is non-empty AND the status line
+// doesn't already start with "✓" (i.e. hasn't been resolved yet).
+// Returns true if geocoding was needed (and succeeded), false otherwise.
+async function geocodeIfPending(site) {
+  const S       = site.toUpperCase();
+  const query   = document.getElementById('addr'+S).value.trim();
+  const status  = document.getElementById('addrStatus'+S).textContent;
+  if (!query || status.startsWith('✓')) return false;  // nothing to do
+
+  setAddrStatus(site, '🔍 Resolving address…', 'inf');
+
+  const key = query.toLowerCase();
+  if (geoCache[key]) {
+    applyGeocode(site, geoCache[key], /*silent=*/true);
+    return true;
+  }
+
+  const sources = [
+    { name: 'ArcGIS',    fn: geocodeViaArcGIS },
+    { name: 'Photon',    fn: geocodeViaPhoton },
+    { name: 'Nominatim', fn: geocodeViaNominatim },
+  ];
+  for (const src of sources) {
+    try {
+      const result = await src.fn(query);
+      if (result) {
+        result.label = result.label || query;
+        geoCache[key] = result;
+        applyGeocode(site, result, /*silent=*/true);
+        return true;
+      }
+    } catch(e) { console.warn(`geocodeIfPending [${src.name}]:`, e.message); }
+  }
+
+  setAddrStatus(site, '⚠ Could not resolve address — check spelling or use "Pick on Map"', 'err');
+  return false;
+}
+
+function setAddrStatus(site, msg, cls) {
+  const el = document.getElementById('addrStatus' + site.toUpperCase());
+  el.textContent = msg;
+  el.className   = 'addr-status ' + cls;
+}
+
+// ═══════════════════════════════════════════════
+// UNIT HELPERS
+// ═══════════════════════════════════════════════
+const M_TO_FT   = 3.28084;
+const M_TO_MI   = 0.000621371;
+const FT_TO_M   = 0.3048;
+
+// Format meters → "492 ft (150m)"  [panel display, both units]
+function fmtFtM(meters) {
+  const ft = Math.round(meters * M_TO_FT);
+  const m  = Math.round(meters);
+  return `${ft.toLocaleString()} ft (${m}m)`;
+}
+// Format meters → "492 ft"  [chart-only, ft no suffix]
+function fmtFt(meters) {
+  return Math.round(meters * M_TO_FT).toLocaleString() + ' ft';
+}
+// Format meters distance → "3.2 mi" or "528 ft"  [chart + panel distance]
+function fmtDist(meters, milesOnly) {
+  const mi = meters * M_TO_MI;
+  if (milesOnly) return mi >= 0.1 ? mi.toFixed(2)+' mi' : Math.round(meters*M_TO_FT)+' ft';
+  if (mi >= 0.1) return mi.toFixed(2)+' mi ('+( meters>=1000?(meters/1000).toFixed(1)+'km':Math.round(meters)+'m' )+')';
+  return Math.round(meters*M_TO_FT)+' ft ('+Math.round(meters)+'m)';
+}
+// Clearance: signed, panel format
+function fmtClearFtM(meters) {
+  const ft = Math.round(meters * M_TO_FT);
+  const m  = Math.round(meters);
+  const sign = meters >= 0 ? '+' : '';
+  return `${sign}${ft.toLocaleString()} ft (${sign}${m}m)`;
+}
+
+// ═══════════════════════════════════════════════
+// FREQUENCY BAND STATE & DIFFRACTION MODEL
+// ═══════════════════════════════════════════════
+//
+//  RF beyond-LOS model based on ITU-R P.526 knife-edge diffraction.
+//
+//  For a single dominant obstacle, the Fresnel-Kirchhoff diffraction
+//  parameter ν is:
+//    ν = h_obs · √(2(d1+d2) / (λ·d1·d2))
+//  where h_obs is the height of terrain ABOVE the LOS ray (positive when
+//  blocked), d1/d2 are distances from each endpoint to the obstacle, and
+//  λ is wavelength in metres.
+//
+//  Diffraction loss J(ν) per ITU-R P.526-15 approx:
+//    ν ≤ -0.78  → J ≈ 0 dB  (full Fresnel clearance)
+//    -0.78–0    → J ≈ small (partial intrusion)
+//    0–2.4      → moderate loss
+//    > 2.4      → J ≈ 20·log10(0.225/ν)
+//
+//  Link quality grades (all bands assume a typical 150 dB budget for
+//  portable VHF/UHF radios; adjust for fixed links):
+//    Excellent  : LOS clear + ≥60% Fresnel clearance   → 0 dB loss
+//    Good       : LOS clear or ν ≤ 0.5                  → 0–5 dB
+//    Fair       : 0.5 < ν ≤ 1.5  (≈5–15 dB loss)      → marginal
+//    Poor       : 1.5 < ν ≤ 2.5  (≈15–25 dB loss)     → very marginal
+//    Unlikely   : ν > 2.5         (> 25 dB loss)        → near-zero
+//
+//  VHF diffracts better than UHF because λ is longer → F1 is larger →
+//  same obstacle height yields a lower ν → less diffraction loss.
+//
+const FREQ_BANDS = {
+  'vhf-low':  { label:'VHF Low',  range:'30–88 MHz',   freqMHz: 60,  lambda: 300/60  },  // λ=5.0m
+  'vhf-high': { label:'VHF High', range:'136–174 MHz', freqMHz: 155, lambda: 300/155 },  // λ=1.94m
+  'uhf-low':  { label:'UHF Low',  range:'400–512 MHz', freqMHz: 450, lambda: 300/450 },  // λ=0.67m
+  'uhf-high': { label:'UHF High', range:'700–900 MHz', freqMHz: 800, lambda: 300/800 },  // λ=0.375m
+};
+let currentBand = 'vhf-high';
+
+function setFreqBand(band) {
+  currentBand = band;
+  document.querySelectorAll('.freq-opt').forEach(b => b.classList.remove('freq-sel'));
+  const map_id = { 'vhf-low':'fVLow','vhf-high':'fVHigh','uhf-low':'fULow','uhf-high':'fUHigh' };
+  document.getElementById(map_id[band]).classList.add('freq-sel');
+  const fb = FREQ_BANDS[band];
+  document.getElementById('freqDesc').textContent = `${fb.label} (${fb.range}) · λ≈${fb.lambda.toFixed(2)} m`;
+  // Re-run if we already have results
+  if (document.getElementById('resultsSection').style.display !== 'none') runAnalysis();
+}
+
+// Knife-edge diffraction loss J(ν) per ITU-R P.526 approximation
+function knifeedgeLoss(nu) {
+  if (nu <= -0.78) return 0;
+  if (nu <= 0)     return 20 * Math.log10(0.5 - 0.62 * nu);
+  if (nu <= 1)     return 20 * Math.log10(0.5 * Math.exp(-0.95 * nu));
+  if (nu <= 2.4)   return 20 * Math.log10(0.4 - Math.sqrt(0.1184 - (0.38 - 0.1*nu)**2));
+  return 20 * Math.log10(0.225 / nu);
+}
+
+// Compute worst-case ν across the path, find the dominant obstacle
+function computeDiffraction(dists, terrain, losLine, D, lambda) {
+  let worstNu = -Infinity, worstIdx = 0;
+  for (let i = 1; i < dists.length - 1; i++) {
+    const h_obs = terrain[i] - losLine[i]; // positive when terrain above LOS
+    if (h_obs <= 0) continue;              // not an obstacle at this point
+    const d1 = dists[i];
+    const d2 = D - dists[i];
+    if (d1 <= 0 || d2 <= 0) continue;
+    const nu = h_obs * Math.sqrt(2 * (d1 + d2) / (lambda * d1 * d2));
+    if (nu > worstNu) { worstNu = nu; worstIdx = i; }
+  }
+  if (worstNu === -Infinity) worstNu = -2; // fully clear
+  const lossDb = knifeedgeLoss(worstNu);
+  return { nu: worstNu, lossDb, obstacleIdx: worstIdx };
+}
+
+// Map diffraction result to a link quality grade
+function linkGrade(nu, minClearM, anyBlocked) {
+  // F1 intrusion: fully clear = nu ≤ -0.78 (60% clearance rule)
+  if (!anyBlocked && nu <= -0.78) return { grade:'excellent', pct:100, label:'EXCELLENT', icon:'✅', desc:'Full LOS · first Fresnel zone clear' };
+  if (!anyBlocked && nu <= 0)     return { grade:'good',      pct:85,  label:'GOOD',      icon:'🟢', desc:'LOS clear · minor Fresnel intrusion' };
+  if (!anyBlocked && nu <= 0.5)   return { grade:'good',      pct:75,  label:'GOOD',      icon:'🟢', desc:'LOS clear · partial Fresnel zone blocked' };
+  if (nu <= 0.5)                   return { grade:'fair',      pct:60,  label:'FAIR',      icon:'🟡', desc:'Marginal LOS · expect reduced signal' };
+  if (nu <= 1.5)                   return { grade:'fair',      pct:45,  label:'FAIR',      icon:'🟡', desc:'Diffraction path · signal likely usable' };
+  if (nu <= 2.5)                   return { grade:'poor',      pct:25,  label:'POOR',      icon:'🟠', desc:'Heavy diffraction · marginal / intermittent' };
+  return                                  { grade:'unlikely',  pct:8,   label:'UNLIKELY',  icon:'🔴', desc:'Severe obstruction · contact improbable' };
+}
+
+// ═══════════════════════════════════════════════
+// MATH
+// ═══════════════════════════════════════════════
+const toRad = d => d * Math.PI / 180;
+const toDeg = r => r * 180 / Math.PI;
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const dLat = toRad(lat2-lat1), dLng = toRad(lng2-lng1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;
+  return 2 * EARTH_R * Math.asin(Math.sqrt(a));
+}
+
+function bearing(lat1, lng1, lat2, lng2) {
+  const dLng = toRad(lng2-lng1);
+  const y = Math.sin(dLng)*Math.cos(toRad(lat2));
+  const x = Math.cos(toRad(lat1))*Math.sin(toRad(lat2)) - Math.sin(toRad(lat1))*Math.cos(toRad(lat2))*Math.cos(dLng);
+  return (toDeg(Math.atan2(y,x))+360)%360;
+}
+
+const lerp  = (a, b, t) => a + (b-a)*t;
+const bulge = (d, D) => (d*(D-d)) / (2*K*EARTH_R);
+
+// ═══════════════════════════════════════════════
+// ELEVATION  — Open-Meteo API
+//   • Free, no key, no account
+//   • Access-Control-Allow-Origin: * — works from file://
+//   • Uses SRTM data (same underlying source)
+//   • Max 100 locations per request — we use exactly 100 points
+// ═══════════════════════════════════════════════
+async function fetchElevations(points) {
+  const lats = points.map(p => p[0].toFixed(5)).join(',');
+  const lngs = points.map(p => p[1].toFixed(5)).join(',');
+  const url  = `https://api.open-meteo.com/v1/elevation?latitude=${lats}&longitude=${lngs}`;
+
+  // Retry up to 3 times with backoff on 429 Too Many Requests
+  const delays = [0, 1200, 2500];
+  for (let attempt = 0; attempt < delays.length; attempt++) {
+    if (delays[attempt] > 0) {
+      document.getElementById('loadingText').textContent =
+        `Rate limited — retrying in ${(delays[attempt]/1000).toFixed(1)}s… (attempt ${attempt+1})`;
+      await new Promise(r => setTimeout(r, delays[attempt]));
+    }
+    const resp = await fetch(url);
+    if (resp.status === 429) {
+      if (attempt === delays.length - 1) throw new Error('Elevation API rate limited (429). Wait a moment and try again.');
+      continue;
+    }
+    if (!resp.ok) throw new Error('Elevation API HTTP ' + resp.status);
+    const json = await resp.json();
+    if (!json.elevation) throw new Error('Elevation API: unexpected response');
+    return json.elevation;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// MAP PATH
+// ═══════════════════════════════════════════════
+function clearPath() {
+  if (!pathLayer) return;
+  if (pathLayer.eachLayer) pathLayer.eachLayer(l => map.removeLayer(l));
+  else map.removeLayer(pathLayer);
+  pathLayer = null;
+}
+
+function drawPlaceholderPath(llA, llB) {
+  clearPath();
+  pathLayer = L.polyline([llA, llB], { color:'#4a5568', weight:2, opacity:.6, dashArray:'6 4' }).addTo(map);
+}
+
+function drawSegmentedPath(points, blocked) {
+  clearPath();
+  const layers = [];
+  if (points.length < 2) return;
+
+  let start = 0, curB = blocked[0];
+  for (let i = 1; i <= points.length - 1; i++) {
+    const b = blocked[Math.min(i, blocked.length-1)];
+    const isLast = i === points.length - 1;
+    if (b !== curB || isLast) {
+      const seg = points.slice(start, isLast ? i+1 : i);
+      if (seg.length >= 2) {
+        layers.push(L.polyline(seg, { color: curB ? '#ff6b35' : '#69ff47', weight: 3, opacity: .9 }));
+      }
+      start = i;
+      curB  = b;
+    }
+  }
+
+  if (!layers.length) {
+    layers.push(L.polyline(points, { color: blocked.some(Boolean) ? '#ff6b35' : '#69ff47', weight: 3 }));
+  }
+
+  pathLayer = L.layerGroup(layers).addTo(map);
+}
+
+// ═══════════════════════════════════════════════
+// ELEVATION CHART
+// ═══════════════════════════════════════════════
+
+// Shared padding constant used by chart draw + interactivity
+const CHART_PAD = { l:52, r:16, t:14, b:28 };
+
+function drawChartBase(ctx, W, H, dists, terrain, losLine, blocked) {
+  const pad = CHART_PAD;
+  const pW = W-pad.l-pad.r, pH = H-pad.t-pad.b;
+  if (pW <= 0 || pH <= 0) return;
+
+  const maxD = dists[dists.length-1];
+  const allE = [...terrain, ...losLine];
+  const minE = Math.min(...allE)-5, maxE = Math.max(...allE)+20, rng = maxE-minE;
+
+  const xS = d => pad.l + (d/maxD)*pW;
+  const yS = e => pad.t + pH - ((e-minE)/rng)*pH;
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,0.04)'; ctx.lineWidth = 1;
+  for (let i=0; i<=4; i++) {
+    const y = pad.t + (i/4)*pH;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+pW,y); ctx.stroke();
+    ctx.fillStyle='rgba(125,133,144,0.8)'; ctx.font='9px "Share Tech Mono",monospace';
+    ctx.textAlign='right';
+    ctx.fillText(Math.round((maxE-(i/4)*rng)*M_TO_FT).toLocaleString()+'ft', pad.l-4, y+3);
+  }
+  for (let i=0; i<=5; i++) {
+    const x = pad.l + (i/5)*pW;
+    ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+pH); ctx.stroke();
+    ctx.fillStyle='rgba(125,133,144,0.8)'; ctx.font='9px "Share Tech Mono",monospace';
+    ctx.textAlign='center';
+    const d = (i/5)*maxD;
+    const dMi = d * M_TO_MI;
+    ctx.fillText(dMi>=0.1?dMi.toFixed(2)+'mi':Math.round(d*M_TO_FT)+'ft', x, pad.t+pH+14);
+  }
+
+  // Terrain fill
+  ctx.beginPath();
+  ctx.moveTo(xS(dists[0]), yS(terrain[0]));
+  for (let i=1; i<dists.length; i++) ctx.lineTo(xS(dists[i]), yS(terrain[i]));
+  ctx.lineTo(xS(dists[dists.length-1]), pad.t+pH);
+  ctx.lineTo(xS(dists[0]),              pad.t+pH);
+  ctx.closePath();
+  const g = ctx.createLinearGradient(0,pad.t,0,pad.t+pH);
+  g.addColorStop(0,'rgba(74,85,104,.7)'); g.addColorStop(1,'rgba(74,85,104,.1)');
+  ctx.fillStyle=g; ctx.fill();
+
+  // Terrain line
+  ctx.beginPath();
+  ctx.moveTo(xS(dists[0]), yS(terrain[0]));
+  for (let i=1; i<dists.length; i++) ctx.lineTo(xS(dists[i]), yS(terrain[i]));
+  ctx.strokeStyle='#718096'; ctx.lineWidth=1.5; ctx.setLineDash([]); ctx.stroke();
+
+  // LOS segmented
+  let s0=0, pb=blocked[0];
+  const flush = end => {
+    if (end <= s0) return;
+    ctx.beginPath();
+    ctx.moveTo(xS(dists[s0]), yS(losLine[s0]));
+    for (let i=s0+1; i<=end; i++) ctx.lineTo(xS(dists[i]), yS(losLine[i]));
+    ctx.strokeStyle = pb ? '#ff6b35' : '#69ff47';
+    ctx.lineWidth=2.5; ctx.setLineDash([6,3]); ctx.stroke(); ctx.setLineDash([]);
+  };
+  for (let i=1; i<blocked.length; i++) {
+    if (blocked[i] !== pb) { flush(i-1); s0=i-1; pb=blocked[i]; }
+  }
+  flush(blocked.length-1);
+
+  // Endpoint dots
+  [[0,'#00e5ff','A','left'],[dists.length-1,'#69ff47','B','right']].forEach(([idx,fill,lbl,align]) => {
+    const x=xS(dists[idx]), y=yS(losLine[idx]);
+    ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2); ctx.fillStyle=fill; ctx.fill();
+    ctx.fillStyle=fill; ctx.font='bold 11px Barlow,sans-serif'; ctx.textAlign=align;
+    ctx.fillText(lbl, align==='left'?x+9:x-9, y+4);
+  });
+
+  // Border
+  ctx.strokeStyle='rgba(255,255,255,0.06)'; ctx.lineWidth=1; ctx.setLineDash([]);
+  ctx.strokeRect(pad.l,pad.t,pW,pH);
+}
+
+function drawChart(dists, terrain, losLine, blocked, points) {
+  const canvas = document.getElementById('elevChart');
+  canvas.width  = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  const W = canvas.width, H = canvas.height;
+  if (!W || !H) return;
+  ctx.clearRect(0, 0, W, H);
+
+  drawChartBase(ctx, W, H, dists, terrain, losLine, blocked);
+
+  // Save base image for fast crosshair overlay restore
+  const allE = [...terrain, ...losLine];
+  const minE = Math.min(...allE)-5, maxE = Math.max(...allE)+20;
+
+  chartState = {
+    dists, terrain, losLine, blocked, points,
+    maxD: dists[dists.length-1],
+    minE, maxE, rng: maxE-minE,
+    W, H,
+    baseImage: ctx.getImageData(0, 0, W, H)
+  };
+}
+
+// ═══════════════════════════════════════════════
+// CHART INTERACTIVITY — crosshair + live map marker
+// ═══════════════════════════════════════════════
+function initChartInteractivity() {
+  const canvas = document.getElementById('elevChart');
+
+  canvas.addEventListener('mousemove', e => {
+    if (!chartState) return;
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = (e.clientX - rect.left) * (canvas.width  / rect.width);
+    const mouseY = (e.clientY - rect.top)  * (canvas.height / rect.height);
+
+    const { dists, terrain, losLine, blocked, points,
+            maxD, minE, rng, W, H, baseImage } = chartState;
+    const pad = CHART_PAD;
+    const pW = W-pad.l-pad.r, pH = H-pad.t-pad.b;
+
+    // Clamp to plot area
+    if (mouseX < pad.l || mouseX > pad.l+pW || mouseY < pad.t || mouseY > pad.t+pH) {
+      clearCrosshair();
+      return;
+    }
+
+    // Find closest sample index by x position
+    const fraction = (mouseX - pad.l) / pW;
+    const rawIdx   = fraction * (dists.length - 1);
+    const idx      = Math.max(0, Math.min(dists.length-1, Math.round(rawIdx)));
+
+    const xS = d => pad.l + (d/maxD)*pW;
+    const yS = e_ => pad.t + pH - ((e_-minE)/rng)*pH;
+
+    const dist     = dists[idx];
+    const terrElev = terrain[idx];
+    const losElev  = losLine[idx];
+    const clearance= losElev - terrElev;
+    const isBlocked= blocked[idx];
+    const xPx      = xS(dist);
+    const accentCol= isBlocked ? '#ff6b35' : '#69ff47';
+
+    // ── Restore base image ──
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    ctx.putImageData(baseImage, 0, 0);
+
+    // ── Vertical crosshair line ──
+    ctx.save();
+    ctx.strokeStyle = accentCol;
+    ctx.lineWidth   = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.globalAlpha = 0.7;
+    ctx.beginPath();
+    ctx.moveTo(xPx, pad.t);
+    ctx.lineTo(xPx, pad.t+pH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+
+    // ── Dot at terrain ──
+    ctx.beginPath();
+    ctx.arc(xPx, yS(terrElev), 4, 0, Math.PI*2);
+    ctx.fillStyle = '#718096'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+
+    // ── Dot at LOS ray ──
+    ctx.beginPath();
+    ctx.arc(xPx, yS(losElev), 4, 0, Math.PI*2);
+    ctx.fillStyle = accentCol; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 1; ctx.stroke();
+
+    // ── Tooltip box ──
+    const distMi   = dist * M_TO_MI;
+    const distLabel = distMi >= 0.1 ? distMi.toFixed(2)+' mi' : Math.round(dist*M_TO_FT)+' ft';
+    const clearFt   = Math.round(clearance * M_TO_FT);
+    const clearSign = clearance >= 0 ? '+' : '';
+    const lines = [
+      { label: 'Distance',  val: distLabel },
+      { label: 'Terrain',   val: fmtFt(terrElev) },
+      { label: 'LOS Ray',   val: fmtFt(losElev) },
+      { label: 'Clearance', val: clearSign+clearFt+' ft', col: isBlocked ? '#ff6b35' : '#69ff47' },
+      { label: '',          val: isBlocked ? '⛔ BLOCKED' : '✅ CLEAR', col: isBlocked ? '#ff6b35' : '#69ff47' },
+    ];
+
+    const boxW = 148, lineH = 16, boxPad = 10;
+    const boxH = lines.length * lineH + boxPad * 2;
+    let bx = xPx + 10;
+    if (bx + boxW > W - 4) bx = xPx - boxW - 10;
+    const by = pad.t + 6;
+
+    ctx.fillStyle   = 'rgba(13,17,23,0.92)';
+    ctx.strokeStyle = accentCol;
+    ctx.lineWidth   = 1;
+    ctx.beginPath();
+    ctx.roundRect(bx, by, boxW, boxH, 5);
+    ctx.fill(); ctx.stroke();
+
+    ctx.font = '10px "Share Tech Mono",monospace';
+    lines.forEach((ln, i) => {
+      const y = by + boxPad + i * lineH + 10;
+      ctx.fillStyle = 'rgba(125,133,144,0.9)';
+      ctx.textAlign = 'left';
+      ctx.fillText(ln.label, bx+8, y);
+      ctx.fillStyle = ln.col || '#e6edf3';
+      ctx.textAlign = 'right';
+      ctx.fillText(ln.val, bx+boxW-8, y);
+    });
+    ctx.restore();
+
+    // ── Live marker on Leaflet map ──
+    const ll = points[idx];
+    if (ll) {
+      const markerColor  = isBlocked ? '#ff6b35' : '#69ff47';
+      const markerGlow   = isBlocked ? '#ff6b35' : '#69ff47';
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="
+          width:16px;height:16px;
+          background:${markerColor};
+          border:2px solid #fff;
+          border-radius:50%;
+          box-shadow:0 0 10px 3px ${markerGlow};
+          pointer-events:none;
+        "></div>`,
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      if (!crosshairMarker) {
+        crosshairMarker = L.marker(ll, { icon, interactive: false, zIndexOffset: 500 }).addTo(map);
+      } else {
+        crosshairMarker.setLatLng(ll);
+        crosshairMarker.setIcon(icon);
+      }
+    }
+  });
+
+  canvas.addEventListener('mouseleave', clearCrosshair);
+}
+
+function clearCrosshair() {
+  if (chartState?.baseImage) {
+    const canvas = document.getElementById('elevChart');
+    canvas.getContext('2d').putImageData(chartState.baseImage, 0, 0);
+  }
+  if (crosshairMarker) {
+    map.removeLayer(crosshairMarker);
+    crosshairMarker = null;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// MAIN ANALYSIS
+// ═══════════════════════════════════════════════
+// Public entry point — debounced so rapid calls (geocode callbacks,
+// drag events, band switch) collapse into a single elevation fetch.
+function runAnalysis() {
+  clearTimeout(_analysisTimer);
+  _analysisTimer = setTimeout(_doAnalysis, 120);
+}
+
+async function _doAnalysis() {
+  if (_analysisRunning) return;
+  _analysisRunning = true;
+
+  // ── Pre-flight: geocode any address fields that were typed but not confirmed ──
+  // Run sequentially (not parallel) to avoid duplicate API calls and
+  // to keep the second geocode from firing a re-entrant runAnalysis.
+  await geocodeIfPending('a');
+  await geocodeIfPending('b');
+
+  const a = getCoords('a'), b = getCoords('b');
+  if (isNaN(a.lat)||isNaN(a.lng)||isNaN(b.lat)||isNaN(b.lng)) {
+    _analysisRunning = false; return;
+  }
+
+  const hA = getAntennaMeters('a');
+  const hB = getAntennaMeters('b');
+
+  syncAllMarkers();
+
+  const overlay = document.getElementById('loadingOverlay');
+  overlay.classList.remove('hidden');
+  document.getElementById('calcBtn').disabled = true;
+
+  try {
+    const D = haversine(a.lat, a.lng, b.lat, b.lng);
+
+    // Build exactly N_SAMPLES+1 = 100 points
+    const points = [];
+    for (let i=0; i<=N_SAMPLES; i++) {
+      const f = i/N_SAMPLES;
+      points.push([lerp(a.lat,b.lat,f), lerp(a.lng,b.lng,f)]);
+    }
+
+    document.getElementById('loadingText').textContent = 'Fetching elevation data…';
+    const elev  = await fetchElevations(points);
+    const dists = points.map((_,i) => (i/N_SAMPLES)*D);
+
+    const antA = elev[0]+hA, antB = elev[N_SAMPLES]+hB;
+    const losLine=[], blocked=[];
+    let anyBlocked=false, minClear=Infinity, maxBulge=0;
+
+    for (let i=0; i<=N_SAMPLES; i++) {
+      const d=dists[i], f=d/D;
+      const losH = lerp(antA, antB, f);
+      losLine.push(losH);
+      const bg = bulge(d,D);
+      if (bg>maxBulge) maxBulge=bg;
+      const clear = losH-(elev[i]+bg);
+      if (clear<minClear) minClear=clear;
+      blocked.push(clear<0);
+      if (clear<0) anyBlocked=true;
+    }
+
+    // ── Diffraction analysis ──
+    const band    = FREQ_BANDS[currentBand];
+    const diffr   = computeDiffraction(dists, elev, losLine, D, band.lambda);
+    const grade   = linkGrade(diffr.nu, minClear, anyBlocked);
+
+    drawSegmentedPath(points.map(p=>[p[0],p[1]]), blocked);
+    map.fitBounds(L.latLngBounds([a.lat,a.lng],[b.lat,b.lng]).pad(0.3));
+    drawChart(dists, elev, losLine, blocked, points);
+
+    // ── Status card ──
+    const bear = bearing(a.lat,a.lng,b.lat,b.lng);
+    document.getElementById('resultsSection').style.display='block';
+    document.getElementById('losCard').className = 'los-card los-'+grade.grade;
+    document.getElementById('losIcon').textContent  = grade.icon;
+    document.getElementById('losTitle').textContent = grade.label;
+    document.getElementById('losDesc').textContent  = grade.desc;
+
+    // ── Header badge ──
+    const badge = document.getElementById('headerBadge');
+    badge.className   = 'badge badge-'+grade.grade;
+    badge.textContent = grade.label;
+
+    // ── Link quality meter ──
+    const meterEl = document.getElementById('linkMeter');
+    meterEl.style.display = 'block';
+    const fillEl = document.getElementById('linkMeterFill');
+    const meterColors = { excellent:'#00e5ff', good:'#69ff47', fair:'#ffe066', poor:'#ff9f43', unlikely:'#ff6b35' };
+    fillEl.style.width      = grade.pct + '%';
+    fillEl.style.background = meterColors[grade.grade];
+
+    const diffrInfoEl = document.getElementById('linkDiffInfo');
+    if (anyBlocked) {
+      const lossStr  = diffr.lossDb.toFixed(1);
+      const nuStr    = diffr.nu.toFixed(2);
+      const obsFt    = diffr.obstacleIdx > 0 ? fmtFt(elev[diffr.obstacleIdx] - losLine[diffr.obstacleIdx]) : '—';
+      diffrInfoEl.innerHTML = `ν=${nuStr} · Est. diffraction loss: <strong style="color:${meterColors[grade.grade]}">${lossStr} dB</strong><br>`
+        + `Band: ${band.label} (λ=${band.lambda.toFixed(2)}m) · Worst obstacle: ${obsFt} above LOS`;
+    } else {
+      const fresnelPct = diffr.nu <= -0.78 ? '≥60%' : diffr.nu <= 0 ? '40–60%' : '<40%';
+      diffrInfoEl.innerHTML = `LOS clear · Fresnel zone clearance: <strong style="color:#69ff47">${fresnelPct}</strong><br>`
+        + `Band: ${band.label} · ν=${diffr.nu.toFixed(2)}`;
+    }
+
+    // ── Diffraction loss stat card ──
+    if (anyBlocked) {
+      document.getElementById('diffrCard').style.display = 'block';
+      const dEl = document.getElementById('statDiffr');
+      dEl.textContent = diffr.lossDb.toFixed(1) + ' dB (estimated, knife-edge model)';
+      dEl.className = 'stat-value ' + (diffr.lossDb < 15 ? 'sv-b' : diffr.lossDb < 25 ? '' : 'sv-warn');
+    } else {
+      document.getElementById('diffrCard').style.display = 'none';
+    }
+
+    // ── Stat values (imperial primary) ──
+    document.getElementById('statDist').textContent    = fmtDist(D, false);
+    document.getElementById('statBearing').textContent = bear.toFixed(1)+'°';
+    document.getElementById('statElevA').textContent   = fmtFtM(elev[0]);
+    document.getElementById('statElevB').textContent   = fmtFtM(elev[N_SAMPLES]);
+    document.getElementById('statMaxT').textContent    = fmtFtM(Math.max(...elev));
+    document.getElementById('statBulge').textContent   = fmtFtM(maxBulge);
+
+    const clEl = document.getElementById('statClear');
+    clEl.textContent = fmtClearFtM(minClear) + (minClear >= 0 ? ' above LOS' : ' BELOW LOS');
+    clEl.className   = 'stat-value '+(minClear>=0?'sv-b':'sv-warn');
+
+  } catch(err) {
+    console.error('Analysis error:', err);
+    const badge = document.getElementById('headerBadge');
+    badge.className='badge badge-idle'; badge.textContent='ERROR';
+
+    let msg = 'Could not fetch elevation data.\n\n';
+    if (err.message.includes('Failed to fetch') || err.message.includes('NetworkError')) {
+      msg += window.location.protocol === 'file:'
+        ? 'This may be a CORS restriction when opening from a local file.\nTry opening via a local web server (see the note in the panel).'
+        : 'Check your internet connection and try again.';
+    } else {
+      msg += err.message;
+    }
+    alert(msg);
+
+  } finally {
+    document.getElementById('loadingOverlay').classList.add('hidden');
+    document.getElementById('calcBtn').disabled = false;
+    _analysisRunning = false;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════════════
+window.addEventListener('load', () => {
+  initMap();
+  setMapMode('off');
+  initChartInteractivity();
+  runAnalysis();
+});
+</script>
+</body>
+</html>
