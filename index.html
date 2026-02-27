@@ -419,29 +419,33 @@
     display: none;   /* JS shows this on mobile */
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    height: 54px;
-    background: rgba(13,17,23,0.98);
-    border-top: 1px solid var(--border);
-    backdrop-filter: blur(12px);
+    height: 72px;
+    background: #f0f2f0;
+    border-top: 3px solid #3DFFA0;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.55);
     z-index: 2000;
   }
   .mob-tab {
     flex: 1;
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 2px;
+    gap: 5px;
     background: none; border: none;
-    color: var(--muted);
+    color: #555e58;
     font-family: 'Barlow', sans-serif;
-    font-size: 10px; font-weight: 700;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    cursor: pointer; transition: color 0.15s;
+    font-size: 12px; font-weight: 800;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
     padding: 0;
     -webkit-tap-highlight-color: transparent;
   }
-  .mob-tab-icon { font-size: 17px; line-height: 1; }
-  .mob-tab.active { color: #3DFFA0; }
-  .mob-tab + .mob-tab { border-left: 1px solid var(--border); }
+  .mob-tab-icon { font-size: 26px; line-height: 1; }
+  .mob-tab.active {
+    color: #0a7a47;
+    background: rgba(61,255,160,0.18);
+  }
+  .mob-tab + .mob-tab { border-left: 1px solid #cdd1cd; }
 
 
 </style>
@@ -716,15 +720,12 @@ function applyMobileLayout() {
   const chartWrap= document.querySelector('.chart-wrap');
   const tabbar   = document.getElementById('mobTabbar');
 
-  const TAB_H    = 54;
-  const CHART_H  = 170;
-  const headerH  = header ? header.offsetHeight : 60;
-  const mainH    = window.innerHeight - headerH - TAB_H;
+  const TAB_H    = 72;   // must match CSS height above
 
-  // Show tab bar
+  // Show tab bar first so header.offsetHeight is stable
   tabbar.style.display = 'flex';
 
-  // Compact header
+  // Compact header FIRST, then measure its actual height
   header.style.padding   = '8px 12px';
   header.style.gap       = '10px';
   const h1 = header.querySelector('h1');
@@ -736,6 +737,15 @@ function applyMobileLayout() {
   const svg = ico ? ico.querySelector('svg') : null;
   if (svg) { svg.setAttribute('width','22'); svg.setAttribute('height','22'); }
 
+  // Measure header height AFTER compacting it
+  const headerH = header.offsetHeight;
+
+  // Total available space between header bottom and tab bar top
+  const mainH = window.innerHeight - headerH - TAB_H;
+
+  // Chart gets 38% of mainH, minimum 210px — leaves 62% for map
+  const CHART_H = Math.max(210, Math.round(mainH * 0.38));
+
   // .main: block container, exact height, no overflow
   main.style.cssText = `
     display: block !important;
@@ -746,22 +756,28 @@ function applyMobileLayout() {
     grid-template-rows: unset !important;
   `;
 
-  // All three children: absolute, fill the main box
-  const basePane = `position:absolute; top:0; left:0; right:0; bottom:0;`;
+  // Chart strip pinned to bottom of .main
+  chartWrap.style.cssText = `
+    position: absolute !important;
+    left: 0; right: 0; bottom: 0;
+    height: ${CHART_H}px !important;
+    display: flex !important;
+    flex-direction: column;
+  `;
 
-  // Map pane: map on top, chart strip at bottom
-  mapWrap.style.cssText  = `${basePane} display:block !important;`;
-  chartWrap.style.cssText= `position:absolute; left:0; right:0; bottom:0; height:${CHART_H}px; display:flex !important; flex-direction:column;`;
+  // Map fills everything above the chart
+  mapWrap.style.cssText = `
+    position: absolute !important;
+    top: 0; left: 0; right: 0;
+    bottom: ${CHART_H}px !important;
+    display: block !important;
+    overflow: hidden;
+  `;
 
-  // Adjust map to not overlap chart
-  const mapEl = document.getElementById('map');
-  if (mapEl) mapEl.style.cssText = 'position:absolute; inset:0; bottom:0;';
-  // map-wrap inner map fills top portion
-  mapWrap.style.cssText = `${basePane} bottom:${CHART_H}px !important; display:block !important;`;
-
-  // Panel: absolute, fills main, scrollable, hidden by default
+  // Panel: absolute, fills all of main, scrollable, hidden by default
   panel.style.cssText = `
-    ${basePane}
+    position: absolute !important;
+    top: 0; left: 0; right: 0; bottom: 0;
     display: none !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
@@ -769,6 +785,18 @@ function applyMobileLayout() {
     background: var(--surface);
     z-index: 5;
   `;
+
+  // Compact layer switcher to horizontal row on mobile
+  const ls = document.getElementById('layerSwitcher');
+  if (ls) {
+    ls.style.cssText = 'flex-direction:row; top:8px; right:6px; left:6px; gap:4px;';
+    ls.querySelectorAll('.ls-btn').forEach(b => {
+      b.style.cssText = 'flex:1; padding:5px 2px; font-size:10px; gap:3px; justify-content:center;';
+    });
+    ls.querySelectorAll('.ls-swatch').forEach(s => {
+      s.style.cssText = 'width:10px; height:10px; border-radius:2px; flex-shrink:0;';
+    });
+  }
 
   // Activate current tab
   _applyMobTab(_mobTab);
@@ -778,39 +806,28 @@ function _applyMobTab(tab) {
   const panel    = document.querySelector('.panel');
   const mapWrap  = document.getElementById('map-wrap');
   const chartWrap= document.querySelector('.chart-wrap');
-  const header   = document.querySelector('.header');
-  const TAB_H    = 54;
-  const CHART_H  = 170;
-  const headerH  = header ? header.offsetHeight : 60;
-  const mainH    = window.innerHeight - headerH - TAB_H;
 
-  // Update tab button active states
-  ['Map','Controls','Results'].forEach(t => {
-    const btn = document.getElementById('mobTab' + t);
-    if (btn) btn.classList.toggle('active', t.toLowerCase() === tab ||
-      (tab === 'results' && t === 'Controls'));
-  });
-  // Specific active state
+  // Update active tab button
   document.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('active'));
   const activeBtn = document.getElementById('mobTab' + tab.charAt(0).toUpperCase() + tab.slice(1));
   if (activeBtn) activeBtn.classList.add('active');
 
   if (tab === 'map') {
-    mapWrap.style.display  = 'block';
-    chartWrap.style.display= 'flex';
-    panel.style.display    = 'none';
+    mapWrap.style.display   = 'block';
+    chartWrap.style.display = 'flex';
+    panel.style.display     = 'none';
     setTimeout(() => { if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 80);
 
   } else if (tab === 'controls') {
-    mapWrap.style.display  = 'none';
-    chartWrap.style.display= 'none';
-    panel.style.display    = 'block';
+    mapWrap.style.display   = 'none';
+    chartWrap.style.display = 'none';
+    panel.style.display     = 'block';
     panel.scrollTop = 0;
 
   } else if (tab === 'results') {
-    mapWrap.style.display  = 'none';
-    chartWrap.style.display= 'none';
-    panel.style.display    = 'block';
+    mapWrap.style.display   = 'none';
+    chartWrap.style.display = 'none';
+    panel.style.display     = 'block';
     setTimeout(() => {
       const rs = document.getElementById('resultsSection');
       if (rs) rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -845,6 +862,13 @@ function resetDesktopLayout() {
   if (svg) { svg.setAttribute('width','32'); svg.setAttribute('height','32'); }
   const mapEl = document.getElementById('map');
   if (mapEl) mapEl.removeAttribute('style');
+  // Restore layer switcher
+  const ls = document.getElementById('layerSwitcher');
+  if (ls) {
+    ls.removeAttribute('style');
+    ls.querySelectorAll('.ls-btn').forEach(b => b.removeAttribute('style'));
+    ls.querySelectorAll('.ls-swatch').forEach(s => s.removeAttribute('style'));
+  }
   if (typeof map !== 'undefined' && map) setTimeout(() => map.invalidateSize(), 80);
 }
 
