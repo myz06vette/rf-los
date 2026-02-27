@@ -687,7 +687,7 @@
     </button>
     <button class="mob-tab" id="mobTabProfile" onclick="switchMobileTab('profile')">
       <span class="mob-tab-icon">📈</span>
-      Profile
+      RF Path
     </button>
     <button class="mob-tab" id="mobTabControls" onclick="switchMobileTab('controls')">
       <span class="mob-tab-icon">⚙️</span>
@@ -712,7 +712,7 @@
 // MOBILE LAYOUT — inline styles beat all CSS specificity
 // ═══════════════════════════════════════════════
 const MOB_BREAK = 768;
-let _mobTab = 'map';
+let _mobTab = 'controls';
 
 function isMobile() { return window.innerWidth <= MOB_BREAK; }
 
@@ -764,7 +764,7 @@ function applyMobileLayout() {
     overflow-y:auto !important; overflow-x:hidden !important;
     -webkit-overflow-scrolling:touch; background:var(--surface); z-index:5;`;
 
-  // Compact chart header for Profile tab
+  // Compact chart header for RF Path tab
   const chartHeader = document.querySelector('.chart-header');
   const chartLegend = document.querySelector('.chart-legend');
   const chartTitle  = document.querySelector('.chart-title');
@@ -805,17 +805,31 @@ function _applyMobTab(tab) {
 
   if (tab === 'map') {
     mapWrap.style.display = 'block';
-    setTimeout(() => { if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 80);
+    setTimeout(() => {
+      if (typeof map !== 'undefined' && map) {
+        map.invalidateSize();
+        // Re-fit to markers so mobile Map tab doesn't show world-zoom
+        if (typeof markerA !== 'undefined' && markerA &&
+            typeof markerB !== 'undefined' && markerB) {
+          const llA = markerA.getLatLng();
+          const llB = markerB.getLatLng();
+          map.fitBounds(L.latLngBounds(llA, llB).pad(0.3));
+        }
+      }
+    }, 80);
 
   } else if (tab === 'profile') {
     chartWrap.style.display = 'flex';
-    // Redraw chart at new dimensions after display:flex takes effect
-    setTimeout(() => {
-      if (typeof chartState !== 'undefined' && chartState) {
-        const { dists, terrain, losLine, blocked, points } = chartState;
-        drawChart(dists, terrain, losLine, blocked, points);
-      }
-    }, 80);
+    // Double rAF ensures browser has completed layout before we measure canvas
+    // Uses chartData (always set after analysis) not chartState (null if canvas was hidden)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (typeof chartData !== 'undefined' && chartData) {
+          const { dists, terrain, losLine, blocked, points } = chartData;
+          drawChart(dists, terrain, losLine, blocked, points);
+        }
+      });
+    });
 
   } else if (tab === 'controls') {
     panel.style.display = 'block';
@@ -873,6 +887,13 @@ function resetDesktopLayout() {
     ls.querySelectorAll('.ls-swatch').forEach(s => s.removeAttribute('style'));
   }
   if (typeof map !== 'undefined' && map) setTimeout(() => map.invalidateSize(), 80);
+  // Re-draw chart now that canvas is visible again at desktop dimensions
+  if (typeof chartData !== 'undefined' && chartData) {
+    const { dists, terrain, losLine, blocked, points } = chartData;
+    requestAnimationFrame(() => { requestAnimationFrame(() => {
+      drawChart(dists, terrain, losLine, blocked, points);
+    }); });
+  }
 }
 
 window.addEventListener('resize', () => {
@@ -901,7 +922,8 @@ let map, markerA, markerB, pathLayer = null;
 let mapClickMode    = 'off';
 let ghostMarker     = null;
 let crosshairMarker = null;   // live map marker synced to chart hover
-let chartState      = null;   // populated after each analysis
+let chartState      = null;   // populated after each analysis (requires visible canvas)
+let chartData       = null;   // always set after analysis — raw data for redraw
 const geoCache      = {};
 
 // Debounce guard: collapses rapid consecutive runAnalysis() calls into one
@@ -2006,11 +2028,9 @@ async function _doAnalysis() {
 
     drawSegmentedPath(points.map(p=>[p[0],p[1]]), blocked);
     map.fitBounds(L.latLngBounds([a.lat,a.lng],[b.lat,b.lng]).pad(0.3));
+    // Always store raw data — drawChart may silently fail if canvas is hidden (display:none)
+    chartData = { dists, terrain: elev, losLine, blocked, points };
     drawChart(dists, elev, losLine, blocked, points);
-    // Mobile: flip to Profile tab automatically so user sees the chart
-    if (isMobile() && (_mobTab === 'map' || _mobTab === 'profile')) {
-      switchMobileTab('profile');
-    }
 
     // ── Status card ──
     const bear = bearing(a.lat,a.lng,b.lat,b.lng);
