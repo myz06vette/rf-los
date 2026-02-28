@@ -111,7 +111,7 @@
   .section { padding: 18px 20px; border-bottom: 1px solid var(--border); }
 
   .section-title {
-    font-size: 13px; font-weight: 700; letter-spacing: 0.12em;
+    font-size: 16px; font-weight: 700; letter-spacing: 0.12em;
     text-transform: uppercase; color: var(--muted);
     margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
   }
@@ -167,7 +167,7 @@
   }
   .addr-btn:hover { color:var(--text); }
   .addr-status {
-    font-size:13px; font-family:'Share Tech Mono',monospace;
+    font-size:14px; font-family:'Share Tech Mono',monospace;
     color:var(--muted); min-height:18px; margin-bottom:11px;
     line-height:1.4; word-break:break-word;
   }
@@ -178,7 +178,7 @@
   /* Coords */
   .coord-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
   .field-group label {
-    display:block; font-size:12px; color:var(--muted);
+    display:block; font-size:15px; color:var(--muted);
     font-family:'Share Tech Mono',monospace; letter-spacing:0.07em;
     text-transform:uppercase; margin-bottom:5px;
   }
@@ -215,7 +215,7 @@
     background:rgba(255,255,255,0.02);
   }
   .mapclick-label {
-    font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace;
+    font-size:15px; color:var(--muted); font-family:'Share Tech Mono',monospace;
     padding:0 12px; border-right:1px solid var(--border);
     display:flex; align-items:center; white-space:nowrap; flex-shrink:0;
   }
@@ -230,7 +230,7 @@
   .mc-opt.sel-off { background:rgba(255,255,255,0.05); color:var(--text); }
   .mc-opt.sel-a   { background:rgba(61,255,160,0.12); color:#3DFFA0; }
   .mc-opt.sel-b   { background:rgba(105,255,71,0.10); color:var(--accent-b); }
-  .esc-hint { font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace; text-align:center; margin-top:7px; min-height:18px; }
+  .esc-hint { font-size:14px; color:var(--muted); font-family:'Share Tech Mono',monospace; text-align:center; margin-top:7px; min-height:18px; }
 
   /* Calc button */
   .calc-btn {
@@ -245,13 +245,13 @@
   .calc-btn:hover { background:linear-gradient(135deg,rgba(61,255,160,0.24),rgba(0,112,243,0.24)); box-shadow:0 0 18px rgba(61,255,160,0.18); }
   .calc-btn:active { transform:scale(0.98); }
   .calc-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
-  .tip { font-size:13px; color:var(--muted); font-style:italic; text-align:center; padding:7px 0 0; }
+  .tip { font-size:15px; color:var(--muted); font-style:italic; text-align:center; padding:7px 0 0; }
 
   /* Results */
   .stats-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .stat-card { background:rgba(255,255,255,0.02); border:1px solid var(--border); border-radius:8px; padding:13px 15px; }
   .stat-card.full { grid-column:1/-1; }
-  .stat-label { font-size:12px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; font-family:'Share Tech Mono',monospace; }
+  .stat-label { font-size:15px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; font-family:'Share Tech Mono',monospace; }
   .stat-value { font-family:'Share Tech Mono',monospace; font-size:18px; color:var(--text); }
   .sv-a    { color:#3DFFA0; }
   .sv-b    { color:var(--accent-b); }
@@ -266,7 +266,7 @@
   .los-idle      { background:rgba(255,255,255,0.02); border:1px solid var(--border); }
   .los-icon { font-size:28px; }
   .los-text h3 { font-size:18px; font-weight:700; margin-bottom:3px; }
-  .los-text p  { font-size:13px; color:var(--muted); line-height:1.4; }
+  .los-text p  { font-size:15px; color:var(--muted); line-height:1.4; }
   .los-excellent .los-text h3 { color:#3DFFA0; }
   .los-good      .los-text h3 { color:#69ff47; }
   .los-fair      .los-text h3 { color:#ffe066; }
@@ -275,10 +275,185 @@
 
   /* Link quality meter bar */
   .link-meter { margin-top:11px; }
-  .link-meter-label { font-size:12px; color:var(--muted); font-family:'Share Tech Mono',monospace; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px; }
+  .link-meter-label { font-size:15px; color:var(--muted); font-family:'Share Tech Mono',monospace; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:6px; }
   .link-meter-track { height:9px; background:var(--border); border-radius:4px; overflow:hidden; }
   .link-meter-fill  { height:100%; border-radius:4px; transition:width 0.4s ease, background 0.4s ease; }
-  .link-diffraction { margin-top:8px; font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace; line-height:1.6; }
+  .link-diffraction { margin-top:8px; font-size:15px; color:var(--muted); font-family:'Share Tech Mono',monospace; line-height:1.6; }
+
+  /* ── LINK BUDGET PANEL ── */
+  .lb-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; user-select: none; padding: 2px 0 10px;
+  }
+  .lb-toggle-icon {
+    font-size: 14px; color: var(--muted);
+    font-family: 'Share Tech Mono', monospace; letter-spacing: 0.06em;
+  }
+  .lb-body { overflow: hidden; }
+  .lb-row {
+    display: flex; gap: 8px; align-items: center;
+    margin-bottom: 10px;
+  }
+  .lb-row label {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    flex: 0 0 120px; line-height: 1.3;
+  }
+  .lb-input {
+    padding: 9px 10px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-family: 'Share Tech Mono', monospace; font-size: 15px; font-weight: 700;
+    outline: none; transition: border-color 0.15s;
+    width: 90px; flex-shrink: 0;
+  }
+  .lb-input:focus { border-color: rgba(61,255,160,0.5); }
+  .lb-select {
+    flex: 1; padding: 9px 10px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 600;
+    outline: none; cursor: pointer; min-width: 0;
+    -webkit-appearance: none; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23606870' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center;
+    padding-right: 28px;
+  }
+  .lb-select option { background: #161b22; }
+  .lb-select optgroup { background: #161b22; color: #3DFFA0; font-size: 11px; font-style: normal; font-weight: 700; letter-spacing: 0.06em; }
+  .lb-select:focus { border-color: rgba(61,255,160,0.5); }
+  .lb-unit {
+    font-size: 14px; font-family: 'Share Tech Mono', monospace;
+    color: var(--muted); flex: 0 0 auto; white-space: nowrap;
+  }
+  /* Unit-mode toggle (dB ↔ W, dBd ↔ dBi) */
+  .lb-unit-toggle {
+    display: flex; border: 1px solid var(--border); border-radius: 5px;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .lb-unit-btn {
+    padding: 5px 9px; border: none; background: none;
+    font-family: 'Share Tech Mono', monospace; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.05em; cursor: pointer; color: var(--muted);
+    transition: all 0.12s; white-space: nowrap;
+  }
+  .lb-unit-btn:first-child { border-right: 1px solid var(--border); }
+  .lb-unit-btn.lb-unit-active {
+    background: rgba(61,255,160,0.14); color: #3DFFA0;
+  }
+  .lb-divider {
+    border: none; border-top: 1px solid var(--border);
+    margin: 8px 0 12px;
+  }
+  .lb-sub {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted); opacity: 0.7;
+    font-family: 'Share Tech Mono', monospace; margin-bottom: 10px;
+  }
+  .lb-erp-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(61,255,160,0.06); border: 1px solid rgba(61,255,160,0.2);
+    border-radius: 7px; padding: 10px 14px; margin: 4px 0 14px;
+  }
+  .lb-erp-label {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+    color: var(--muted); font-family: 'Share Tech Mono', monospace;
+  }
+  .lb-erp-val {
+    font-family: 'Share Tech Mono', monospace; font-size: 18px; font-weight: 700;
+    color: #3DFFA0;
+  }
+  .lb-convert-note {
+    font-size: 11px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
+    margin-top: -6px; margin-bottom: 10px; padding-left: 108px; line-height: 1.5;
+  }
+
+  /* ── LINK BUDGET RESULT CARD ── */
+  .lbr-card {
+    border-radius: 10px; padding: 14px 16px;
+    margin-top: 12px; display: none;
+  }
+  .lbr-card.visible { display: block; }
+  .lbr-card.lbr-pass   { background: rgba(61,255,160,0.05);  border: 1px solid rgba(61,255,160,0.3); }
+  .lbr-card.lbr-marginal{ background:rgba(255,224,102,0.05); border: 1px solid rgba(255,224,102,0.3); }
+  .lbr-card.lbr-fail   { background: rgba(255,107,53,0.05);  border: 1px solid rgba(255,107,53,0.3); }
+  .lbr-title {
+    font-size: 15px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted);
+    font-family: 'Share Tech Mono', monospace; margin-bottom: 10px;
+  }
+  .lbr-margin-row {
+    display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px;
+  }
+  .lbr-margin-val {
+    font-family: 'Share Tech Mono', monospace; font-size: 28px; font-weight: 700;
+  }
+  .lbr-margin-label {
+    font-family: 'Share Tech Mono', monospace; font-size: 13px; color: var(--muted);
+  }
+  .lbr-verdict {
+    font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .lbr-pass   .lbr-margin-val { color: #3DFFA0; }
+  .lbr-marginal .lbr-margin-val { color: #ffe066; }
+  .lbr-fail   .lbr-margin-val { color: #ff6b35; }
+  .lbr-pass   .lbr-verdict { color: #3DFFA0; }
+  .lbr-marginal .lbr-verdict { color: #ffe066; }
+  .lbr-fail   .lbr-verdict { color: #ff6b35; }
+  .lbr-table {
+    width: 100%; border-collapse: collapse; font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+  }
+  .lbr-table tr { border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .lbr-table tr:last-child { border-bottom: none; }
+  .lbr-table td { padding: 4px 2px; }
+  .lbr-table .td-label { color: var(--muted); }
+  .lbr-table .td-sign { width: 20px; text-align: center; }
+  .lbr-table .td-val { text-align: right; color: var(--text); white-space: nowrap; }
+  .lbr-table .td-val.pos { color: #3DFFA0; }
+  .lbr-table .td-val.neg { color: #ff6b35; }
+  .lbr-table .td-val.neu { color: #ffe066; }
+  .lbr-table tr.lbr-total td { border-top: 1px solid var(--border); padding-top: 8px; font-weight: 700; }
+  .lbr-table tr.lbr-footnote td { padding-top: 6px; opacity: 0.45; font-size: 13px; }
+  .lbr-table .td-val.muted { color: var(--muted); }
+  .lbr-hint {
+    font-size: 14px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
+    margin-top: 10px; line-height: 1.6;
+  }
+  .lbr-hint strong { color: var(--text); }
+
+  /* Corrected margin secondary display */
+  .lbr-corrected-block {
+    margin: 12px 0 4px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 7px;
+  }
+  .lbr-corrected-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-family: 'Share Tech Mono', monospace; margin-bottom: 6px;
+  }
+  .lbr-corrected-row {
+    display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;
+  }
+  .lbr-corrected-val {
+    font-family: 'Share Tech Mono', monospace; font-size: 22px; font-weight: 700;
+  }
+  .lbr-corrected-val.pos  { color: #3DFFA0; }
+  .lbr-corrected-val.neu  { color: #ffe066; }
+  .lbr-corrected-val.neg  { color: #ff6b35; }
+  .lbr-corrected-sub {
+    font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted);
+    line-height: 1.5;
+  }
+  .lbr-correction-breakdown {
+    font-family: 'Share Tech Mono', monospace; font-size: 13px;
+    color: var(--muted); margin-top: 4px; line-height: 1.7;
+  }
+  .lbr-correction-breakdown span { color: #ff9f43; }
 
   /* Freq band selector */
   .freq-bar {
@@ -287,13 +462,13 @@
     background:rgba(255,255,255,0.02); margin-bottom:14px;
   }
   .freq-label {
-    font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace;
+    font-size:15px; color:var(--muted); font-family:'Share Tech Mono',monospace;
     padding:0 12px; border-right:1px solid var(--border);
     display:flex; align-items:center; white-space:nowrap; flex-shrink:0;
   }
   .freq-opt {
     flex:1; padding:10px 4px; border:none; background:none;
-    font-family:'Barlow',sans-serif; font-size:13px; font-weight:700;
+    font-family:'Barlow',sans-serif; font-size:15px; font-weight:700;
     letter-spacing:0.04em; text-transform:uppercase;
     cursor:pointer; color:var(--muted); transition:all 0.14s; text-align:center;
   }
@@ -340,8 +515,8 @@
     overflow: hidden;
   }
   .chart-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:9px; flex-shrink:0; }
-  .chart-title  { font-size:13px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
-  .chart-legend { display:flex; gap:16px; font-size:13px; color:var(--muted); font-family:'Share Tech Mono',monospace; flex-wrap:wrap; }
+  .chart-title  { font-size:15px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); }
+  .chart-legend { display:flex; gap:16px; font-size:15px; color:var(--muted); font-family:'Share Tech Mono',monospace; flex-wrap:wrap; }
   .leg { display:flex; align-items:center; gap:5px; }
   .leg-sw { width:22px; height:3px; border-radius:1px; }
   canvas#elevChart { flex:1; min-height:0; width:100% !important; cursor:crosshair; }
@@ -357,8 +532,8 @@
   @keyframes spin { to { transform:rotate(360deg); } }
   .loading-overlay.hidden { display:none; }
 
-  .info-note { font-size:13px; color:var(--muted); line-height:1.8; font-family:'Share Tech Mono',monospace; }
-  .api-note  { font-size:13px; color:var(--muted); line-height:1.7; font-family:'Share Tech Mono',monospace; background:rgba(255,107,53,0.06); border:1px solid rgba(255,107,53,0.2); border-radius:6px; padding:11px 13px; margin-top:8px; }
+  .info-note { font-size:15px; color:var(--muted); line-height:1.8; font-family:'Share Tech Mono',monospace; }
+  .api-note  { font-size:15px; color:var(--muted); line-height:1.7; font-family:'Share Tech Mono',monospace; background:rgba(255,107,53,0.06); border:1px solid rgba(255,107,53,0.2); border-radius:6px; padding:11px 13px; margin-top:8px; }
 
   /* ── LAYER SWITCHER ── */
   .layer-switcher {
@@ -410,7 +585,7 @@
     white-space: nowrap;
   }
   .gkey-apply:hover { background: rgba(61,255,160,0.16); }
-  .gkey-status { font-size: 13px; font-family: 'Share Tech Mono', monospace; color: var(--muted); margin-top: 6px; min-height: 18px; }
+  .gkey-status { font-size: 14px; font-family: 'Share Tech Mono', monospace; color: var(--muted); margin-top: 6px; min-height: 18px; }
   .gkey-status.ok  { color: var(--accent-b); }
   .gkey-status.err { color: var(--accent-warn); }
 
@@ -447,6 +622,63 @@
   }
   .mob-tab + .mob-tab { border-left: 1px solid #cdd1cd; }
 
+
+  /* ── GRID SQUARE LOOKUP ── */
+  .grid-sq-desc {
+    font-size: 14px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
+    line-height: 1.6; margin-bottom: 12px;
+  }
+  .grid-sq-desc code {
+    background: rgba(61,255,160,0.1); border: 1px solid rgba(61,255,160,0.25);
+    border-radius: 3px; padding: 1px 5px; color: #3DFFA0;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .grid-row {
+    display: flex; gap: 8px; align-items: stretch; margin-bottom: 8px;
+  }
+  .grid-input {
+    flex: 1; padding: 10px 12px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text);
+    font-family: 'Share Tech Mono', monospace; font-size: 20px;
+    font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+    outline: none; transition: border-color 0.15s;
+  }
+  .grid-input::placeholder { font-size: 14px; letter-spacing: 0.04em; font-weight: 400; color: var(--muted); }
+  .grid-input:focus { border-color: rgba(61,255,160,0.5); }
+  .grid-btn {
+    padding: 10px 18px;
+    background: rgba(61,255,160,0.1); border: 1px solid rgba(61,255,160,0.4);
+    border-radius: 7px; color: #3DFFA0;
+    font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.06em; cursor: pointer; white-space: nowrap;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .grid-btn:hover { background: rgba(61,255,160,0.18); }
+  .grid-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .grid-status {
+    font-size: 14px; font-family: 'Share Tech Mono', monospace;
+    color: var(--muted); margin-bottom: 8px; min-height: 18px;
+  }
+  .grid-status.ok  { color: #3DFFA0; }
+  .grid-status.err { color: var(--accent-warn); }
+  .grid-card {
+    background: rgba(61,255,160,0.04); border: 1px solid rgba(61,255,160,0.22);
+    border-radius: 9px; padding: 13px 14px; margin-bottom: 10px; display: none;
+  }
+  .grid-card.visible { display: block; }
+  .grid-card-sq {
+    font-family: 'Share Tech Mono', monospace; font-size: 22px; font-weight: 700;
+    color: #3DFFA0; letter-spacing: 0.18em; margin-bottom: 4px;
+  }
+  .grid-card-info {
+    font-size: 14px; color: var(--text); margin-bottom: 8px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .grid-card-note {
+    font-size: 13px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
+    line-height: 1.5;
+  }
   /* ── REPEATER LOOKUP ── */
   .site-mode-row {
     display: flex; gap: 0;
@@ -455,20 +687,30 @@
     background: rgba(255,255,255,0.02);
   }
   .site-mode-btn {
-    flex: 1; padding: 9px 6px;
+    flex: 1; padding: 9px 4px;
     border: none; background: none;
-    font-family: 'Barlow', sans-serif; font-size: 13px;
+    font-family: 'Barlow', sans-serif; font-size: 14px;
     font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
     cursor: pointer; color: var(--muted); transition: all 0.14s;
     display: flex; align-items: center; justify-content: center; gap: 6px;
   }
-  .site-mode-btn:first-child { border-right: 1px solid var(--border); }
+  .site-mode-btn:not(:last-child) { border-right: 1px solid var(--border); }
   .site-mode-btn:hover { color: var(--text); background: rgba(255,255,255,0.04); }
   .site-mode-btn.mode-active {
     background: rgba(61,255,160,0.12); color: #3DFFA0;
   }
   .rptr-row {
-    display: flex; gap: 8px; align-items: stretch; margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 8px; align-items: stretch; margin-bottom: 8px;
+  }
+  /* If the row is too cramped (mobile/narrow panel), stack callsign+type on row 1, button on row 2 */
+  @media (max-width: 400px) {
+    .rptr-row {
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+    }
+    .rptr-btn { grid-column: 1 / -1; }
   }
   .rptr-callsign {
     flex: 1; padding: 10px 12px;
@@ -481,26 +723,27 @@
   .rptr-callsign::placeholder { font-size: 13px; letter-spacing: 0.04em; text-transform: none; font-weight: 400; color: var(--muted); }
   .rptr-callsign:focus { border-color: rgba(61,255,160,0.5); }
   .rptr-type {
-    padding: 10px 10px;
+    padding: 10px 8px;
     background: rgba(255,255,255,0.04); border: 1px solid var(--border);
     border-radius: 7px; color: var(--muted);
-    font-family: 'Barlow', sans-serif; font-size: 12px; font-weight: 700;
-    letter-spacing: 0.05em; text-transform: uppercase;
+    font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.03em; text-transform: uppercase;
     cursor: pointer; outline: none;
+    min-width: 0; max-width: 110px;
   }
   .rptr-type option { background: #161b22; }
   .rptr-btn {
     padding: 10px 16px;
     background: rgba(61,255,160,0.1); border: 1px solid rgba(61,255,160,0.4);
     border-radius: 7px; color: #3DFFA0;
-    font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 700;
-    letter-spacing: 0.06em; cursor: pointer; white-space: nowrap;
+    font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.04em; cursor: pointer; white-space: nowrap;
     transition: all 0.15s; display: flex; align-items: center; gap: 6px;
   }
   .rptr-btn:hover { background: rgba(61,255,160,0.18); }
   .rptr-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .rptr-status {
-    font-size: 12px; font-family: 'Share Tech Mono', monospace;
+    font-size: 14px; font-family: 'Share Tech Mono', monospace;
     color: var(--muted); margin-bottom: 8px; min-height: 16px;
   }
   .rptr-status.ok  { color: #3DFFA0; }
@@ -522,11 +765,11 @@
     font-size: 14px; color: var(--text); margin-bottom: 4px;
   }
   .rptr-card-loc {
-    font-size: 13px; color: var(--muted); margin-bottom: 8px;
+    font-size: 15px; color: var(--muted); margin-bottom: 8px;
   }
   .rptr-badges { display: flex; gap: 6px; flex-wrap: wrap; }
   .rptr-badge {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
     text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
     font-family: 'Share Tech Mono', monospace;
   }
@@ -539,19 +782,19 @@
   }
   .rptr-picker.visible { display: block; }
   .rptr-picker-label {
-    font-size: 11px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
+    font-size: 13px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
     letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 6px;
   }
   .rptr-picker select {
     width: 100%; padding: 8px 10px;
     background: rgba(255,255,255,0.04); border: 1px solid var(--border);
     border-radius: 7px; color: var(--text);
-    font-family: 'Share Tech Mono', monospace; font-size: 12px;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px;
     outline: none; cursor: pointer;
   }
   .rptr-picker select option { background: #161b22; }
   .rptr-proxy-note {
-    font-size: 11px; color: var(--accent-warn);
+    font-size: 13px; color: var(--accent-warn);
     font-family: 'Share Tech Mono', monospace;
     background: rgba(255,107,53,0.07); border: 1px solid rgba(255,107,53,0.25);
     border-radius: 6px; padding: 8px 10px; margin-bottom: 10px; display: none;
@@ -577,14 +820,14 @@
     padding: 10px 16px;
     background: rgba(255,224,102,0.1); border: 1px solid rgba(255,224,102,0.4);
     border-radius: 7px; color: #ffe066;
-    font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 700;
-    letter-spacing: 0.06em; cursor: pointer; white-space: nowrap;
+    font-family: 'Barlow', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.04em; cursor: pointer; white-space: nowrap;
     transition: all 0.15s; display: flex; align-items: center; gap: 6px;
   }
   .lic-btn:hover { background: rgba(255,224,102,0.18); }
   .lic-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .lic-status {
-    font-size: 12px; font-family: 'Share Tech Mono', monospace;
+    font-size: 14px; font-family: 'Share Tech Mono', monospace;
     color: var(--muted); margin-bottom: 8px; min-height: 16px;
   }
   .lic-status.ok  { color: #ffe066; }
@@ -605,10 +848,10 @@
     font-size: 15px; color: var(--text); margin-bottom: 4px;
   }
   .lic-card-addr {
-    font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.5;
+    font-size: 15px; color: var(--muted); margin-bottom: 8px; line-height: 1.5;
   }
   .lic-card-note {
-    font-size: 11px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
     font-style: italic;
   }
   .lic-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -688,8 +931,8 @@
           </div>
           <div class="addr-status" id="addrStatusA"></div>
           <div class="coord-row">
-            <div class="field-group"><label>Latitude</label><input type="number" id="latA" step="0.0001" value="33.7490"></div>
-            <div class="field-group"><label>Longitude</label><input type="number" id="lngA" step="0.0001" value="-84.3880"></div>
+            <div class="field-group"><label>Latitude</label><input type="number" id="latA" step="0.0001" value="39.8283"></div>
+            <div class="field-group"><label>Longitude</label><input type="number" id="lngA" step="0.0001" value="-98.5795"></div>
           </div>
           <div class="field-group">
             <label>Antenna Height (ft AGL)</label>
@@ -711,16 +954,19 @@
             <span class="site-label label-b">Site Bravo</span>
           </div>
 
-          <!-- Mode toggle: Manual vs Repeater Lookup -->
+          <!-- Mode toggle -->
           <div class="site-mode-row">
             <button class="site-mode-btn mode-active" id="siteBModeManual" onclick="setSiteBMode('manual')">
-              📍 Manual Entry
+              📍 Manual
             </button>
             <button class="site-mode-btn" id="siteBModeRepeater" onclick="setSiteBMode('repeater')">
-              📡 Repeater Lookup
+              📡 Repeater
             </button>
             <button class="site-mode-btn" id="siteBModeLicensee" onclick="setSiteBMode('licensee')">
-              👤 Licensee Lookup
+              👤 Licensee
+            </button>
+            <button class="site-mode-btn" id="siteBModeGrid" onclick="setSiteBMode('grid')">
+              🔲 Grid Sq.
             </button>
           </div>
 
@@ -802,10 +1048,35 @@
             <div class="addr-status" id="addrStatusBLicensee"></div>
           </div>
 
+          <!-- Grid Square lookup -->
+          <div id="siteBGrid" style="display:none;">
+            <p class="grid-sq-desc">
+              Enter a <strong style="color:#3DFFA0">Maidenhead grid square</strong>
+              (4 or 6 characters, e.g. <code>EM74</code> or <code>EM74rj</code>).
+              The marker will be placed at the center of that grid square.
+            </p>
+            <div class="grid-row">
+              <input class="grid-input" type="text" id="gridInput"
+                placeholder="e.g. EM74rj"
+                maxlength="6"
+                onkeydown="if(event.key==='Enter')lookupGridSquare()"
+                oninput="this.value=this.value.toUpperCase()">
+              <button class="grid-btn" id="gridLookupBtn" onclick="lookupGridSquare()">
+                🔲 Go
+              </button>
+            </div>
+            <div class="grid-status" id="gridStatus"></div>
+            <div class="grid-card" id="gridCard">
+              <div class="grid-card-sq" id="gridCardSq">—</div>
+              <div class="grid-card-info" id="gridCardInfo">—</div>
+              <div class="grid-card-note">📍 Marker placed at grid square center · precision ≈ 3–70 mi depending on grid size</div>
+            </div>
+          </div>
+
           <!-- Shared: coordinates + antenna height -->
           <div class="coord-row">
-            <div class="field-group"><label>Latitude</label><input type="number" id="latB" step="0.0001" value="34.1015"></div>
-            <div class="field-group"><label>Longitude</label><input type="number" id="lngB" step="0.0001" value="-84.5194"></div>
+            <div class="field-group"><label>Latitude</label><input type="number" id="latB" step="0.0001" value="39.9283"></div>
+            <div class="field-group"><label>Longitude</label><input type="number" id="lngB" step="0.0001" value="-98.4795"></div>
           </div>
           <div class="field-group">
             <label>Antenna Height (ft AGL)</label>
@@ -816,6 +1087,104 @@
             <input type="number" id="heightB" value="33" min="0" max="1640" step="1" style="margin-top:5px;">
           </div>
         </div>
+      </div>
+
+      <!-- Link Budget -->
+      <div class="section" id="lbSection">
+        <div class="lb-header" onclick="toggleLinkBudget()" title="Expand / collapse">
+          <div style="display:flex;flex-direction:column;gap:4px;">
+            <div class="section-title" style="margin:0;">⚡ Transmitter Power / Antenna Gain</div>
+            <div class="lb-sub" id="lbCollapsedPeek" style="margin:0;opacity:0.7;">📡 My Station — Transmitter (Site A)</div>
+          </div>
+          <span class="lb-toggle-icon" id="lbToggleIcon">▼ EXPAND</span>
+        </div>
+        <div class="lb-body" id="lbBody" style="display:none;">
+
+          <!-- ── TRANSMITTER (Site A) ── -->
+          <div class="lb-sub">📡 My Station — Transmitter (Site A)</div>
+
+          <!-- TX Power -->
+          <div class="lb-row">
+            <label>TX Output</label>
+            <input class="lb-input" id="lbTxPow" type="number" min="0.1" max="1500" step="1" value="5"
+              oninput="lbUpdateDerived()">
+            <span class="lb-unit">watts</span>
+          </div>
+
+          <!-- TX Feedline Loss — dB or watts toggle -->
+          <div class="lb-row">
+            <label>Line Loss</label>
+            <input class="lb-input" id="lbTxLossVal" type="number" min="0" max="20" step="0.1" value="1.5"
+              oninput="lbUpdateDerived()">
+            <div class="lb-unit-toggle">
+              <button class="lb-unit-btn lb-unit-active" id="lbTxLossUnitDb"  onclick="lbSetLossUnit('db')">dB</button>
+              <button class="lb-unit-btn"                id="lbTxLossUnitW"   onclick="lbSetLossUnit('w')">W lost</button>
+            </div>
+          </div>
+          <div class="lb-convert-note" id="lbTxLossNote">≈ 71% efficient · delivering ~3.5 W to antenna</div>
+
+          <!-- TX Antenna Gain — dBd or dBi toggle -->
+          <div class="lb-row">
+            <label>TX Antenna</label>
+            <select class="lb-select" id="lbTxAnt" onchange="lbAntennaChange()">
+              <option value="0">HT rubber duck / whip — 0 dBd (0 dBi) · or similar</option>
+              <optgroup label="── Comet Fiberglass Omni ──────────────">
+              <option value="2.35">Comet GP-3 — 2.35 dBd (4.5 dBi) · 2m/70cm, 6 ft · or similar</option>
+              <option value="4.35">Comet CX-333 — 4.35 dBd (6.5 dBi) · 2m/1.25m/70cm triband, 10 ft · or similar</option>
+              <option value="4.35">Comet GP-6 — 4.35 dBd (6.5 dBi) · 2m/70cm, 10 ft · or similar</option>
+              <option value="6.35">Comet GP-9 — 6.35 dBd (8.5 dBi) · 2m/70cm, 17 ft · or similar</option>
+              <option value="6.85">Comet CA-712 — 6.85 dBd (9.0 dBi) · UHF/GMRS 460–470 MHz, 10 ft · or similar</option>
+              </optgroup>
+              <optgroup label="── Yagi / Directional ────────────────">
+              <option value="5">Yagi 3-el — 5 dBd (7.15 dBi) · or similar</option>
+              <option value="9">Yagi 5-el — 9 dBd (11.15 dBi) · or similar</option>
+              <option value="12">Yagi 9-el — 12 dBd (14.15 dBi) · or similar</option>
+              </optgroup>
+              <option value="custom">Enter custom gain…</option>
+            </select>
+          </div>
+          <div class="lb-row" id="lbTxAntCustomRow" style="display:none;">
+            <label>TX Gain</label>
+            <input class="lb-input" id="lbTxAntCustom" type="number" min="-3" max="30" step="0.1" value="4"
+              oninput="lbUpdateDerived()">
+            <div class="lb-unit-toggle">
+              <button class="lb-unit-btn lb-unit-active" id="lbTxAntUnitDbd" onclick="lbSetAntUnit('dbd')">dBd</button>
+              <button class="lb-unit-btn"                id="lbTxAntUnitDbi" onclick="lbSetAntUnit('dbi')">dBi</button>
+            </div>
+          </div>
+          <div class="lb-convert-note" id="lbTxAntNote" style="display:none;"></div>
+
+          <!-- ERP readout -->
+          <div class="lb-erp-row">
+            <div class="lb-erp-label">Effective Radiated Power (ERP)</div>
+            <div class="lb-erp-val" id="lbErpVal">— W</div>
+          </div>
+
+          <hr class="lb-divider">
+
+          <!-- ── RECEIVER (Site B) ── -->
+          <div class="lb-sub">📻 Their Station — Receiver (Site B)</div>
+
+          <!-- RX Sensitivity -->
+          <div class="lb-row">
+            <label>RX Sensitivity</label>
+            <select class="lb-select" id="lbRxSens" onchange="lbSensChange()">
+              <option value="-107">HT / handheld (−107 dBm)</option>
+              <option value="-110">Mid-range mobile (−110 dBm)</option>
+              <option value="-116">Commercial repeater (−116 dBm)</option>
+              <option value="-120">Sensitive receiver (−120 dBm)</option>
+              <option value="-130">SDR / high-perf (−130 dBm)</option>
+              <option value="custom">Custom…</option>
+            </select>
+          </div>
+          <div class="lb-row" id="lbRxSensCustomRow" style="display:none;">
+            <label>Sensitivity</label>
+            <input class="lb-input" id="lbRxSensCustom" type="number" min="-160" max="-50" step="1" value="-107"
+              oninput="lbUpdateDerived()">
+            <span class="lb-unit">dBm</span>
+          </div>
+
+        </div><!-- /lb-body -->
       </div>
 
       <!-- Calculate -->
@@ -867,6 +1236,30 @@
           <div class="stat-card full"><div class="stat-label">Min Clearance</div><div class="stat-value" id="statClear">—</div></div>
           <div class="stat-card full" id="diffrCard" style="display:none;"><div class="stat-label">Diffraction Loss (est.)</div><div class="stat-value" id="statDiffr">—</div></div>
         </div>
+
+        <!-- Link Budget Result -->
+        <div class="lbr-card" id="lbResultCard">
+          <div class="lbr-title">📡 Link Budget Analysis</div>
+
+          <!-- PRIMARY: corrected margin (shown when terrain corrections apply) -->
+          <div id="lbrPrimaryBlock">
+            <div class="lbr-margin-row">
+              <span class="lbr-margin-val" id="lbrMarginVal">—</span>
+              <span class="lbr-margin-label" id="lbrMarginLabel">dB estimated margin</span>
+            </div>
+            <div class="lbr-verdict" id="lbrVerdict">—</div>
+          </div>
+
+          <!-- Budget breakdown table -->
+          <table class="lbr-table" id="lbrTable">
+            <tbody id="lbrTableBody"></tbody>
+          </table>
+
+          <!-- Correction detail (shown when terrain corrections apply) -->
+          <div class="lbr-correction-breakdown" id="lbrCorrectionBreakdown" style="display:none;"></div>
+
+          <div class="lbr-hint" id="lbrHint"></div>
+        </div>
       </div>
 
       <!-- Map / Google Key -->
@@ -888,6 +1281,9 @@
         <div class="section-title">About</div>
         <p class="info-note">
           Earth curvature (k=4/3) applied.<br>
+          Diffraction: ITU-R P.526 knife-edge + Deygout 3-obstacle.<br>
+          Terrain roughness: Δh penalty (ITU-R P.1546 / Longley-Rice).<br>
+          Path loss: Free Space (FSPL).<br>
           Buildings &amp; vegetation not included.<br>
           Elevation: Open-Meteo (SRTM 90m).<br>
           Geocoding: ArcGIS → Photon → Nominatim.<br>
@@ -1302,7 +1698,7 @@ function applyGoogleKey() {
 }
 
 function initMap() {
-  map = L.map('map', { zoomControl: true }).setView([33.9252, -84.4537], 10);
+  map = L.map('map', { zoomControl: true }).setView([39.8283, -98.5795], 4);
 
   // Default: Esri satellite (free, no key, great quality)
   switchLayer('esri-hybrid');
@@ -1334,7 +1730,36 @@ function initMap() {
 
   map.on('mouseout', dropGhost);
 
-  drawPlaceholderPath(llA, llB);
+  // ── Auto-center on user location at first load ──────────────────────────
+  // If geolocation is available and granted, move both markers to user's
+  // location and zoom in. Silently falls back to US-center if denied/unavailable.
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        // Place Site A at user's exact location
+        document.getElementById('latA').value = lat.toFixed(5);
+        document.getElementById('lngA').value = lng.toFixed(5);
+        markerA.setLatLng([lat, lng]);
+        // Place Site B slightly northeast as a default second point
+        const latB = lat  + 0.05;
+        const lngB = lng  + 0.05;
+        document.getElementById('latB').value = latB.toFixed(5);
+        document.getElementById('lngB').value = lngB.toFixed(5);
+        markerB.setLatLng([latB, lngB]);
+        map.fitBounds(L.latLngBounds([lat, lng], [latB, lngB]).pad(0.5));
+        drawPlaceholderPath([lat, lng], [latB, lngB]);
+      },
+      _err => {
+        // Denied or unavailable — US-center defaults already set above
+        drawPlaceholderPath(llA, llB);
+      },
+      { timeout: 5000, maximumAge: 60000 }
+    );
+  } else {
+    drawPlaceholderPath(llA, llB);
+  }
 }
 
 function dropGhost() {
@@ -1767,6 +2192,96 @@ function computeDiffraction(dists, terrain, losLine, D, lambda) {
   if (worstNu === -Infinity) worstNu = -2; // fully clear
   const lossDb = knifeedgeLoss(worstNu);
   return { nu: worstNu, lossDb, obstacleIdx: worstIdx };
+}
+
+
+// ── Deygout 3-obstacle diffraction (ITU-R P.526-15 §4.2) ──────────────────
+//
+// Standard "3-knife-edge" Deygout method:
+//   1. Find the dominant obstacle on the full path (highest ν).
+//   2. Find the dominant sub-obstacle on the left sub-path  (A → main peak).
+//   3. Find the dominant sub-obstacle on the right sub-path (main peak → B).
+//   4. Sum all three individual knife-edge losses.
+//
+// Models multiple ridge crossings — each contributing independently.
+// Returns totalLossDb (positive), extraLossDb over single KE, nPeaks found.
+
+function _findPeak(terrain, losLine, dists, lambda) {
+  let bestNu = -99, bestIdx = -1;
+  for (let i = 1; i < terrain.length - 1; i++) {
+    const h = terrain[i] - losLine[i];
+    if (h <= 0) continue;
+    const d1 = dists[i] - dists[0];
+    const d2 = dists[dists.length-1] - dists[i];
+    if (d1 <= 0 || d2 <= 0) continue;
+    const nu = h * Math.sqrt(2*(d1+d2) / (lambda*d1*d2));
+    if (nu > bestNu) { bestNu = nu; bestIdx = i; }
+  }
+  return (bestIdx >= 0 && bestNu > -0.78) ? { idx: bestIdx, nu: bestNu } : null;
+}
+
+function computeDeygout(dists, terrain, losLine, D, lambda) {
+  const main = _findPeak(terrain, losLine, dists, lambda);
+  if (!main) return { totalLossDb: 0, extraLossDb: 0, nPeaks: 0, nuLeft: null, nuRight: null };
+
+  // knifeedgeLoss returns negative (convention); flip to get positive loss dB
+  const keLoss = nu => Math.max(0, -knifeedgeLoss(nu));
+  const mainLoss = keLoss(main.nu);
+
+  // Left sub-path A → main peak; sub-LOS from losLine[0] to terrain[main.idx]
+  let leftLoss = 0, nuLeft = null;
+  if (main.idx > 1) {
+    const lt = terrain.slice(0, main.idx + 1);
+    const ld = dists.slice(0, main.idx + 1);
+    const peakH = terrain[main.idx];
+    const ll = ld.map((d,i) => losLine[0] + (peakH - losLine[0]) * (ld[i]-ld[0]) / (ld[ld.length-1]-ld[0]));
+    const lp = _findPeak(lt, ll, ld, lambda);
+    if (lp) { leftLoss = keLoss(lp.nu); nuLeft = lp.nu; }
+  }
+
+  // Right sub-path main peak → B; sub-LOS from terrain[main.idx] to losLine[end]
+  let rightLoss = 0, nuRight = null;
+  if (main.idx < terrain.length - 2) {
+    const rt = terrain.slice(main.idx);
+    const rd = dists.slice(main.idx);
+    const peakH = terrain[main.idx];
+    const rl = rd.map((d,i) => peakH + (losLine[losLine.length-1] - peakH) * (rd[i]-rd[0]) / (rd[rd.length-1]-rd[0]));
+    const rp = _findPeak(rt, rl, rd, lambda);
+    if (rp) { rightLoss = keLoss(rp.nu); nuRight = rp.nu; }
+  }
+
+  const totalLossDb = mainLoss + leftLoss + rightLoss;
+  const extraLossDb = leftLoss + rightLoss;
+  const nPeaks = 1 + (nuLeft !== null ? 1 : 0) + (nuRight !== null ? 1 : 0);
+  return { totalLossDb, extraLossDb, nPeaks, nuLeft, nuRight };
+}
+
+// ── Δh Terrain Roughness Penalty (ITU-R P.1546 / Longley-Rice) ────────────
+//
+// Δh = interdecile height variation = P90(elev) − P10(elev) along path.
+// Models background scatter from rolling hills, trees, rocks — the continuous
+// loss that single-peak diffraction misses between the main obstacles.
+//
+// Calibrated against Longley-Rice for VHF/UHF terrestrial paths:
+//   Flat/gentle (Δh<10m)  → 0 dB
+//   Rolling hills (Δh~50m) → ~3 dB
+//   Significant (Δh~150m)  → ~7 dB
+//   Mountainous (Δh~300m)  → ~11 dB
+// Capped at 14 dB to avoid double-counting with Deygout corrections.
+
+function computeTerrainRoughness(elevations, distMeters, freqMHz) {
+  if (!elevations || elevations.length < 10) return { lossDb: 0, deltaH: 0 };
+  const sorted = [...elevations].sort((a,b) => a-b);
+  const n   = sorted.length;
+  const p10 = sorted[Math.floor(n * 0.10)];
+  const p90 = sorted[Math.floor(n * 0.90)];
+  const dh  = Math.max(0, p90 - p10);
+  if (dh <= 10) return { lossDb: 0, deltaH: dh };
+  const dKm        = distMeters / 1000;
+  const distFactor = 1 + 0.3 * Math.log10(Math.max(dKm, 10) / 10);
+  const freqFactor = Math.pow(freqMHz / 150, 0.1);
+  const loss       = Math.min(14.0, 5.0 * Math.log10(dh / 10) * distFactor * freqFactor);
+  return { lossDb: Math.max(0, loss), deltaH: dh };
 }
 
 // Map diffraction result to a link quality grade
@@ -2350,6 +2865,10 @@ async function _doAnalysis() {
       document.getElementById('diffrCard').style.display = 'none';
     }
 
+    // ── Link Budget ──
+    renderLinkBudget(D, FREQ_BANDS[currentBand].freqMHz, diffr.lossDb, diffr.nu,
+                     elev, dists, losLine, FREQ_BANDS[currentBand].lambda);
+
     // ── Stat values (imperial primary) ──
     document.getElementById('statDist').textContent    = fmtDist(D, false);
     document.getElementById('statBearing').textContent = bear.toFixed(1)+'°';
@@ -2386,8 +2905,316 @@ async function _doAnalysis() {
 
 
 // ═══════════════════════════════════════════════════════════
+// LINK BUDGET
+// ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// LINK BUDGET
+// ═══════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════
+// LINK BUDGET
+// ═══════════════════════════════════════════════════════════
+
+// ── State: unit modes ────────────────────────────────────
+const _lbState = {
+  txLossUnit: 'db',   // 'db' or 'w'
+  txAntUnit:  'dbd',  // 'dbd' or 'dbi'
+};
+
+// ── Panel toggle (open by default) ───────────────────────
+function toggleLinkBudget() {
+  const body = document.getElementById('lbBody');
+  const icon = document.getElementById('lbToggleIcon');
+  const peek = document.getElementById('lbCollapsedPeek');
+  const open = body.style.display === 'none';
+  body.style.display  = open ? 'block' : 'none';
+  icon.textContent    = open ? '▲ COLLAPSE' : '▼ EXPAND';
+  if (peek) peek.style.display = open ? 'none' : 'block';
+}
+
+// ── Toggle feedline loss unit: dB ↔ W-lost ──────────────
+function lbSetLossUnit(unit) {
+  if (unit === _lbState.txLossUnit) return;
+  const prev   = _lbState.txLossUnit;
+  _lbState.txLossUnit = unit;
+
+  const input  = document.getElementById('lbTxLossVal');
+  const curVal = parseFloat(input.value) || 0;
+  const txPowW = parseFloat(document.getElementById('lbTxPow').value) || 5;
+
+  if (unit === 'w') {
+    // dB → watts lost
+    const wLost = txPowW * (1 - Math.pow(10, -curVal / 10));
+    input.value = Math.min(wLost, txPowW * 0.999).toFixed(1);
+    input.min = '0'; input.step = '0.5';
+  } else {
+    // watts lost → dB
+    const eff = Math.max(0.001, 1 - curVal / txPowW);
+    input.value = (-10 * Math.log10(eff)).toFixed(1);
+    input.min = '0'; input.step = '0.1';
+  }
+
+  document.getElementById('lbTxLossUnitDb').classList.toggle('lb-unit-active', unit === 'db');
+  document.getElementById('lbTxLossUnitW' ).classList.toggle('lb-unit-active', unit === 'w');
+  lbUpdateDerived();
+}
+
+// ── Toggle antenna gain unit: dBd ↔ dBi ─────────────────
+function lbSetAntUnit(unit) {
+  if (unit === _lbState.txAntUnit) return;
+  _lbState.txAntUnit = unit;
+
+  const input  = document.getElementById('lbTxAntCustom');
+  const curVal = parseFloat(input.value) || 0;
+  input.value  = unit === 'dbi' ? (curVal + 2.15).toFixed(2) : (curVal - 2.15).toFixed(2);
+
+  document.getElementById('lbTxAntUnitDbd').classList.toggle('lb-unit-active', unit === 'dbd');
+  document.getElementById('lbTxAntUnitDbi').classList.toggle('lb-unit-active', unit === 'dbi');
+  lbUpdateDerived();
+}
+
+// ── Get TX loss in dB from whichever mode is active ──────
+function _getTxLossDb() {
+  const val    = parseFloat(document.getElementById('lbTxLossVal').value) || 0;
+  if (_lbState.txLossUnit === 'db') return val;
+  const txPowW = parseFloat(document.getElementById('lbTxPow').value) || 5;
+  const eff    = Math.max(0.001, 1 - val / txPowW);
+  return -10 * Math.log10(eff);
+}
+
+// ── Get TX antenna gain in dBd from dropdown or custom ───
+function _getTxGainDbd() {
+  const sel = document.getElementById('lbTxAnt').value;
+  if (sel !== 'custom') return parseFloat(sel) || 0;
+  const raw = parseFloat(document.getElementById('lbTxAntCustom').value) || 0;
+  return _lbState.txAntUnit === 'dbi' ? raw - 2.15 : raw;
+}
+
+// ── Format watts compactly ───────────────────────────────
+function fmtW(w) {
+  if (w >= 1000)  return (w / 1000).toFixed(1) + ' kW';
+  if (w >= 100)   return w.toFixed(0) + ' W';
+  if (w >= 10)    return w.toFixed(1) + ' W';
+  if (w >= 0.1)   return w.toFixed(2) + ' W';
+  return (w * 1000).toFixed(1) + ' mW';
+}
+
+// ── Read full link budget → return object ────────────────
+function getLinkBudget() {
+  const txPowW    = parseFloat(document.getElementById('lbTxPow').value) || 5;
+  const txLossDb  = _getTxLossDb();
+  const txGainDbd = _getTxGainDbd();
+  const txGainDbi = txGainDbd + 2.15;
+
+  const sensSel   = document.getElementById('lbRxSens').value;
+  const rxSensDbm = sensSel === 'custom'
+    ? (parseFloat(document.getElementById('lbRxSensCustom').value) || -107)
+    : parseFloat(sensSel);
+
+  // ERP (watts, referenced to dipole)
+  const txLineEff = Math.pow(10, -txLossDb / 10);
+  const erpW      = txPowW * Math.pow(10, txGainDbd / 10) * txLineEff;
+
+  // EIRP (dBm) — used internally with FSPL math
+  const txPowDbm = 10 * Math.log10(txPowW * 1000);
+  const eirpDbm  = txPowDbm + txGainDbi - txLossDb;
+
+  return { txPowW, txPowDbm, txGainDbd, txGainDbi, txLossDb,
+           rxSensDbm, eirpDbm, erpW };
+}
+
+// ── Update all live readouts ─────────────────────────────
+function lbUpdateDerived() {
+  const txPowW   = parseFloat(document.getElementById('lbTxPow').value) || 5;
+  const txLossDb = _getTxLossDb();
+  const txEff    = Math.pow(10, -txLossDb / 10);
+  const wToAnt   = txPowW * txEff;
+
+  // Feedline conversion note
+  const note = document.getElementById('lbTxLossNote');
+  if (_lbState.txLossUnit === 'db') {
+    note.textContent = `≈ ${(txEff*100).toFixed(0)}% efficient · delivering ${fmtW(wToAnt)} to antenna`;
+  } else {
+    const lostW = parseFloat(document.getElementById('lbTxLossVal').value) || 0;
+    note.textContent = `${fmtW(lostW)} dissipated in feedline · ${fmtW(Math.max(0, txPowW - lostW))} to antenna`;
+  }
+
+  // Antenna conversion note (custom only)
+  const antSel  = document.getElementById('lbTxAnt').value;
+  const antNote = document.getElementById('lbTxAntNote');
+  if (antSel === 'custom') {
+    const dbd = _getTxGainDbd();
+    antNote.textContent = _lbState.txAntUnit === 'dbd'
+      ? `= ${(dbd + 2.15).toFixed(2)} dBi`
+      : `= ${dbd.toFixed(2)} dBd`;
+    antNote.style.display = 'block';
+  } else {
+    antNote.style.display = 'none';
+  }
+
+  // ERP
+  const lb = getLinkBudget();
+  document.getElementById('lbErpVal').textContent = fmtW(lb.erpW) + ' ERP';
+
+  // NOTE: deliberately does NOT call runAnalysis() — link budget is recalculated
+  // from current input values when the Calculate button is pressed. This prevents
+  // every keystroke in the power/loss fields from triggering an elevation API call.
+}
+
+// ── Antenna dropdown change ───────────────────────────────
+function lbAntennaChange() {
+  const sel = document.getElementById('lbTxAnt').value;
+  document.getElementById('lbTxAntCustomRow').style.display = sel === 'custom' ? 'flex' : 'none';
+  lbUpdateDerived();
+}
+
+// ── Sensitivity dropdown change ───────────────────────────
+function lbSensChange() {
+  document.getElementById('lbRxSensCustomRow').style.display =
+    document.getElementById('lbRxSens').value === 'custom' ? 'flex' : 'none';
+  lbUpdateDerived();
+}
+
+// ── Free Space Path Loss ──────────────────────────────────
+function computeFSPL(distMeters, freqMHz) {
+  if (distMeters <= 0) return 0;
+  return 20 * Math.log10(distMeters) + 20 * Math.log10(freqMHz * 1e6) - 147.55;
+}
+
+// ── Render the link budget result card ───────────────────
+function renderLinkBudget(distMeters, freqMHz, diffrLossDb, nuVal,
+                          elevations, dists, losLine, lambda) {
+  const lb   = getLinkBudget();
+  const fspl = computeFSPL(distMeters, freqMHz);
+
+  // ── Knife-edge loss (positive dB) ──
+  const keLoss   = Math.max(0, -diffrLossDb);
+  const rsl      = lb.eirpDbm - fspl - keLoss;
+  const keMargin = rsl - lb.rxSensDbm;
+
+  // ── Terrain corrections (only when path is obstructed) ──
+  let deygout   = { extraLossDb: 0, nPeaks: 1 };
+  let roughness = { lossDb: 0, deltaH: 0 };
+  let hasCorrected = false;
+
+  if (nuVal > 0.5 && elevations && dists && losLine) {
+    deygout   = computeDeygout(dists, elevations, losLine, distMeters, lambda);
+    roughness = computeTerrainRoughness(elevations, distMeters, freqMHz);
+    hasCorrected = deygout.extraLossDb > 0.5 || roughness.lossDb > 0.5;
+  }
+
+  const combinedCorrection = Math.min(deygout.extraLossDb + roughness.lossDb, 28.0);
+  const correctedMargin    = keMargin - combinedCorrection;
+
+  // ── Primary margin: corrected when available, KE otherwise ──
+  const primaryMargin = hasCorrected ? correctedMargin : keMargin;
+  const primaryLabel  = hasCorrected ? 'dB est. margin (terrain-corrected)' : 'dB link margin';
+
+  // ── Card colour ──
+  const card = document.getElementById('lbResultCard');
+  card.className = 'lbr-card visible ' +
+    (primaryMargin >= 15 ? 'lbr-pass' : primaryMargin >= 0 ? 'lbr-marginal' : 'lbr-fail');
+
+  document.getElementById('lbrMarginVal').textContent =
+    (primaryMargin >= 0 ? '+' : '') + primaryMargin.toFixed(1);
+  document.getElementById('lbrMarginLabel').textContent = primaryLabel;
+
+  // ── Verdict ──
+  const terrainHard = nuVal > 3.0;
+  let verdict, hint;
+  if (terrainHard && primaryMargin < 20) {
+    verdict = '🏔️ Terrain blocks this path';
+    hint    = keLoss > 25
+      ? `The terrain is far above the line of sight — no practical amount of power can overcome this.`
+      : `Heavy terrain loss. Even high-power stations would struggle here.`;
+  } else if (primaryMargin >= 20) {
+    verdict = '✅ Solid link — excellent margin';
+    hint    = `Your ${fmtW(lb.erpW)} ERP arrives well above the receiver threshold. Robust and reliable.`;
+  } else if (primaryMargin >= 10) {
+    verdict = '✅ Good link — adequate margin';
+    hint    = `Should work reliably under normal conditions. Some fading expected.`;
+  } else if (primaryMargin >= 0) {
+    verdict = '⚠️ Marginal — expect heavy static';
+    hint    = `Signal near the noise floor. Copy will be difficult; conditions matter a lot.`;
+  } else {
+    const needWatts = lb.txPowW * Math.pow(10, Math.abs(primaryMargin) / 10);
+    verdict = '🔴 Link budget fails';
+    hint = terrainHard
+      ? `Terrain obstruction (ν=${nuVal.toFixed(1)}) is the primary blocker. Power alone cannot fix this.`
+      : `Need ${Math.abs(primaryMargin).toFixed(1)} dB more. Power alone: ~${fmtW(needWatts)} TX.`;
+  }
+  document.getElementById('lbrVerdict').innerHTML = verdict;
+
+  // ── Budget table ──
+  const txAntDbd = lb.txGainDbd.toFixed(2);
+  const txAntDbi = lb.txGainDbi.toFixed(2);
+  const rows = [
+    { label: 'TX Output',       sign: '+', val: fmtW(lb.txPowW),                               cls: 'pos' },
+    { label: 'TX Line Loss',    sign: '−', val: lb.txLossDb.toFixed(1) + ' dB',                cls: lb.txLossDb > 0.2 ? 'neg' : '' },
+    { label: 'TX Antenna',      sign: '+', val: `${txAntDbd} dBd  (${txAntDbi} dBi)`,          cls: 'pos' },
+    { label: 'ERP',             sign: '=', val: fmtW(lb.erpW),                                  cls: 'neu', bold: true },
+    { label: 'Free Space Loss', sign: '−', val: fspl.toFixed(1) + ' dB',                       cls: 'neg' },
+    { label: 'Knife-Edge Loss', sign: '−', val: keLoss.toFixed(1) + ' dB',                     cls: keLoss > 3 ? 'neg' : '' },
+    { label: 'Received Signal', sign: '=', val: rsl.toFixed(1) + ' dBm',                       cls: rsl >= lb.rxSensDbm ? 'pos' : 'neg', bold: true },
+    { label: 'RX Sensitivity',  sign: '↓', val: lb.rxSensDbm.toFixed(0) + ' dBm min',         cls: '' },
+  ];
+
+  if (hasCorrected) {
+    // Correction rows (italic, orange)
+    if (deygout.extraLossDb > 0.5) {
+      const pd = deygout.nPeaks === 1 ? '1 obstacle' : `${deygout.nPeaks} obstacles`;
+      rows.push({ label: `Deygout (${pd})`, sign: '−', val: deygout.extraLossDb.toFixed(1) + ' dB', cls: 'neg', italic: true });
+    }
+    if (roughness.lossDb > 0.5) {
+      rows.push({ label: `Δh roughness (${roughness.deltaH.toFixed(0)}m)`, sign: '−', val: roughness.lossDb.toFixed(1) + ' dB', cls: 'neg', italic: true });
+    }
+    // Corrected margin = main total
+    rows.push({ label: 'Est. Margin', sign: '▶',
+      val: (correctedMargin >= 0 ? '+' : '') + correctedMargin.toFixed(1) + ' dB',
+      cls: correctedMargin >= 15 ? 'pos' : correctedMargin >= 0 ? 'neu' : 'neg',
+      bold: true, total: true });
+    // KE margin = small muted footnote
+    rows.push({ label: 'KE only (single-obstacle ref.)', sign: '',
+      val: (keMargin >= 0 ? '+' : '') + keMargin.toFixed(1) + ' dB',
+      cls: 'muted', footnote: true });
+  } else {
+    rows.push({ label: 'Link Margin', sign: '▶',
+      val: (keMargin >= 0 ? '+' : '') + keMargin.toFixed(1) + ' dB',
+      cls: keMargin >= 15 ? 'pos' : keMargin >= 0 ? 'neu' : 'neg',
+      bold: true, total: true });
+  }
+
+  document.getElementById('lbrTableBody').innerHTML = rows.map(r => {
+    const trCls = r.total ? 'lbr-total' : r.footnote ? 'lbr-footnote' : '';
+    const style = [r.bold ? 'font-weight:700' : '', r.italic ? 'font-style:italic' : ''].filter(Boolean).join(';');
+    return `<tr class="${trCls}">
+      <td class="td-label">${r.label}</td>
+      <td class="td-sign">${r.sign}</td>
+      <td class="td-val ${r.cls}" ${style ? `style="${style}"` : ''}>${r.val}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Correction footnote ──
+  const bkEl = document.getElementById('lbrCorrectionBreakdown');
+  if (hasCorrected) {
+    bkEl.textContent = '± 5 dB uncertainty · ITU-R P.526 Deygout + P.1546 Δh model';
+    bkEl.style.display = 'block';
+  } else {
+    bkEl.style.display = 'none';
+  }
+
+  document.getElementById('lbrHint').innerHTML = hint;
+}
+
+// ── Initialize on page load ───────────────────────────────
+function initLinkBudget() {
+  lbUpdateDerived();
+}
+// ═══════════════════════════════════════════════════════════
 // REPEATER LOOKUP
 // ═══════════════════════════════════════════════════════════
+
 
 // ── Set this to your deployed Cloudflare Worker URL ──────
 // e.g. 'https://rf-los-proxy.yourname.workers.dev'
@@ -2409,17 +3236,15 @@ function setSiteBMode(mode) {
   const manual   = document.getElementById('siteBManual');
   const repeater = document.getElementById('siteBRepeater');
   const licensee = document.getElementById('siteBLicensee');
+  const grid     = document.getElementById('siteBGrid');
   const btnM     = document.getElementById('siteBModeManual');
   const btnR     = document.getElementById('siteBModeRepeater');
   const btnL     = document.getElementById('siteBModeLicensee');
+  const btnG     = document.getElementById('siteBModeGrid');
 
   // Hide all panels, deactivate all buttons
-  manual.style.display   = 'none';
-  repeater.style.display = 'none';
-  licensee.style.display = 'none';
-  btnM.classList.remove('mode-active');
-  btnR.classList.remove('mode-active');
-  if (btnL) btnL.classList.remove('mode-active');
+  [manual, repeater, licensee, grid].forEach(el => { if (el) el.style.display = 'none'; });
+  [btnM, btnR, btnL, btnG].forEach(el => { if (el) el.classList.remove('mode-active'); });
 
   if (mode === 'repeater') {
     repeater.style.display = 'block';
@@ -2428,6 +3253,9 @@ function setSiteBMode(mode) {
   } else if (mode === 'licensee') {
     licensee.style.display = 'block';
     if (btnL) btnL.classList.add('mode-active');
+  } else if (mode === 'grid') {
+    if (grid) grid.style.display = 'block';
+    if (btnG) btnG.classList.add('mode-active');
   } else {
     manual.style.display = 'block';
     btnM.classList.add('mode-active');
@@ -2622,19 +3450,29 @@ async function lookupLicensee() {
     const resp = await fetch(url);
     const data = await resp.json();
 
+    // Special case: GMRS callsigns have no public API.
+    // Worker returns 422 with error:'GMRS_NO_API' and a direct FCC search URL.
+    if (data.error === 'GMRS_NO_API') {
+      const fccUrl = data.fccUrl || `https://wireless2.fcc.gov/UlsApp/UlsSearch/searchLicense.jsp`;
+      statusEl.innerHTML =
+        `⚠ GMRS callsigns cannot be looked up via API — the FCC provides no public endpoint for GMRS data.<br>` +
+        `<a href="${fccUrl}" target="_blank" rel="noopener" style="color:#ffe066;text-decoration:underline;">` +
+        `🔗 Search FCC ULS for ${callsign} →</a>`;
+      statusEl.className = 'lic-status err';
+      return;
+    }
+
     if (data.error) throw new Error(data.error);
 
-    // Build address string for geocoding
+    const isGmrs    = data.source === 'fcc_uls';
     const addrParts = [data.addr1, data.addr2, data.state, data.zip].filter(Boolean);
     const addrStr   = addrParts.join(', ');
-    const isGmrs    = data.source === 'fcc_uls';
 
-    // Show card
+    // Build badges
     const badgesEl = document.getElementById('licCardBadges');
     badgesEl.innerHTML = isGmrs
       ? '<span class="lic-badge lic-badge-gmrs">GMRS</span>'
       : '<span class="lic-badge lic-badge-ham">Amateur</span>';
-
     if (data.class && !isGmrs) {
       const classLabels = { T:'Technician', G:'General', A:'Advanced', E:'Extra' };
       const label = classLabels[data.class] || data.class;
@@ -2645,29 +3483,30 @@ async function lookupLicensee() {
     document.getElementById('licCardName').textContent =
       [data.fname, data.name].filter(Boolean).join(' ') || data.name || '—';
     document.getElementById('licCardAddr').textContent = addrStr || 'Address not available';
-    document.getElementById('licCardNote').textContent =
-      '📍 Address will be geocoded — location is approximate';
 
     cardEl.classList.add('visible');
     statusEl.textContent = `✓ Found: ${data.callsign}`;
     statusEl.className   = 'lic-status ok';
 
-    // If HamDB returned lat/lon directly, use them; otherwise geocode the address
-    if (data.lat && data.lon && parseFloat(data.lat) !== 0) {
+    // callook.info returns pre-geocoded lat/lon — use directly, no geocoding step needed
+    if (data.lat && data.lon) {
       const lat = parseFloat(data.lat);
       const lon = parseFloat(data.lon);
       document.getElementById('latB').value = lat.toFixed(5);
       document.getElementById('lngB').value = lon.toFixed(5);
       if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lon]);
-      document.getElementById('licCardNote').textContent = '📍 Grid-derived coordinates';
+      const noteText = data.grid
+        ? `📍 FCC address geocoded · Grid: ${data.grid}`
+        : '📍 FCC address geocoded · location is approximate';
+      document.getElementById('licCardNote').textContent = noteText;
       document.getElementById('addrStatusBLicensee').textContent = '';
       runAnalysis();
     } else if (addrStr) {
-      // Geocode the address using the existing geocode infrastructure
+      // Fallback: geocode manually if callook didn't return coords
       document.getElementById('licCardNote').textContent = '⏳ Geocoding address…';
       geocodeLicenseeAddress(addrStr, data.callsign);
     } else {
-      document.getElementById('licCardNote').textContent = '⚠ No address available — enter coordinates manually';
+      document.getElementById('licCardNote').textContent = '⚠ No coordinates available — enter manually';
     }
 
   } catch (err) {
@@ -2702,6 +3541,123 @@ async function geocodeLicenseeAddress(addrStr, callsign) {
   }
 }
 
+
+// ═══════════════════════════════════════════════════════════
+// MAIDENHEAD GRID SQUARE LOOKUP
+// Pure JS — no external API needed.
+// Converts a grid square string to lat/lng of its CENTER point.
+// Supports 4-char (field+square, ~3°×5° ≈ ~70mi) and
+// 6-char (field+square+subsquare, ~0.25°×0.5° ≈ ~3-15mi) grids.
+// Reference: ARRL/ITU Maidenhead Locator System
+// ═══════════════════════════════════════════════════════════
+
+/**
+ * Parse a Maidenhead grid square string → { lat, lng, sizeLat, sizeLng }
+ * Returns null on invalid input.
+ */
+function gridSquareToLatLng(grid) {
+  if (!grid || grid.length < 4) return null;
+  const g = grid.toUpperCase();
+
+  // Validate characters
+  if (!/^[A-R]{2}[0-9]{2}([A-X]{2})?$/.test(g)) return null;
+
+  // Field (chars 0-1): A-R → longitude -180 to +180 in 20° steps
+  //                         latitude  -90  to +90  in 10° steps
+  const f1 = g.charCodeAt(0) - 65;  // 0-17 (A=0, R=17)
+  const f2 = g.charCodeAt(1) - 65;  // 0-17
+  let lng = f1 * 20 - 180;
+  let lat = f2 * 10 - 90;
+
+  // Square (chars 2-3): 0-9 → 2° lon / 1° lat steps
+  lng += parseInt(g[2]) * 2;
+  lat += parseInt(g[3]) * 1;
+
+  // Subsquare (chars 4-5, optional): A-X → 5'/2.5' steps
+  let sizeLng = 2, sizeLat = 1;
+  if (g.length >= 6) {
+    const s1 = g.charCodeAt(4) - 65;  // 0-23 (A=0, X=23)
+    const s2 = g.charCodeAt(5) - 65;  // 0-23
+    lng += s1 * (5/60);
+    lat += s2 * (2.5/60);
+    sizeLng = 5/60;
+    sizeLat = 2.5/60;
+  }
+
+  // Center of the grid square
+  const centerLng = lng + sizeLng / 2;
+  const centerLat = lat + sizeLat / 2;
+
+  return { lat: centerLat, lng: centerLng, sizeLat, sizeLng };
+}
+
+/** Format a precision note based on grid size */
+function gridPrecisionNote(sizeLat, sizeLng) {
+  // Convert degrees to approximate miles (1° lat ≈ 69 mi, 1° lng ≈ 69*cos(lat) mi)
+  const latMi  = sizeLat * 69;
+  const lngMi  = sizeLng * 69;
+  const maxMi  = Math.max(latMi, lngMi);
+  if (maxMi < 1) return `Grid precision: < 1 mile`;
+  if (maxMi < 5) return `Grid precision: ~${maxMi.toFixed(0)} miles`;
+  return `Grid precision: ~${Math.round(maxMi)} miles (${sizeLat.toFixed(sizeLat < 1 ? 2 : 0)}° lat × ${sizeLng.toFixed(sizeLng < 1 ? 2 : 0)}° lng)`;
+}
+
+/** Main lookup handler */
+function lookupGridSquare() {
+  const raw      = (document.getElementById('gridInput').value || '').trim().toUpperCase();
+  const statusEl = document.getElementById('gridStatus');
+  const cardEl   = document.getElementById('gridCard');
+
+  // Reset
+  cardEl.classList.remove('visible');
+  statusEl.className = 'grid-status';
+
+  // Validate length
+  if (!raw) {
+    statusEl.textContent = '⚠ Enter a grid square (e.g. EM74 or EM74rj)';
+    statusEl.className   = 'grid-status err';
+    return;
+  }
+  if (raw.length !== 4 && raw.length !== 6) {
+    statusEl.textContent = '⚠ Grid square must be 4 or 6 characters (e.g. EM74 or EM74rj)';
+    statusEl.className   = 'grid-status err';
+    return;
+  }
+
+  const result = gridSquareToLatLng(raw);
+  if (!result) {
+    statusEl.textContent = `⚠ "${raw}" is not a valid Maidenhead grid square`;
+    statusEl.className   = 'grid-status err';
+    return;
+  }
+
+  const { lat, lng, sizeLat, sizeLng } = result;
+
+  // Update coordinates
+  document.getElementById('latB').value = lat.toFixed(5);
+  document.getElementById('lngB').value = lng.toFixed(5);
+  if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lng]);
+
+  // Populate card
+  document.getElementById('gridCardSq').textContent = raw;
+  document.getElementById('gridCardInfo').textContent =
+    `Center: ${lat >= 0 ? lat.toFixed(4)+'°N' : Math.abs(lat).toFixed(4)+'°S'}, ` +
+    `${lng >= 0 ? lng.toFixed(4)+'°E' : Math.abs(lng).toFixed(4)+'°W'}`;
+
+  // Update precision note in card
+  const noteEl = cardEl.querySelector('.grid-card-note');
+  if (noteEl) noteEl.textContent = '📍 ' + gridPrecisionNote(sizeLat, sizeLng);
+
+  cardEl.classList.add('visible');
+
+  const precLen = raw.length === 6 ? '6-char subsquare' : '4-char square';
+  statusEl.textContent = `✓ ${raw} decoded (${precLen})`;
+  statusEl.className   = 'grid-status ok';
+
+  // Run analysis
+  runAnalysis();
+}
+
 // ═══════════════════════════════════════════════
 // BOOT
 // ═══════════════════════════════════════════════
@@ -2709,6 +3665,7 @@ window.addEventListener('load', () => {
   initMap();
   setMapMode('off');
   initChartInteractivity();
+  initLinkBudget();
   if (isMobile()) applyMobileLayout();
   runAnalysis();
 });
