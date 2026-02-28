@@ -558,6 +558,71 @@
     line-height: 1.5;
   }
 
+  /* ── LICENSEE LOOKUP ── */
+  .lic-row {
+    display: flex; gap: 8px; align-items: stretch; margin-bottom: 8px;
+  }
+  .lic-callsign {
+    flex: 1; padding: 10px 12px;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+    border-radius: 7px; color: var(--text);
+    font-family: 'Share Tech Mono', monospace; font-size: 16px;
+    font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+    outline: none; transition: border-color 0.15s;
+  }
+  .lic-callsign::placeholder { font-size: 13px; letter-spacing: 0.04em;
+    text-transform: none; font-weight: 400; color: var(--muted); }
+  .lic-callsign:focus { border-color: rgba(255,224,102,0.5); }
+  .lic-btn {
+    padding: 10px 16px;
+    background: rgba(255,224,102,0.1); border: 1px solid rgba(255,224,102,0.4);
+    border-radius: 7px; color: #ffe066;
+    font-family: 'Barlow', sans-serif; font-size: 13px; font-weight: 700;
+    letter-spacing: 0.06em; cursor: pointer; white-space: nowrap;
+    transition: all 0.15s; display: flex; align-items: center; gap: 6px;
+  }
+  .lic-btn:hover { background: rgba(255,224,102,0.18); }
+  .lic-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .lic-status {
+    font-size: 12px; font-family: 'Share Tech Mono', monospace;
+    color: var(--muted); margin-bottom: 8px; min-height: 16px;
+  }
+  .lic-status.ok  { color: #ffe066; }
+  .lic-status.err { color: var(--accent-warn); }
+  .lic-card {
+    background: rgba(255,224,102,0.04);
+    border: 1px solid rgba(255,224,102,0.22);
+    border-radius: 9px; padding: 13px 14px;
+    margin-bottom: 10px; display: none;
+  }
+  .lic-card.visible { display: block; }
+  .lic-card-call {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px; font-weight: 700;
+    color: #ffe066; letter-spacing: 0.1em; margin-bottom: 4px;
+  }
+  .lic-card-name {
+    font-size: 15px; color: var(--text); margin-bottom: 4px;
+  }
+  .lic-card-addr {
+    font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.5;
+  }
+  .lic-card-note {
+    font-size: 11px; color: var(--muted); font-family: 'Share Tech Mono', monospace;
+    font-style: italic;
+  }
+  .lic-badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .lic-badge {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .lic-badge-ham  { background: rgba(61,255,160,0.12); color: #3DFFA0;
+                    border: 1px solid rgba(61,255,160,0.3); }
+  .lic-badge-gmrs { background: rgba(255,224,102,0.12); color: #ffe066;
+                    border: 1px solid rgba(255,224,102,0.3); }
+  .lic-badge-class { background: rgba(105,255,71,0.10); color: #69ff47;
+                     border: 1px solid rgba(105,255,71,0.25); }
 
 </style>
 </head>
@@ -654,6 +719,9 @@
             <button class="site-mode-btn" id="siteBModeRepeater" onclick="setSiteBMode('repeater')">
               📡 Repeater Lookup
             </button>
+            <button class="site-mode-btn" id="siteBModeLicensee" onclick="setSiteBMode('licensee')">
+              👤 Licensee Lookup
+            </button>
           </div>
 
           <!-- Manual entry (default) -->
@@ -705,6 +773,33 @@
             </div>
 
             <div class="addr-status" id="addrStatusBRepeater"></div>
+          </div>
+
+          <!-- Licensee lookup (ham or GMRS operator by callsign) -->
+          <div id="siteBLicensee" style="display:none;">
+            <p style="font-size:12px;color:var(--muted);margin:0 0 10px;line-height:1.5;">
+              Enter any <strong style="color:#3DFFA0">amateur (ham)</strong> or
+              <strong style="color:#ffe066">GMRS</strong> callsign to look up the
+              licensee's address and plot it as Point B.
+            </p>
+            <div class="lic-row">
+              <input class="lic-callsign" type="text" id="licCallsign"
+                placeholder="e.g. N4MXB or WQXX1234"
+                onkeydown="if(event.key==='Enter')lookupLicensee()"
+                oninput="this.value=this.value.toUpperCase()">
+              <button class="lic-btn" id="licLookupBtn" onclick="lookupLicensee()">
+                🔍 Look Up
+              </button>
+            </div>
+            <div class="lic-status" id="licStatus"></div>
+            <div class="lic-card" id="licCard">
+              <div class="lic-badges" id="licCardBadges"></div>
+              <div class="lic-card-call" id="licCardCall">—</div>
+              <div class="lic-card-name" id="licCardName">—</div>
+              <div class="lic-card-addr" id="licCardAddr">—</div>
+              <div class="lic-card-note" id="licCardNote"></div>
+            </div>
+            <div class="addr-status" id="addrStatusBLicensee"></div>
           </div>
 
           <!-- Shared: coordinates + antenna height -->
@@ -2313,20 +2408,29 @@ function _checkProxyConfig() {
 function setSiteBMode(mode) {
   const manual   = document.getElementById('siteBManual');
   const repeater = document.getElementById('siteBRepeater');
+  const licensee = document.getElementById('siteBLicensee');
   const btnM     = document.getElementById('siteBModeManual');
   const btnR     = document.getElementById('siteBModeRepeater');
+  const btnL     = document.getElementById('siteBModeLicensee');
+
+  // Hide all panels, deactivate all buttons
+  manual.style.display   = 'none';
+  repeater.style.display = 'none';
+  licensee.style.display = 'none';
+  btnM.classList.remove('mode-active');
+  btnR.classList.remove('mode-active');
+  if (btnL) btnL.classList.remove('mode-active');
 
   if (mode === 'repeater') {
-    manual.style.display   = 'none';
     repeater.style.display = 'block';
-    btnM.classList.remove('mode-active');
     btnR.classList.add('mode-active');
     _checkProxyConfig();
+  } else if (mode === 'licensee') {
+    licensee.style.display = 'block';
+    if (btnL) btnL.classList.add('mode-active');
   } else {
-    manual.style.display   = 'block';
-    repeater.style.display = 'none';
+    manual.style.display = 'block';
     btnM.classList.add('mode-active');
-    btnR.classList.remove('mode-active');
   }
 }
 
@@ -2484,6 +2588,117 @@ async function lookupRepeater() {
     statusEl.className   = 'rptr-status err';
   } finally {
     document.getElementById('rptrLookupBtn').disabled = false;
+  }
+}
+
+
+// ═══════════════════════════════════════════════════════════
+// LICENSEE LOOKUP (ham via HamDB, GMRS via FCC ULS)
+// ═══════════════════════════════════════════════════════════
+
+async function lookupLicensee() {
+  const callsign  = document.getElementById('licCallsign').value.trim().toUpperCase();
+  const statusEl  = document.getElementById('licStatus');
+  const cardEl    = document.getElementById('licCard');
+
+  if (!callsign) {
+    statusEl.textContent = '⚠ Enter a callsign first';
+    statusEl.className   = 'lic-status err';
+    return;
+  }
+  if (!REPEATER_PROXY) {
+    statusEl.textContent = '⚠ Proxy not configured';
+    statusEl.className   = 'lic-status err';
+    return;
+  }
+
+  cardEl.classList.remove('visible');
+  statusEl.textContent = '⏳ Looking up ' + callsign + '…';
+  statusEl.className   = 'lic-status';
+  document.getElementById('licLookupBtn').disabled = true;
+
+  try {
+    const url  = `${REPEATER_PROXY}?callsign=${encodeURIComponent(callsign)}&type=licensee`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (data.error) throw new Error(data.error);
+
+    // Build address string for geocoding
+    const addrParts = [data.addr1, data.addr2, data.state, data.zip].filter(Boolean);
+    const addrStr   = addrParts.join(', ');
+    const isGmrs    = data.source === 'fcc_uls';
+
+    // Show card
+    const badgesEl = document.getElementById('licCardBadges');
+    badgesEl.innerHTML = isGmrs
+      ? '<span class="lic-badge lic-badge-gmrs">GMRS</span>'
+      : '<span class="lic-badge lic-badge-ham">Amateur</span>';
+
+    if (data.class && !isGmrs) {
+      const classLabels = { T:'Technician', G:'General', A:'Advanced', E:'Extra' };
+      const label = classLabels[data.class] || data.class;
+      badgesEl.innerHTML += `<span class="lic-badge lic-badge-class">${label}</span>`;
+    }
+
+    document.getElementById('licCardCall').textContent = data.callsign || callsign;
+    document.getElementById('licCardName').textContent =
+      [data.fname, data.name].filter(Boolean).join(' ') || data.name || '—';
+    document.getElementById('licCardAddr').textContent = addrStr || 'Address not available';
+    document.getElementById('licCardNote').textContent =
+      '📍 Address will be geocoded — location is approximate';
+
+    cardEl.classList.add('visible');
+    statusEl.textContent = `✓ Found: ${data.callsign}`;
+    statusEl.className   = 'lic-status ok';
+
+    // If HamDB returned lat/lon directly, use them; otherwise geocode the address
+    if (data.lat && data.lon && parseFloat(data.lat) !== 0) {
+      const lat = parseFloat(data.lat);
+      const lon = parseFloat(data.lon);
+      document.getElementById('latB').value = lat.toFixed(5);
+      document.getElementById('lngB').value = lon.toFixed(5);
+      if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lon]);
+      document.getElementById('licCardNote').textContent = '📍 Grid-derived coordinates';
+      document.getElementById('addrStatusBLicensee').textContent = '';
+      runAnalysis();
+    } else if (addrStr) {
+      // Geocode the address using the existing geocode infrastructure
+      document.getElementById('licCardNote').textContent = '⏳ Geocoding address…';
+      geocodeLicenseeAddress(addrStr, data.callsign);
+    } else {
+      document.getElementById('licCardNote').textContent = '⚠ No address available — enter coordinates manually';
+    }
+
+  } catch (err) {
+    statusEl.textContent = `✗ Lookup failed: ${err.message}`;
+    statusEl.className   = 'lic-status err';
+  } finally {
+    document.getElementById('licLookupBtn').disabled = false;
+  }
+}
+
+async function geocodeLicenseeAddress(addrStr, callsign) {
+  const noteEl = document.getElementById('licCardNote');
+  // Use the same ArcGIS geocoder already in the tool
+  const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`
+    + `?SingleLine=${encodeURIComponent(addrStr)}&f=json&outFields=&maxLocations=1`;
+  try {
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const cand = data?.candidates?.[0];
+    if (!cand || cand.score < 60) throw new Error('Address geocoding returned no confident result');
+
+    const lat = cand.location.y, lon = cand.location.x;
+    document.getElementById('latB').value = lat.toFixed(5);
+    document.getElementById('lngB').value = lon.toFixed(5);
+    if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lon]);
+    noteEl.textContent = `📍 Geocoded from address (${addrStr})`;
+    document.getElementById('addrStatusBLicensee').textContent = '';
+    runAnalysis();
+  } catch (err) {
+    noteEl.textContent = `⚠ Geocoding failed: ${err.message} — enter coordinates manually`;
+    document.getElementById('addrStatusBLicensee').textContent = '';
   }
 }
 
