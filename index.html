@@ -1589,8 +1589,13 @@ let chartData       = null;   // always set after analysis — raw data for redr
 const geoCache      = {};
 
 // Debounce guard: collapses rapid consecutive runAnalysis() calls into one
-let _analysisTimer  = null;
+let _analysisTimer   = null;
 let _analysisRunning = false;
+
+// Elevation cache: keyed by "latA,lngA,latB,lngB" rounded to 4dp
+// Same two endpoints = same 100 elevation samples; no need to re-fetch.
+let _elevCache = {};  // key → { elev: [...], dists: [...] }
+let _elevCacheKey = null;  // key used for the last successful fetch
 
 // ═══════════════════════════════════════════════
 // MARKER ICONS
@@ -2319,34 +2324,75 @@ const lerp  = (a, b, t) => a + (b-a)*t;
 const bulge = (d, D) => (d*(D-d)) / (2*K*EARTH_R);
 
 // ═══════════════════════════════════════════════
-// ELEVATION  — Open-Meteo API
-//   • Free, no key, no account
-//   • Access-Control-Allow-Origin: * — works from file://
-//   • Uses SRTM data (same underlying source)
-//   • Max 100 locations per request — we use exactly 100 points
+// ELEVATION  — Open-Meteo API (primary) + Open-Elevation fallback
+//   • Open-Meteo: Free, no key, CORS-friendly, SRTM data, max 100 pts
+//   • Open-Elevation: Free fallback if Open-Meteo is rate-limited
+//   • Exponential backoff on 429 (Too Many Requests)
 // ═══════════════════════════════════════════════
-async function fetchElevations(points) {
+
+async function _fetchOpenMeteo(points) {
   const lats = points.map(p => p[0].toFixed(5)).join(',');
   const lngs = points.map(p => p[1].toFixed(5)).join(',');
   const url  = `https://api.open-meteo.com/v1/elevation?latitude=${lats}&longitude=${lngs}`;
 
-  // Retry up to 3 times with backoff on 429 Too Many Requests
-  const delays = [0, 1200, 2500];
+  // Quick check: 2 attempts only (0s, 1.5s) — bail fast to fallback
+  const delays = [0, 1500];
   for (let attempt = 0; attempt < delays.length; attempt++) {
     if (delays[attempt] > 0) {
       document.getElementById('loadingText').textContent =
-        `Rate limited — retrying in ${(delays[attempt]/1000).toFixed(1)}s… (attempt ${attempt+1})`;
+        `Rate limited — retrying… (attempt ${attempt+1})`;
       await new Promise(r => setTimeout(r, delays[attempt]));
     }
-    const resp = await fetch(url);
-    if (resp.status === 429) {
-      if (attempt === delays.length - 1) throw new Error('Elevation API rate limited (429). Wait a moment and try again.');
-      continue;
+    try {
+      const resp = await fetch(url);
+      if (resp.status === 429) {
+        if (attempt === delays.length - 1) throw new Error('RATE_LIMITED');
+        continue;
+      }
+      if (!resp.ok) throw new Error('Elevation API HTTP ' + resp.status);
+      const json = await resp.json();
+      if (!json.elevation) throw new Error('Elevation API: unexpected response');
+      return json.elevation;
+    } catch (e) {
+      if (e.message === 'RATE_LIMITED') throw e;
+      if (attempt === delays.length - 1) throw e;
     }
-    if (!resp.ok) throw new Error('Elevation API HTTP ' + resp.status);
-    const json = await resp.json();
-    if (!json.elevation) throw new Error('Elevation API: unexpected response');
-    return json.elevation;
+  }
+}
+
+async function _fetchOpenElevation(points) {
+  // POST-based API — avoids URL length limits and works with 100 points
+  const locations = points.map(p => ({ latitude: +p[0].toFixed(5), longitude: +p[1].toFixed(5) }));
+  const resp = await fetch('https://api.open-elevation.com/api/v1/lookup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ locations })
+  });
+  if (!resp.ok) throw new Error('Open-Elevation HTTP ' + resp.status);
+  const json = await resp.json();
+  if (!json.results || json.results.length !== points.length) throw new Error('Open-Elevation: unexpected response');
+  return json.results.map(r => r.elevation);
+}
+
+async function fetchElevations(points) {
+  // Try primary (Open-Meteo) first
+  try {
+    return await _fetchOpenMeteo(points);
+  } catch (primaryErr) {
+    console.warn('Open-Meteo failed, trying fallback:', primaryErr.message);
+    document.getElementById('loadingText').textContent = 'Primary API unavailable — trying fallback…';
+  }
+  // Fallback to Open-Elevation
+  try {
+    return await _fetchOpenElevation(points);
+  } catch (fallbackErr) {
+    console.error('Fallback also failed:', fallbackErr.message);
+    throw new Error(
+      'Both elevation APIs failed.\n'
+      + 'Primary (Open-Meteo): rate limited or unreachable.\n'
+      + 'Fallback (Open-Elevation): ' + fallbackErr.message + '.\n\n'
+      + 'Wait 30–60 seconds and try again, or check your connection.'
+    );
   }
 }
 
@@ -2753,7 +2799,7 @@ function clearCrosshair() {
 // drag events, band switch) collapse into a single elevation fetch.
 function runAnalysis() {
   clearTimeout(_analysisTimer);
-  _analysisTimer = setTimeout(_doAnalysis, 120);
+  _analysisTimer = setTimeout(_doAnalysis, 600);
 }
 
 async function _doAnalysis() {
@@ -2790,9 +2836,26 @@ async function _doAnalysis() {
       points.push([lerp(a.lat,b.lat,f), lerp(a.lng,b.lng,f)]);
     }
 
-    document.getElementById('loadingText').textContent = 'Fetching elevation data…';
-    const elev  = await fetchElevations(points);
-    const dists = points.map((_,i) => (i/N_SAMPLES)*D);
+    // Build cache key from endpoints rounded to 4dp (~11m precision)
+    const _cKey = `${a.lat.toFixed(4)},${a.lng.toFixed(4)},${b.lat.toFixed(4)},${b.lng.toFixed(4)}`;
+    let elev, dists;
+    if (_elevCache[_cKey]) {
+      // Cache hit — reuse elevation data, skip API call entirely
+      elev  = _elevCache[_cKey].elev;
+      dists = _elevCache[_cKey].dists;
+      document.getElementById('loadingText').textContent = 'Using cached elevation…';
+    } else {
+      // Cache miss — fetch from API
+      document.getElementById('loadingText').textContent = 'Fetching elevation data…';
+      elev  = await fetchElevations(points);
+      dists = points.map((_,i) => (i/N_SAMPLES)*D);
+      // Store in cache (keep last 5 unique paths to avoid unbounded growth)
+      if (Object.keys(_elevCache).length >= 5) {
+        delete _elevCache[Object.keys(_elevCache)[0]];
+      }
+      _elevCache[_cKey] = { elev, dists };
+      _elevCacheKey = _cKey;
+    }
 
     const antA = elev[0]+hA, antB = elev[N_SAMPLES]+hB;
     const losLine=[], blocked=[];
@@ -3667,7 +3730,9 @@ window.addEventListener('load', () => {
   initChartInteractivity();
   initLinkBudget();
   if (isMobile()) applyMobileLayout();
-  runAnalysis();
+  // NOTE: intentionally NOT calling runAnalysis() on boot.
+  // Default coordinates are placeholder values — no point burning an API call
+  // until the user has set real locations. Calculate button is always available.
 });
 </script>
 </body>
