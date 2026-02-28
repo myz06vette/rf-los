@@ -1,4 +1,5 @@
 How to Use Mike’s RF Line of Sight Tool
+
 Live Link: https://myz06vette.github.io/rf-los/
 
 Site A: The transmitting station. You can use the browser to fetch your current location, enter an address manually, or pick a location on the map using the mouse. You can also provide latitude / longitude coordinates. In addition, you can set your antenna height above ground. 
