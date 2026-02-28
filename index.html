@@ -2324,9 +2324,9 @@ const lerp  = (a, b, t) => a + (b-a)*t;
 const bulge = (d, D) => (d*(D-d)) / (2*K*EARTH_R);
 
 // ═══════════════════════════════════════════════
-// ELEVATION  — Open-Meteo API (primary) + Open-Elevation fallback
-//   • Open-Meteo: Free, no key, CORS-friendly, SRTM data, max 100 pts
-//   • Open-Elevation: Free fallback if Open-Meteo is rate-limited
+// ELEVATION  — Open-Elevation API (primary) + Open-Meteo fallback
+//   • Open-Elevation: Free, POST-based, reliable, no rate-limit issues
+//   • Open-Meteo: Fallback if Open-Elevation is unavailable
 //   • Exponential backoff on 429 (Too Many Requests)
 // ═══════════════════════════════════════════════
 
@@ -2375,22 +2375,22 @@ async function _fetchOpenElevation(points) {
 }
 
 async function fetchElevations(points) {
-  // Try primary (Open-Meteo) first
-  try {
-    return await _fetchOpenMeteo(points);
-  } catch (primaryErr) {
-    console.warn('Open-Meteo failed, trying fallback:', primaryErr.message);
-    document.getElementById('loadingText').textContent = 'Primary API unavailable — trying fallback…';
-  }
-  // Fallback to Open-Elevation
+  // Try primary (Open-Elevation) first
   try {
     return await _fetchOpenElevation(points);
+  } catch (primaryErr) {
+    console.warn('Open-Elevation failed, trying fallback:', primaryErr.message);
+    document.getElementById('loadingText').textContent = 'Primary API unavailable — trying fallback…';
+  }
+  // Fallback to Open-Meteo
+  try {
+    return await _fetchOpenMeteo(points);
   } catch (fallbackErr) {
     console.error('Fallback also failed:', fallbackErr.message);
     throw new Error(
       'Both elevation APIs failed.\n'
-      + 'Primary (Open-Meteo): rate limited or unreachable.\n'
-      + 'Fallback (Open-Elevation): ' + fallbackErr.message + '.\n\n'
+      + 'Primary (Open-Elevation): unreachable or unexpected response.\n'
+      + 'Fallback (Open-Meteo): ' + fallbackErr.message + '.\n\n'
       + 'Wait 30–60 seconds and try again, or check your connection.'
     );
   }
