@@ -671,10 +671,12 @@
     position: fixed;
     bottom: 0; left: 0; right: 0;
     height: 72px;
-    background: #f0f2f0;
-    border-top: 3px solid #3DFFA0;
-    box-shadow: 0 -4px 24px rgba(0,0,0,0.55);
+    background: rgba(13,17,23,0.98);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.7);
     z-index: 2000;
+    gap: 0;
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .mob-tab {
     flex: 1;
@@ -682,21 +684,44 @@
     align-items: center; justify-content: center;
     gap: 5px;
     background: none; border: none;
-    color: #555e58;
+    color: var(--muted);
     font-family: 'Barlow', sans-serif;
-    font-size: 12px; font-weight: 800;
-    letter-spacing: 0.06em; text-transform: uppercase;
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.15s, color 0.15s;
+    transition: color 0.15s, background 0.15s;
     padding: 0;
+    position: relative;
     -webkit-tap-highlight-color: transparent;
   }
-  .mob-tab-icon { font-size: 22px; line-height: 1; }
-  .mob-tab.active {
-    color: #0a7a47;
-    background: rgba(61,255,160,0.18);
+  .mob-tab::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 12%; right: 12%; height: 2px;
+    background: transparent;
+    border-radius: 0 0 3px 3px;
+    transition: background 0.15s;
   }
-  .mob-tab + .mob-tab { border-left: 1px solid #cdd1cd; }
+  .mob-tab.active {
+    color: #3DFFA0;
+    background: rgba(61,255,160,0.06);
+  }
+  .mob-tab.active::before {
+    background: #3DFFA0;
+  }
+  .mob-tab + .mob-tab {
+    border-left: 1px solid var(--border);
+  }
+  .mob-tab-icon {
+    width: 24px; height: 24px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mob-tab-icon svg {
+    width: 22px; height: 22px;
+    stroke-width: 1.8;
+    transition: stroke 0.15s;
+  }
+  .mob-tab .tab-label { line-height: 1; }
 
 
   /* ── GRID SQUARE LOOKUP ── */
@@ -978,7 +1003,7 @@
     <div class="panel">
 
       <!-- Map click mode -->
-      <div class="section">
+      <div class="section" id="mapClickSection">
         <div class="section-title">Map Click — Place Sites</div>
         <div class="mapclick-bar">
           <span class="mapclick-label">📍 Click sets</span>
@@ -991,14 +1016,14 @@
 
       <!-- Site A -->
       <div class="section">
-        <div class="section-title">Site A — Transmitter</div>
+        <div class="section-title">Site A — Your Station</div>
         <div class="site-block">
           <div class="site-header">
             <div class="site-dot site-dot-a"></div>
             <span class="site-label label-a">Site Alpha</span>
           </div>
           <div class="action-row">
-            <button class="icon-btn" id="gpsA" onclick="useMyLocation('a')">🎯 My Location</button>
+            <button class="icon-btn" id="gpsA" onclick="useMyLocation('a')">🎯 Use My GPS</button>
             <button class="icon-btn" id="mapBtnA" onclick="setMapMode('a')">🗺 Pick on Map</button>
           </div>
           <div class="address-row">
@@ -1024,7 +1049,7 @@
 
       <!-- Site B -->
       <div class="section">
-        <div class="section-title">Site B — Receiver</div>
+        <div class="section-title">Site B — Targeted Contact</div>
         <div class="site-block">
           <div class="site-header">
             <div class="site-dot site-dot-b"></div>
@@ -1034,7 +1059,7 @@
           <!-- Mode toggle -->
           <div class="site-mode-row">
             <button class="site-mode-btn mode-active" id="siteBModeManual" onclick="setSiteBMode('manual')">
-              📍 Manual
+              📍 Address
             </button>
             <button class="site-mode-btn" id="siteBModeRepeater" onclick="setSiteBMode('repeater')">
               📡 Repeater
@@ -1050,7 +1075,7 @@
           <!-- Manual entry (default) -->
           <div id="siteBManual">
             <div class="action-row">
-              <button class="icon-btn" id="gpsB" onclick="useMyLocation('b')">🎯 My Location</button>
+              <button class="icon-btn" id="gpsB" onclick="useMyLocation('b')">🎯 Use My GPS</button>
               <button class="icon-btn" id="mapBtnB" onclick="setMapMode('b')">🗺 Pick on Map</button>
             </div>
             <div class="address-row">
@@ -1165,6 +1190,29 @@
             <input type="number" id="heightB" value="33" min="0" max="1640" step="1" style="margin-top:5px;">
           </div>
         </div>
+        <p class="info-note" style="margin-top:10px; font-size:12px; opacity:0.6;">Repeater location lookup powered by <a href="https://www.repeaterbook.com" target="_blank" style="color:var(--accent-a);text-decoration:none;">RepeaterBook.com</a>. Lat/long data not guaranteed to be accurate.</p>
+      </div>
+
+
+      <!-- Frequency Band (above Calculate) -->
+      <div class="section">
+        <div class="section-title">RF Band</div>
+        <div class="freq-bar">
+          <span class="freq-label">📻 Band</span>
+          <button class="freq-opt" id="fVLow"  onclick="setFreqBand('vhf-low')"  title="VHF Low: 30–88 MHz">VHF Lo</button>
+          <button class="freq-opt freq-sel" id="fVHigh" onclick="setFreqBand('vhf-high')" title="VHF High: 136–174 MHz">VHF Hi</button>
+          <button class="freq-opt" id="fULow"  onclick="setFreqBand('uhf-low')"  title="UHF Low: 400–512 MHz">UHF Lo</button>
+          <button class="freq-opt" id="fUHigh" onclick="setFreqBand('uhf-high')" title="UHF High: 700–900 MHz">UHF Hi</button>
+        </div>
+        <p class="info-note" id="freqDesc">VHF High (136–174 MHz) · λ≈1.8 m</p>
+      </div>
+
+      <!-- Calculate -->
+      <div class="section">
+        <button class="calc-btn" id="calcBtn" onclick="runAnalysis()">
+          <span>⚡</span> Calculate Line of Sight
+        </button>
+        <p class="tip">Drag markers · click map · enter address · or use GPS</p>
       </div>
 
       <!-- Link Budget -->
@@ -1172,14 +1220,14 @@
         <div class="lb-header" onclick="toggleLinkBudget()" title="Expand / collapse">
           <div style="display:flex;flex-direction:column;gap:4px;">
             <div class="section-title" style="margin:0;">⚡ Transmitter Power / Antenna Gain</div>
-            <div class="lb-sub" id="lbCollapsedPeek" style="margin:0;opacity:0.7;">📡 My Station — Transmitter (Site A)</div>
+            <div class="lb-sub" id="lbCollapsedPeek" style="margin:0;opacity:0.7;">📡 Your Station — Transmitter</div>
           </div>
           <span class="lb-toggle-icon" id="lbToggleIcon">▼ EXPAND</span>
         </div>
         <div class="lb-body" id="lbBody" style="display:none;">
 
           <!-- ── TRANSMITTER (Site A) ── -->
-          <div class="lb-sub">📡 My Station — Transmitter (Site A)</div>
+          <div class="lb-sub">📡 Your Station — Transmitter</div>
 
           <!-- TX Power -->
           <div class="lb-row">
@@ -1265,26 +1313,6 @@
         </div><!-- /lb-body -->
       </div>
 
-      <!-- Calculate -->
-      <div class="section">
-        <button class="calc-btn" id="calcBtn" onclick="runAnalysis()">
-          <span>⚡</span> Calculate Line of Sight
-        </button>
-        <p class="tip">Drag markers · click map · enter address · or use GPS</p>
-      </div>
-
-      <!-- Frequency Band -->
-      <div class="section">
-        <div class="section-title">RF Band</div>
-        <div class="freq-bar">
-          <span class="freq-label">📻 Band</span>
-          <button class="freq-opt" id="fVLow"  onclick="setFreqBand('vhf-low')"  title="VHF Low: 30–88 MHz">VHF Lo</button>
-          <button class="freq-opt freq-sel" id="fVHigh" onclick="setFreqBand('vhf-high')" title="VHF High: 136–174 MHz">VHF Hi</button>
-          <button class="freq-opt" id="fULow"  onclick="setFreqBand('uhf-low')"  title="UHF Low: 400–512 MHz">UHF Lo</button>
-          <button class="freq-opt" id="fUHigh" onclick="setFreqBand('uhf-high')" title="UHF High: 700–900 MHz">UHF Hi</button>
-        </div>
-        <p class="info-note" id="freqDesc">VHF High (136–174 MHz) · λ≈1.8 m</p>
-      </div>
 
       <!-- Results -->
       <div class="section" id="resultsSection" style="display:none;">
@@ -1409,6 +1437,7 @@
         </div>
       </div>
       <canvas id="elevChart"></canvas>
+      <p class="info-note" style="text-align:center; font-size:12px; opacity:0.5; margin-top:6px; padding:0 8px;">Tap / Click and hold along the RF path to view additional location elevation data.</p>
     </div>
 
     <!-- Mobile-only results pane: shown below chart in Results tab -->
@@ -1419,16 +1448,28 @@
   <!-- Mobile tab bar (hidden on desktop via CSS) -->
   <div class="mob-tabbar" id="mobTabbar">
     <button class="mob-tab active" id="mobTabControls" onclick="switchMobileTab('controls')">
-      <span class="mob-tab-icon">⚙️</span>
-      Controls
+      <span class="mob-tab-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </span>
+      <span class="tab-label">Controls</span>
     </button>
     <button class="mob-tab" id="mobTabMap" onclick="switchMobileTab('map')">
-      <span class="mob-tab-icon">🗺️</span>
-      Map
+      <span class="mob-tab-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>
+        </svg>
+      </span>
+      <span class="tab-label">Map</span>
     </button>
     <button class="mob-tab" id="mobTabResults" onclick="switchMobileTab('results')">
-      <span class="mob-tab-icon">📈</span>
-      Results
+      <span class="mob-tab-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+      </span>
+      <span class="tab-label">Results</span>
     </button>
   </div>
 </div><!-- /app-shell -->
@@ -1461,6 +1502,10 @@ function applyMobileLayout() {
 
   // Show tab bar first
   tabbar.style.display = 'flex';
+
+  // Hide map click widget — not useful when map is on separate tab
+  const mapClickSection = document.getElementById('mapClickSection');
+  if (mapClickSection) mapClickSection.style.display = 'none';
 
   // Compact header
   const safeTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('padding-top')) || 0;
@@ -2049,7 +2094,7 @@ async function useMyLocation(site) {
   btn.textContent = '⏳ …';
   setAddrStatus(site, 'Requesting position — check for a browser prompt…', 'inf');
 
-  const reset = () => { btn.disabled = false; btn.textContent = '🎯 My Location'; };
+  const reset = () => { btn.disabled = false; btn.textContent = '🎯 Use My GPS'; };
 
   navigator.geolocation.getCurrentPosition(
     pos => {
