@@ -1338,20 +1338,16 @@
 
   <!-- Mobile tab bar (hidden on desktop via CSS) -->
   <div class="mob-tabbar" id="mobTabbar">
-    <button class="mob-tab active" id="mobTabMap" onclick="switchMobileTab('map')">
-      <span class="mob-tab-icon">🗺️</span>
-      Map
-    </button>
-    <button class="mob-tab" id="mobTabProfile" onclick="switchMobileTab('profile')">
-      <span class="mob-tab-icon">📈</span>
-      RF Path
-    </button>
-    <button class="mob-tab" id="mobTabControls" onclick="switchMobileTab('controls')">
+    <button class="mob-tab active" id="mobTabControls" onclick="switchMobileTab('controls')">
       <span class="mob-tab-icon">⚙️</span>
       Controls
     </button>
+    <button class="mob-tab" id="mobTabMap" onclick="switchMobileTab('map')">
+      <span class="mob-tab-icon">🗺️</span>
+      Map
+    </button>
     <button class="mob-tab" id="mobTabResults" onclick="switchMobileTab('results')">
-      <span class="mob-tab-icon">📊</span>
+      <span class="mob-tab-icon">📈</span>
       Results
     </button>
   </div>
@@ -1412,7 +1408,7 @@ function applyMobileLayout() {
     grid-template-rows: unset !important;
   `;
 
-  // All three content panes — map & panel fill full mainH, chart capped to landscape ratio
+  // All three content panes — map fills full mainH, results tab stacks chart+panel vertically
   const pane = 'position:absolute !important; top:0; left:0; right:0; bottom:0;';
 
   // Cap chart height so it stays landscape on portrait phones (screen-width × 0.68)
@@ -1420,12 +1416,15 @@ function applyMobileLayout() {
   window._mobChartH = Math.round(Math.min(mainH, window.innerWidth * 0.68));
 
   mapWrap.style.cssText   = pane + ' display:block !important; overflow:hidden;';
+  // Chart sits at top of results tab, fixed height
   chartWrap.style.cssText = `position:absolute !important; top:0; left:0; right:0;
     height:${window._mobChartH}px !important;
-    display:none !important; flex-direction:column; background:var(--surface);`;
+    display:none !important; flex-direction:column; background:var(--surface); z-index:4;`;
+  // Panel scrolls below the chart in results tab, or fills full height in controls tab
   panel.style.cssText     = pane + ` display:none !important;
     overflow-y:auto !important; overflow-x:hidden !important;
-    -webkit-overflow-scrolling:touch; background:var(--surface); z-index:5;`;
+    -webkit-overflow-scrolling:touch; background:var(--surface); z-index:3;
+    padding-top:0;`;
 
   // Compact chart header for RF Path tab
   const chartHeader = document.querySelector('.chart-header');
@@ -1481,10 +1480,22 @@ function _applyMobTab(tab) {
       }
     }, 80);
 
-  } else if (tab === 'profile') {
+  } else if (tab === 'controls') {
+    panel.style.display = 'block';
+    panel.style.top = '0';
+    panel.scrollTop = 0;
+
+  } else if (tab === 'results') {
+    // Results tab shows chart on top, results section scrollable below
     chartWrap.style.display = 'flex';
-    // Double rAF ensures browser has completed layout before we measure canvas
-    // Uses chartData (always set after analysis) not chartState (null if canvas was hidden)
+    panel.style.display = 'block';
+    panel.style.top = (window._mobChartH || 0) + 'px';
+    // Scroll panel to results section
+    setTimeout(() => {
+      const rs = document.getElementById('resultsSection');
+      if (rs) rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 60);
+    // Redraw chart now that canvas is visible
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (typeof chartData !== 'undefined' && chartData) {
@@ -1493,17 +1504,6 @@ function _applyMobTab(tab) {
         }
       });
     });
-
-  } else if (tab === 'controls') {
-    panel.style.display = 'block';
-    panel.scrollTop = 0;
-
-  } else if (tab === 'results') {
-    panel.style.display = 'block';
-    setTimeout(() => {
-      const rs = document.getElementById('resultsSection');
-      if (rs) rs.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }, 60);
   }
 }
 
@@ -2908,6 +2908,9 @@ async function _doAnalysis() {
     document.getElementById('losIcon').textContent  = grade.icon;
     document.getElementById('losTitle').textContent = grade.label;
     document.getElementById('losDesc').textContent  = grade.desc;
+
+    // Auto-switch to Results tab on mobile after calculate
+    if (isMobile()) switchMobileTab('results');
 
     // ── Header badge ──
     const badge = document.getElementById('headerBadge');
