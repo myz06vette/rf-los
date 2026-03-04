@@ -156,7 +156,7 @@
     width:100%; background:var(--bg); border:1px solid var(--border);
     border-radius:5px; color:var(--text);
     font-family:'Share Tech Mono',monospace; font-size:14px;
-    padding:9px 40px 9px 12px; outline:none; transition:border-color 0.2s;
+    padding:9px 70px 9px 12px; outline:none; transition:border-color 0.2s;
   }
   .address-row input[type="text"]::placeholder { color:var(--muted); opacity:0.55; }
   .address-row input[type="text"]:focus { border-color:#3DFFA0; }
@@ -167,6 +167,14 @@
     line-height:1;
   }
   .addr-btn:hover { color:var(--text); }
+  .addr-clear {
+    position:absolute; right:36px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:var(--muted);
+    cursor:pointer; font-size:15px; padding:3px 6px; transition:color 0.15s;
+    line-height:1; opacity:0; pointer-events:none; transition:opacity 0.15s, color 0.15s;
+  }
+  .addr-clear.visible { opacity:1; pointer-events:auto; }
+  .addr-clear:hover { color:#ff6b35; }
   .addr-status {
     font-size:14px; font-family:'Share Tech Mono',monospace;
     color:var(--muted); min-height:18px; margin-bottom:11px;
@@ -938,7 +946,8 @@
             <button class="icon-btn" id="mapBtnA" onclick="setMapMode('a')">🗺 Pick on Map</button>
           </div>
           <div class="address-row">
-            <input type="text" id="addrA" name="siteA-address" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('a')">
+            <input type="text" id="addrA" name="siteA-address" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('a')" oninput="updateAddrClear('a')">
+            <button class="addr-clear" id="addrClearA" onclick="clearAddr('a')" title="Clear">✕</button>
             <button class="addr-btn" onclick="geocode('a')" title="Search">🔍</button>
           </div>
           <div class="addr-status" id="addrStatusA"></div>
@@ -989,7 +998,8 @@
               <button class="icon-btn" id="mapBtnB" onclick="setMapMode('b')">🗺 Pick on Map</button>
             </div>
             <div class="address-row">
-              <input type="text" id="addrB" name="siteB-address" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('b')">
+              <input type="text" id="addrB" name="siteB-address" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('b')" oninput="updateAddrClear('b')">
+              <button class="addr-clear" id="addrClearB" onclick="clearAddr('b')" title="Clear">✕</button>
               <button class="addr-btn" onclick="geocode('b')" title="Search">🔍</button>
             </div>
             <div class="addr-status" id="addrStatusB"></div>
@@ -1578,32 +1588,39 @@ window.addEventListener('resize', () => {
   }
 });
 
+// ── Address clear buttons ──
+function updateAddrClear(site) {
+  const val = document.getElementById('addr' + site.toUpperCase()).value;
+  const btn = document.getElementById('addrClear' + site.toUpperCase());
+  if (btn) btn.classList.toggle('visible', val.length > 0);
+}
+
+function clearAddr(site) {
+  const S = site.toUpperCase();
+  document.getElementById('addr' + S).value = '';
+  const btn = document.getElementById('addrClear' + S);
+  if (btn) btn.classList.remove('visible');
+  setAddrStatus(site, '', '');
+}
+
 // ── Prevent Chrome autofill cross-field bleed ──
-// Chrome treats both address fields as part of the same form and fills
-// them simultaneously when the user picks from autocomplete in Site A.
-// Fix: track whether the user is actively focused in addrB.
-// If addrB's value changes while the user is NOT focused in it,
-// that's an autofill bleed — clear it immediately.
+// When user selects autocomplete in addrA, Chrome also fills addrB.
+// If addrB receives an input event while addrA is focused = bleed. Clear it.
 (function() {
   const a = document.getElementById('addrA');
   const b = document.getElementById('addrB');
   if (!a || !b) return;
-
-  let bHasFocus = false;
-  let bLastValue = b.value;
-
-  b.addEventListener('focus', () => { bHasFocus = true; bLastValue = b.value; });
-  b.addEventListener('blur',  () => { bHasFocus = false; bLastValue = b.value; });
-
-  // Poll for unexpected changes to addrB while it's not focused
-  setInterval(() => {
-    if (!bHasFocus && b.value !== bLastValue) {
-      // Value changed without user interaction — autofill bleed
-      b.value = '';
-      bLastValue = '';
+  let aFocused = false;
+  a.addEventListener('focus', () => { aFocused = true; });
+  a.addEventListener('blur',  () => { setTimeout(() => { aFocused = false; }, 200); });
+  b.addEventListener('input', () => {
+    if (aFocused) {
+      setTimeout(() => { b.value = ''; updateAddrClear('b'); }, 0);
     }
-  }, 100);
+  });
 })();
+
+// ── Mobile keyboard: scroll focused input into view after keyboard opens ──
 // Uses visualViewport API where available (most modern mobile browsers).
 // Falls back to a simple focus+delay scroll.
 if (window.visualViewport) {
@@ -1611,13 +1628,11 @@ if (window.visualViewport) {
     if (!isMobile()) return;
     const el = document.activeElement;
     if (!el || !['INPUT','TEXTAREA','SELECT'].includes(el.tagName)) return;
-    // Small delay lets the browser finish repositioning before we scroll
     setTimeout(() => {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   });
 } else {
-  // Fallback: attach focus listeners to all inputs in the panel
   document.querySelectorAll('.panel input, .panel select, .panel textarea').forEach(el => {
     el.addEventListener('focus', () => {
       if (!isMobile()) return;
