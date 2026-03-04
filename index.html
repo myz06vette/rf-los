@@ -3,7 +3,60 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>RF Line of Sight Calculator</title>
+
+<!-- Primary SEO -->
+<title>RF Line of Sight Calculator | Ham Radio & GMRS LOS Tool</title>
+<meta name="description" content="Free RF line-of-sight calculator for ham radio and GMRS operators. Enter two locations to get terrain elevation profile, Earth curvature correction, Fresnel zone clearance, diffraction loss, and full link budget analysis. Supports VHF/UHF bands, repeater lookup, and callsign search.">
+<meta name="keywords" content="RF line of sight calculator, ham radio line of sight, GMRS line of sight, VHF UHF LOS tool, terrain elevation profile, Fresnel zone calculator, knife edge diffraction, link budget calculator, RF path loss, repeater coverage tool, amateur radio LOS, N4MXB">
+<meta name="author" content="Mike Beauchamp N4MXB">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://myz06vette.github.io/rf-los/">
+
+<!-- Open Graph (Facebook, LinkedIn, Discord) -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://myz06vette.github.io/rf-los/">
+<meta property="og:title" content="RF Line of Sight Calculator — Ham Radio & GMRS LOS Tool">
+<meta property="og:description" content="Free RF line-of-sight calculator for ham radio and GMRS operators. Terrain elevation profile, Earth curvature, Fresnel zone, diffraction loss, and link budget — all in one place. No login required.">
+<meta property="og:image" content="https://myz06vette.github.io/rf-los/og-image.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="RF Line of Sight Calculator — Ham Radio & GMRS LOS Tool">
+<meta name="twitter:description" content="Free terrain-aware RF line-of-sight tool. VHF/UHF LOS analysis, Fresnel zone, diffraction loss, link budget. Built for ham radio and GMRS operators.">
+<meta name="twitter:image" content="https://myz06vette.github.io/rf-los/og-image.png">
+
+<!-- Mobile / PWA -->
+<meta name="theme-color" content="#0d1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RF LOS Tool">
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "RF Line of Sight Calculator",
+  "description": "Terrain-aware RF line-of-sight and link budget calculator for ham radio and GMRS operators. Features elevation profile, Earth curvature correction, Fresnel zone analysis, knife-edge diffraction, and repeater lookup.",
+  "url": "https://myz06vette.github.io/rf-los/",
+  "author": {
+    "@type": "Person",
+    "name": "Mike Beauchamp",
+    "identifier": "N4MXB"
+  },
+  "applicationCategory": "UtilitiesApplication",
+  "operatingSystem": "Any",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "keywords": "ham radio, GMRS, line of sight, RF propagation, link budget, VHF, UHF, Fresnel zone, terrain analysis"
+}
+</script>
+
+<link rel="icon" type="image/png" href="data:image/png;base64,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">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
