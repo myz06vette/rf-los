@@ -2,6 +2,8 @@ How to Use Mike’s RF Line of Sight Tool
 
 Live Link: https://myz06vette.github.io/rf-los/
 
+Android Version 1.0 available as of 3/4/26, .apk is available in files. Play Store launch to come... 
+
 Site A: The transmitting station. You can use the browser to fetch your current location, enter an address manually, or pick a location on the map using the mouse. You can also provide latitude / longitude coordinates. In addition, you can set your antenna height above ground. 
 
 Site B: The receiving station. There are several options here for lookup, and where I think the real power in the tool lies. You may not always have lat/long like other LOS tools. You may just have a ham call sign. Or a grid square. Or, you may want to see the RF path between you and a local repeater to troubleshoot link quality. All of these options are available. In addition, you can also set the receiving antenna height above ground.
