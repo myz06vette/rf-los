@@ -1579,15 +1579,31 @@ window.addEventListener('resize', () => {
 });
 
 // ── Prevent Chrome autofill cross-field bleed ──
-// Setting autocomplete="off" at parse time is ignored by Chrome.
-// Setting it dynamically on focus after the page loads is respected.
-// This preserves the browser's per-field suggestion dropdown while
-// preventing Chrome from pushing one field's autofill into the other.
-['addrA', 'addrB'].forEach(id => {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.addEventListener('focus', () => { el.setAttribute('autocomplete', 'off'); }, { once: false });
-});
+// Chrome treats both address fields as part of the same form and fills
+// them simultaneously when the user picks from autocomplete in Site A.
+// Fix: track whether the user is actively focused in addrB.
+// If addrB's value changes while the user is NOT focused in it,
+// that's an autofill bleed — clear it immediately.
+(function() {
+  const a = document.getElementById('addrA');
+  const b = document.getElementById('addrB');
+  if (!a || !b) return;
+
+  let bHasFocus = false;
+  let bLastValue = b.value;
+
+  b.addEventListener('focus', () => { bHasFocus = true; bLastValue = b.value; });
+  b.addEventListener('blur',  () => { bHasFocus = false; bLastValue = b.value; });
+
+  // Poll for unexpected changes to addrB while it's not focused
+  setInterval(() => {
+    if (!bHasFocus && b.value !== bLastValue) {
+      // Value changed without user interaction — autofill bleed
+      b.value = '';
+      bLastValue = '';
+    }
+  }, 100);
+})();
 // Uses visualViewport API where available (most modern mobile browsers).
 // Falls back to a simple focus+delay scroll.
 if (window.visualViewport) {
