@@ -29,13 +29,14 @@
     background: var(--bg);
     color: var(--text);
     overflow: hidden;
-    padding-top: env(safe-area-inset-top);
     background-color: rgba(13,17,23,0.97);
   }
 
   body::before {
     content: '';
-    position: fixed; inset: 0;
+    position: fixed;
+    top: env(safe-area-inset-top);
+    left: 0; right: 0; bottom: 0;
     background-image:
       linear-gradient(var(--grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid) 1px, transparent 1px);
@@ -47,6 +48,7 @@
   .header {
     position: relative; z-index: 20;
     padding: 16px 28px;
+    padding-top: calc(16px + env(safe-area-inset-top));
     border-bottom: 1px solid var(--border);
     background: rgba(13,17,23,0.97);
     backdrop-filter: blur(10px);
@@ -61,9 +63,13 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .header h1 { font-size: 26px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
-  .header p  { font-size: 20px; color: var(--muted); font-family: 'Share Tech Mono', monospace; }
+  .header h1 { font-size: 20px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+  .header p  { font-size: 14px; color: var(--muted); font-family: 'Share Tech Mono', monospace; }
   .status-badge { display: none; }
+  @media (max-width: 768px) {
+    .header h1 { font-size: 28px; }
+    .header p  { font-size: 20px; }
+  }
   .badge {
     padding: 5px 14px; border-radius: 5px; border: 1px solid;
     font-family: 'Share Tech Mono', monospace; font-size: 14px;
