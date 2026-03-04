@@ -1603,6 +1603,8 @@ const geoCache      = {};
 // Debounce guard: collapses rapid consecutive runAnalysis() calls into one
 let _analysisTimer   = null;
 let _analysisRunning = false;
+let _siteBMode   = 'manual';  // 'manual' | 'repeater' | 'licensee' | 'grid'
+let _siteBCoords = null;      // { lat, lng } set by lookup; null = use input fields
 
 // Elevation cache: keyed by "latA,lngA,latB,lngB" rounded to 4dp
 // Same two endpoints = same 100 elevation samples; no need to re-fetch.
@@ -2838,14 +2840,17 @@ async function _doAnalysis() {
   // Run sequentially (not parallel) to avoid duplicate API calls and
   // to keep the second geocode from firing a re-entrant runAnalysis.
   await geocodeIfPending('a');
-  // Only attempt to geocode site B from the address field when manual mode is active.
-  // In repeater / licensee / grid modes the addrB field is hidden but may still contain
-  // stale text from a previous manual entry — geocoding it would overwrite the coords
-  // that were already set by the lookup.
+  // For non-manual Site B modes, use _siteBCoords (set by repeater/licensee/grid lookup)
+  // rather than reading DOM inputs, which could be stale or overwritten.
+  // For manual mode, fall through to geocodeIfPending and getCoords as normal.
   const siteBIsManual = document.getElementById('siteBModeManual')?.classList.contains('mode-active');
   if (siteBIsManual) await geocodeIfPending('b');
 
-  const a = getCoords('a'), b = getCoords('b');
+  const a = getCoords('a');
+  // For non-manual modes, prefer the authoritatively-set _siteBCoords over DOM inputs
+  const b = (!siteBIsManual && _siteBCoords)
+    ? _siteBCoords
+    : getCoords('b');
   if (isNaN(a.lat)||isNaN(a.lng)||isNaN(b.lat)||isNaN(b.lng)) {
     _analysisRunning = false; return;
   }
@@ -3342,6 +3347,8 @@ function _checkProxyConfig() {
 
 // Toggle Site B between Manual and Repeater modes
 function setSiteBMode(mode) {
+  _siteBMode = mode;
+  _siteBCoords = null;
   const manual   = document.getElementById('siteBManual');
   const repeater = document.getElementById('siteBRepeater');
   const licensee = document.getElementById('siteBLicensee');
@@ -3387,12 +3394,14 @@ function renderRepeaterCard(r) {
   _rptrSelected = r;
 
   // Populate lat/lng
-  document.getElementById('latB').value = parseFloat(r.Lat).toFixed(5);
-  document.getElementById('lngB').value = parseFloat(r.Long).toFixed(5);
+  const rLat = parseFloat(r.Lat), rLng = parseFloat(r.Long);
+  document.getElementById('latB').value = rLat.toFixed(5);
+  document.getElementById('lngB').value = rLng.toFixed(5);
+  _siteBCoords = { lat: rLat, lng: rLng };
 
   // Update marker
   if (typeof markerB !== 'undefined' && markerB) {
-    markerB.setLatLng([parseFloat(r.Lat), parseFloat(r.Long)]);
+    markerB.setLatLng([rLat, rLng]);
   }
 
   // Auto-set frequency band
@@ -3613,6 +3622,7 @@ async function lookupLicensee() {
       const lon = parseFloat(data.lon);
       document.getElementById('latB').value = lat.toFixed(5);
       document.getElementById('lngB').value = lon.toFixed(5);
+      _siteBCoords = { lat, lng: lon };
       if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lon]);
       const noteText = data.grid
         ? `📍 FCC address geocoded · Grid: ${data.grid}`
@@ -3649,6 +3659,7 @@ async function geocodeLicenseeAddress(addrStr, callsign) {
     const lat = cand.location.y, lon = cand.location.x;
     document.getElementById('latB').value = lat.toFixed(5);
     document.getElementById('lngB').value = lon.toFixed(5);
+    _siteBCoords = { lat, lng: lon };
     if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lon]);
     noteEl.textContent = `📍 Geocoded from address (${addrStr})`;
     document.getElementById('addrStatusBLicensee').textContent = '';
@@ -3753,6 +3764,7 @@ function lookupGridSquare() {
   // Update coordinates
   document.getElementById('latB').value = lat.toFixed(5);
   document.getElementById('lngB').value = lng.toFixed(5);
+  _siteBCoords = { lat, lng };
   if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lng]);
 
   // Populate card
