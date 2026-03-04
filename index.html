@@ -55,15 +55,6 @@
     display: flex; align-items: center; gap: 20px;
     flex-shrink: 0;
   }
-  /* Fill the safe-area gap above the header with the same background */
-  .header::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: env(safe-area-inset-top);
-    background: rgba(13,17,23,0.97);
-    z-index: 21;
-  }
   .header-icon {
     width: 48px; height: 48px;
     background: rgba(61,255,160,0.06);
