@@ -1621,27 +1621,40 @@ function clearAddr(site) {
 })();
 
 // ── Mobile keyboard: scroll focused input into view after keyboard opens ──
-// Uses visualViewport API where available (most modern mobile browsers).
-// Falls back to a simple focus+delay scroll.
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', () => {
-    if (!isMobile()) return;
+// Only scrolls if the element is actually hidden below the keyboard.
+// Debounced so it fires once after the keyboard finishes animating, not
+// on every intermediate resize tick.
+(function() {
+  if (!isMobile()) return;
+  let _kbTimer = null;
+
+  function scrollIfObscured() {
     const el = document.activeElement;
-    if (!el || !['INPUT','TEXTAREA','SELECT'].includes(el.tagName)) return;
-    setTimeout(() => {
+    if (!el || !['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)) return;
+    const rect = el.getBoundingClientRect();
+    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+    // Only scroll if the bottom of the input is below the visible area
+    if (rect.bottom > vh - 16) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
-  });
-} else {
-  document.querySelectorAll('.panel input, .panel select, .panel textarea').forEach(el => {
-    el.addEventListener('focus', () => {
+    }
+  }
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
       if (!isMobile()) return;
-      setTimeout(() => {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 400);
+      clearTimeout(_kbTimer);
+      _kbTimer = setTimeout(scrollIfObscured, 150);
     });
+  }
+
+  // Also trigger on focus with a delay long enough for keyboard to open
+  document.addEventListener('focusin', e => {
+    if (!isMobile()) return;
+    if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+    clearTimeout(_kbTimer);
+    _kbTimer = setTimeout(scrollIfObscured, 400);
   });
-}
+})();
 
 
 </script>
