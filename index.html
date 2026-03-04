@@ -32,7 +32,6 @@
     font-family: 'Barlow', sans-serif;
     color: var(--text);
     overflow: hidden;
-    padding-top: env(safe-area-inset-top);
   }
 
   body {
@@ -1411,14 +1410,15 @@ function applyMobileLayout() {
   tabbar.style.display = 'flex';
 
   // Compact header
-  header.style.padding = '8px 12px';
+  const safeTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('padding-top')) || 0;
+  header.style.padding = `calc(8px + env(safe-area-inset-top)) 12px 8px 12px`;
   header.style.gap     = '10px';
   const h1  = header.querySelector('h1');
   const hp  = header.querySelector('p');
   const ico = header.querySelector('.header-icon');
   const svg = ico ? ico.querySelector('svg') : null;
-  if (h1)  h1.style.fontSize   = '13px';
-  if (hp)  hp.style.fontSize   = '10px';
+  if (h1)  h1.style.fontSize   = '22px';
+  if (hp)  hp.style.fontSize   = '16px';
   if (ico) { ico.style.width = '34px'; ico.style.height = '34px'; }
   if (svg) { svg.setAttribute('width','22'); svg.setAttribute('height','22'); }
 
