@@ -1620,39 +1620,50 @@ function clearAddr(site) {
   });
 })();
 
-// ── Mobile keyboard: scroll focused input into view after keyboard opens ──
-// Only scrolls if the element is actually hidden below the keyboard.
-// Debounced so it fires once after the keyboard finishes animating, not
-// on every intermediate resize tick.
+// ── Mobile keyboard: only scroll if input is genuinely obscured ──
+// Snapshot the field's position at focus time (before keyboard opens).
+// After the keyboard finishes animating, check if it's actually hidden.
+// If already visible — do nothing.
 (function() {
-  if (!isMobile()) return;
+  if (!window.visualViewport) return;
+
+  let _focusedEl = null;
+  let _preKeyboardVH = window.visualViewport.height;
   let _kbTimer = null;
 
-  function scrollIfObscured() {
-    const el = document.activeElement;
-    if (!el || !['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName)) return;
-    const rect = el.getBoundingClientRect();
-    const vh = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    // Only scroll if the bottom of the input is below the visible area
-    if (rect.bottom > vh - 16) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
-
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      if (!isMobile()) return;
-      clearTimeout(_kbTimer);
-      _kbTimer = setTimeout(scrollIfObscured, 150);
-    });
-  }
-
-  // Also trigger on focus with a delay long enough for keyboard to open
   document.addEventListener('focusin', e => {
     if (!isMobile()) return;
     if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
+    _focusedEl = e.target;
+    _preKeyboardVH = window.visualViewport.height;
     clearTimeout(_kbTimer);
-    _kbTimer = setTimeout(scrollIfObscured, 400);
+  });
+
+  document.addEventListener('focusout', () => {
+    clearTimeout(_kbTimer);
+    _focusedEl = null;
+  });
+
+  window.visualViewport.addEventListener('resize', () => {
+    if (!isMobile()) return;
+    clearTimeout(_kbTimer);
+
+    const newVH = window.visualViewport.height;
+    const keyboardOpened = newVH < _preKeyboardVH - 80; // keyboard adds >80px
+    if (!keyboardOpened) return; // keyboard closing or unrelated resize — do nothing
+
+    if (!_focusedEl) return;
+
+    _kbTimer = setTimeout(() => {
+      const el = _focusedEl;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const vp = window.visualViewport.height;
+      // Only scroll if the field bottom is actually below the keyboard top
+      if (rect.bottom > vp - 16) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }, 150);
   });
 })();
 
