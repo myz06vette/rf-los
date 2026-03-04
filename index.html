@@ -2838,7 +2838,12 @@ async function _doAnalysis() {
   // Run sequentially (not parallel) to avoid duplicate API calls and
   // to keep the second geocode from firing a re-entrant runAnalysis.
   await geocodeIfPending('a');
-  await geocodeIfPending('b');
+  // Only attempt to geocode site B from the address field when manual mode is active.
+  // In repeater / licensee / grid modes the addrB field is hidden but may still contain
+  // stale text from a previous manual entry — geocoding it would overwrite the coords
+  // that were already set by the lookup.
+  const siteBIsManual = document.getElementById('siteBModeManual')?.classList.contains('mode-active');
+  if (siteBIsManual) await geocodeIfPending('b');
 
   const a = getCoords('a'), b = getCoords('b');
   if (isNaN(a.lat)||isNaN(a.lng)||isNaN(b.lat)||isNaN(b.lng)) {
