@@ -1477,14 +1477,14 @@ function _applyMobTab(tab) {
   const activeBtn = document.getElementById(btnId);
   if (activeBtn) activeBtn.classList.add('active');
 
-  // Hide all panes first
-  mapWrap.style.display    = 'none';
-  chartWrap.style.display  = 'none';
-  panel.style.display      = 'none';
-  if (resultsPane) resultsPane.style.display = 'none';
+  // Hide all panes first — use setProperty to ensure !important so stylesheet display:flex on .panel can't win
+  mapWrap.style.setProperty('display', 'none', 'important');
+  chartWrap.style.setProperty('display', 'none', 'important');
+  panel.style.setProperty('display', 'none', 'important');
+  if (resultsPane) resultsPane.style.setProperty('display', 'none', 'important');
 
   if (tab === 'map') {
-    mapWrap.style.display = 'block';
+    mapWrap.style.setProperty('display', 'block', 'important');
     setTimeout(() => {
       if (typeof map !== 'undefined' && map) {
         map.invalidateSize();
@@ -1498,18 +1498,15 @@ function _applyMobTab(tab) {
     }, 80);
 
   } else if (tab === 'controls') {
-    panel.style.display = 'block';
+    panel.style.setProperty('display', 'block', 'important');
     panel.style.top = '0';
     panel.scrollTop = 0;
 
   } else if (tab === 'results') {
-    // Show chart at top
-    chartWrap.style.display = 'flex';
-    // Show results pane below chart only if it has content (calculation done)
+    chartWrap.style.setProperty('display', 'flex', 'important');
     if (resultsPane && resultsPane.children.length > 0) {
-      resultsPane.style.display = 'block';
+      resultsPane.style.setProperty('display', 'block', 'important');
     }
-    // Redraw chart
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         if (typeof chartData !== 'undefined' && chartData) {
