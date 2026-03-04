@@ -3452,10 +3452,22 @@ async function lookupRepeater() {
   try {
     const url  = `${REPEATER_PROXY}?callsign=${encodeURIComponent(callsign)}&type=${type}`;
     const resp = await fetch(url);
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-    const data = await resp.json();
+    const data = await resp.json().catch(() => null);
 
-    if (data.error) throw new Error(data.error);
+    if (!resp.ok) {
+      // Surface the actual upstream status if the worker captured it
+      const rbStatus = data?.rbStatus;
+      if (rbStatus === 403 || rbStatus === 429) {
+        throw new Error(`RepeaterBook blocked the request (HTTP ${rbStatus}) — try again in a moment`);
+      } else if (rbStatus === 503 || rbStatus === 502) {
+        throw new Error(`RepeaterBook is temporarily unavailable (HTTP ${rbStatus}) — try again shortly`);
+      } else if (rbStatus) {
+        throw new Error(`RepeaterBook returned HTTP ${rbStatus}`);
+      }
+      throw new Error(`Proxy error HTTP ${resp.status}`);
+    }
+
+    if (!data || data.error) throw new Error(data?.error || 'Empty response from proxy');
 
     const results = (data.results || []).filter(r =>
       r.Lat && r.Long && parseFloat(r.Lat) !== 0 && parseFloat(r.Long) !== 0
