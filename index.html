@@ -29,6 +29,8 @@
     background: var(--bg);
     color: var(--text);
     overflow: hidden;
+    padding-top: env(safe-area-inset-top);
+    background-color: rgba(13,17,23,0.97);
   }
 
   body::before {
@@ -45,7 +47,6 @@
   .header {
     position: relative; z-index: 20;
     padding: 16px 28px;
-    padding-top: calc(16px + env(safe-area-inset-top));
     border-bottom: 1px solid var(--border);
     background: rgba(13,17,23,0.97);
     backdrop-filter: blur(10px);
