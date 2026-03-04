@@ -1714,8 +1714,8 @@ function initMap() {
   markerA = L.marker(llA, { icon: ICON_A, draggable: true, title: 'Site A' }).addTo(map);
   markerB = L.marker(llB, { icon: ICON_B, draggable: true, title: 'Site B' }).addTo(map);
 
-  markerA.on('dragend', () => { copyMarkerToInputs('a'); runAnalysis(); });
-  markerB.on('dragend', () => { copyMarkerToInputs('b'); runAnalysis(); });
+  markerA.on('dragend', () => { copyMarkerToInputs('a'); });
+  markerB.on('dragend', () => { copyMarkerToInputs('b'); });
 
   map.on('click', e => {
     if (mapClickMode === 'off') return;
@@ -1723,7 +1723,6 @@ function initMap() {
     syncMarkerFromInputs(mapClickMode);
     dropGhost();
     setMapMode('off');
-    runAnalysis();
   });
 
   map.on('mousemove', e => {
@@ -1736,8 +1735,9 @@ function initMap() {
   map.on('mouseout', dropGhost);
 
   // ── Auto-center on user location at first load ──────────────────────────
-  // If geolocation is available and granted, move both markers to user's
-  // location and zoom in. Silently falls back to US-center if denied/unavailable.
+  // If geolocation is available and granted, move Site A marker to user's
+  // location and zoom in. Site B is left at its default until the user sets it.
+  // Silently falls back to US-center if denied/unavailable.
   if ('geolocation' in navigator) {
     navigator.geolocation.getCurrentPosition(
       pos => {
@@ -1747,14 +1747,8 @@ function initMap() {
         document.getElementById('latA').value = lat.toFixed(5);
         document.getElementById('lngA').value = lng.toFixed(5);
         markerA.setLatLng([lat, lng]);
-        // Place Site B slightly northeast as a default second point
-        const latB = lat  + 0.05;
-        const lngB = lng  + 0.05;
-        document.getElementById('latB').value = latB.toFixed(5);
-        document.getElementById('lngB').value = lngB.toFixed(5);
-        markerB.setLatLng([latB, lngB]);
-        map.fitBounds(L.latLngBounds([lat, lng], [latB, lngB]).pad(0.5));
-        drawPlaceholderPath([lat, lng], [latB, lngB]);
+        // Zoom to Site A only — do not touch Site B
+        map.setView([lat, lng], 12);
       },
       _err => {
         // Denied or unavailable — US-center defaults already set above
@@ -1905,7 +1899,6 @@ async function useMyLocation(site) {
       map.setView([lat, lng], Math.max(map.getZoom(), 14));
       setAddrStatus(site, `✓ Located · ±${Math.round(accuracy)} m accuracy`, 'ok');
       reset();
-      runAnalysis();
     },
     err => {
       const msgs = {
@@ -2044,7 +2037,6 @@ function applyGeocode(site, result, silent = false) {
   syncMarkerFromInputs(site);
   setAddrStatus(site, '✓ ' + result.label, 'ok');
   map.setView([result.lat, result.lng], Math.max(map.getZoom(), 13));
-  if (!silent) runAnalysis();
 }
 
 // Geocode a site only if its address field has unconfirmed text.
@@ -2169,8 +2161,32 @@ function setFreqBand(band) {
   document.getElementById(map_id[band]).classList.add('freq-sel');
   const fb = FREQ_BANDS[band];
   document.getElementById('freqDesc').textContent = `${fb.label} (${fb.range}) · λ≈${fb.lambda.toFixed(2)} m`;
-  // Re-run if we already have results
-  if (document.getElementById('resultsSection').style.display !== 'none') runAnalysis();
+  // If we have cached elevation results, re-run the math in-browser (no API call).
+  // The elevation data doesn't change — only the diffraction calculations do.
+  if (chartData) {
+    const { dists, terrain, losLine, blocked, points, D, hA, hB } = chartData;
+    const diffr   = computeDiffraction(dists, terrain, losLine, D, fb.lambda);
+    const grade   = linkGrade(diffr.nu, Math.min(...terrain.map((t,i) => losLine[i]-t)), blocked.some(Boolean));
+    const badge   = document.getElementById('headerBadge');
+    badge.className  = 'badge badge-'+grade.grade;
+    badge.textContent = grade.label;
+    document.getElementById('losCard').className = 'los-card los-'+grade.grade;
+    document.getElementById('losIcon').textContent  = grade.icon;
+    document.getElementById('losTitle').textContent = grade.label;
+    document.getElementById('losDesc').textContent  = grade.desc;
+    const nuStr   = diffr.nu.toFixed(2);
+    const lossStr = Math.abs(diffr.lossDb).toFixed(1);
+    const meterColors = { excellent:'#3DFFA0', good:'#3DFFA0', fair:'#ffe066', poor:'#ff6b35', unlikely:'#ff4444' };
+    const diffrInfoEl = document.getElementById('linkDiffraction');
+    const fillEl      = document.getElementById('linkMeterFill');
+    diffrInfoEl.innerHTML = `ν=${nuStr} · Est. diffraction loss: <strong style="color:${meterColors[grade.grade]}">${lossStr} dB</strong><br>`
+      + `Band: ${fb.label} (λ=${fb.lambda.toFixed(2)}m) · Worst obstacle: ${document.getElementById('statClear').textContent}`;
+    fillEl.style.width      = grade.pct + '%';
+    fillEl.style.background = meterColors[grade.grade];
+    renderLinkBudget(D, fb.freqMHz, diffr.lossDb, diffr.nu,
+                     terrain, dists, losLine, fb.lambda);
+    drawChart(dists, terrain, losLine, blocked, points);
+  }
 }
 
 // Knife-edge diffraction loss J(ν) per ITU-R P.526 approximation
@@ -3397,9 +3413,7 @@ function renderRepeaterCard(r) {
 
   document.getElementById('rptrCard').classList.add('visible');
 
-  // Trigger analysis
   document.getElementById('addrStatusBRepeater').textContent = '';
-  runAnalysis();
 }
 
 // Handle picker selection
@@ -3563,7 +3577,6 @@ async function lookupLicensee() {
         : '📍 FCC address geocoded · location is approximate';
       document.getElementById('licCardNote').textContent = noteText;
       document.getElementById('addrStatusBLicensee').textContent = '';
-      runAnalysis();
     } else if (addrStr) {
       // Fallback: geocode manually if callook didn't return coords
       document.getElementById('licCardNote').textContent = '⏳ Geocoding address…';
@@ -3597,7 +3610,6 @@ async function geocodeLicenseeAddress(addrStr, callsign) {
     if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lon]);
     noteEl.textContent = `📍 Geocoded from address (${addrStr})`;
     document.getElementById('addrStatusBLicensee').textContent = '';
-    runAnalysis();
   } catch (err) {
     noteEl.textContent = `⚠ Geocoding failed: ${err.message} — enter coordinates manually`;
     document.getElementById('addrStatusBLicensee').textContent = '';
@@ -3716,9 +3728,6 @@ function lookupGridSquare() {
   const precLen = raw.length === 6 ? '6-char subsquare' : '4-char square';
   statusEl.textContent = `✓ ${raw} decoded (${precLen})`;
   statusEl.className   = 'grid-status ok';
-
-  // Run analysis
-  runAnalysis();
 }
 
 // ═══════════════════════════════════════════════
