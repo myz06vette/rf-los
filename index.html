@@ -938,7 +938,7 @@
             <button class="icon-btn" id="mapBtnA" onclick="setMapMode('a')">🗺 Pick on Map</button>
           </div>
           <div class="address-row">
-            <input type="text" id="addrA" name="siteA-address" autocomplete="new-password" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('a')">
+            <input type="text" id="addrA" name="siteA-address" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('a')">
             <button class="addr-btn" onclick="geocode('a')" title="Search">🔍</button>
           </div>
           <div class="addr-status" id="addrStatusA"></div>
@@ -989,7 +989,7 @@
               <button class="icon-btn" id="mapBtnB" onclick="setMapMode('b')">🗺 Pick on Map</button>
             </div>
             <div class="address-row">
-              <input type="text" id="addrB" name="siteB-address" autocomplete="new-password" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('b')">
+              <input type="text" id="addrB" name="siteB-address" placeholder="Address or place name…" onkeydown="if(event.key==='Enter')geocode('b')">
               <button class="addr-btn" onclick="geocode('b')" title="Search">🔍</button>
             </div>
             <div class="addr-status" id="addrStatusB"></div>
@@ -1578,7 +1578,16 @@ window.addEventListener('resize', () => {
   }
 });
 
-// ── Mobile keyboard: scroll focused input into view after keyboard opens ──
+// ── Prevent Chrome autofill cross-field bleed ──
+// Setting autocomplete="off" at parse time is ignored by Chrome.
+// Setting it dynamically on focus after the page loads is respected.
+// This preserves the browser's per-field suggestion dropdown while
+// preventing Chrome from pushing one field's autofill into the other.
+['addrA', 'addrB'].forEach(id => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('focus', () => { el.setAttribute('autocomplete', 'off'); }, { once: false });
+});
 // Uses visualViewport API where available (most modern mobile browsers).
 // Falls back to a simple focus+delay scroll.
 if (window.visualViewport) {
