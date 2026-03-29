@@ -94,6 +94,326 @@
   body::before { display: none; }
 
   /* ── HEADER ── */
+  /* ── MODE TABS (VHF/UHF | HF) ── */
+  .mode-tabbar {
+    display: flex;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--border);
+    background: rgba(13,17,23,0.98);
+    z-index: 19;
+  }
+  .mode-tab {
+    padding: 18px 48px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+    border: none; background: none;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .mode-tab:hover { color: var(--text); }
+  .mode-tab.active {
+    color: #3DFFA0;
+    border-bottom-color: #3DFFA0;
+  }
+
+  /* ── HF SHELL ── */
+  .hf-shell {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+    position: relative;
+  }
+  .hf-shell.active {
+    display: flex;
+  }
+  .hf-main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: var(--panel-w) 1fr 300px;
+    grid-template-rows: 1fr;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .hf-panel {
+    grid-column: 1;
+    grid-row: 1;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow-y: auto; overflow-x: hidden;
+    display: flex; flex-direction: column;
+    padding: 0;
+  }
+  .hf-map-wrap {
+    grid-column: 2;
+    grid-row: 1;
+    position: relative;
+    background: #0d1117;
+  }
+  #hf-map {
+    width: 100%; height: 100%;
+  }
+  .hf-log-panel {
+    grid-column: 3;
+    grid-row: 1;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .hf-log-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .hf-log-header-title {
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .hf-log-actions {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .hf-show-all-toggle {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--muted); cursor: pointer;
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 5px 10px; background: none;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .hf-show-all-toggle.on {
+    color: #3DFFA0; border-color: rgba(61,255,160,0.5);
+  }
+  .hf-clear-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 5px 10px; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .hf-clear-btn:hover { color: #ff6b35; border-color: #ff6b35; }
+  .hf-log-list {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding: 10px 10px 16px;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .hf-log-empty {
+    text-align: center; color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; line-height: 1.7;
+    padding: 32px 16px; opacity: 0.6;
+  }
+  /* HF Log Cards */
+  .hf-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 7px; padding: 12px 13px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .hf-card:hover {
+    border-color: rgba(61,255,160,0.35);
+    background: rgba(61,255,160,0.04);
+  }
+  .hf-card-call {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px; font-weight: 700;
+    color: var(--text); letter-spacing: 0.04em;
+  }
+  .hf-card-name {
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px; color: var(--muted);
+  }
+  .hf-card-meta {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--muted);
+    margin-top: 6px; line-height: 1.6;
+  }
+  .hf-card-band {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 3px; border: 1px solid;
+    color: #69ff47; border-color: rgba(105,255,71,0.4);
+    background: rgba(105,255,71,0.08);
+    margin-right: 6px;
+  }
+  .hf-card-footer {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    margin-top: 6px; gap: 6px;
+  }
+  .hf-card-dist {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px; color: var(--muted);
+  }
+  .hf-card-actions {
+    display: flex; gap: 2px; align-items: center;
+  }
+  .hf-card-delete {
+    background: none; border: none;
+    font-size: 15px; cursor: pointer;
+    color: rgba(255,255,255,0.3); padding: 6px 7px;
+    transition: color 0.15s; line-height: 1;
+    min-width: 36px; min-height: 36px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hf-card-delete:hover { color: #ff6b35; }
+  .hf-card-ts {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; color: var(--muted); opacity: 0.5;
+    margin-top: 4px;
+  }
+  /* HF panel form elements */
+  .hf-section {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hf-section-title {
+    font-family: 'Barlow', sans-serif;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .hf-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+  .hf-band-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px; margin-bottom: 12px;
+  }
+  .hf-band-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 10px 4px; border-radius: 5px;
+    cursor: pointer; text-align: center;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+  .hf-band-btn:hover { color: var(--text); border-color: rgba(105,255,71,0.4); }
+  .hf-band-btn.active {
+    color: #69ff47; border-color: rgba(105,255,71,0.6);
+    background: rgba(105,255,71,0.08);
+  }
+  .hf-freq-row {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .hf-freq-row label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    white-space: nowrap;
+  }
+  .hf-freq-row input {
+    flex: 1;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 5px;
+    font-family: 'Share Tech Mono', monospace; font-size: 15px;
+    padding: 8px 10px;
+  }
+  .hf-freq-row input:focus { outline: none; border-color: rgba(61,255,160,0.5); }
+  .hf-freq-row .hf-unit {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--muted);
+  }
+  .hf-notes-row {
+    margin-bottom: 12px;
+  }
+  .hf-notes-row label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .hf-notes-row textarea {
+    width: 100%;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 5px;
+    font-family: 'Barlow', sans-serif; font-size: 15px;
+    padding: 8px 10px; resize: vertical;
+    min-height: 68px;
+  }
+  .hf-notes-row textarea:focus { outline: none; border-color: rgba(61,255,160,0.5); }
+  .hf-log-btn {
+    width: 100%;
+    background: linear-gradient(135deg,rgba(105,255,71,0.15),rgba(0,112,243,0.15));
+    border: 1px solid rgba(105,255,71,0.4);
+    color: #69ff47;
+    font-family: 'Barlow', sans-serif;
+    font-size: 17px; font-weight: 700;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 14px; border-radius: 7px; cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+  }
+  .hf-log-btn:hover {
+    background: linear-gradient(135deg,rgba(105,255,71,0.25),rgba(0,112,243,0.25));
+    box-shadow: 0 0 18px rgba(105,255,71,0.18);
+  }
+  .hf-rst-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+  }
+  .hf-rst-row label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .hf-rst-row input, .hf-mode-select {
+    width: 100%;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 5px;
+    font-family: 'Share Tech Mono', monospace; font-size: 15px;
+    padding: 8px 10px;
+  }
+  .hf-rst-row input:focus, .hf-mode-select:focus {
+    outline: none; border-color: rgba(61,255,160,0.5);
+  }
+  .hf-mode-select option { background: #161b22; }
+  .hf-datetime-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;
+  }
+  .hf-datetime-row label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .hf-datetime-row input {
+    width: 100%;
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); border-radius: 5px;
+    font-family: 'Share Tech Mono', monospace; font-size: 14px;
+    padding: 8px 10px;
+  }
+  .hf-datetime-row input:focus { outline: none; border-color: rgba(61,255,160,0.5); }
+  .hf-map-info {
+    position: absolute; bottom: 10px; left: 10px; z-index: 500;
+    background: rgba(13,17,23,0.85);
+    border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px; color: var(--muted);
+    pointer-events: none;
+  }
+
   .header {
     position: relative; z-index: 20;
     padding: 16px 28px;
@@ -1165,6 +1485,15 @@
     </div>
   </div>
 
+  <!-- MODE TAB BAR -->
+  <div class="mode-tabbar">
+    <button class="mode-tab active" id="modeTabVhf" onclick="switchMode('vhf')">📡 VHF / UHF</button>
+    <button class="mode-tab" id="modeTabHf" onclick="switchMode('hf')">📻 HF</button>
+  </div>
+
+  <!-- VHF/UHF SHELL (existing tool) -->
+  <div id="vhfShell" style="display:flex;flex:1;flex-direction:column;min-height:0;overflow:hidden;">
+
   <!-- MAIN GRID -->
   <div class="main">
 
@@ -1662,6 +1991,205 @@
       <span class="tab-label">History</span>
     </button>
   </div>
+
+  </div><!-- /vhfShell -->
+
+  <!-- HF SHELL -->
+  <div class="hf-shell" id="hfShell">
+    <div class="hf-main">
+
+      <!-- HF LEFT PANEL -->
+      <div class="hf-panel">
+
+        <!-- My Station -->
+        <div class="hf-section">
+          <div class="hf-section-title">My Station — Site A</div>
+          <div class="site-block">
+            <div class="site-header">
+              <div class="site-dot site-dot-a"></div>
+              <span class="site-label label-a">Site Alpha</span>
+            </div>
+            <div class="action-row">
+              <button class="icon-btn" id="hfGpsA" onclick="hfUseMyGps()">🎯 Use My GPS</button>
+            </div>
+            <div class="address-row">
+              <input type="text" id="hfAddrA" placeholder="Address or place name…"
+                onkeydown="if(event.key==='Enter')hfGeocodeA()">
+              <button class="addr-btn" onclick="hfGeocodeA()" title="Search">🔍</button>
+            </div>
+            <div class="addr-status" id="hfAddrStatusA"></div>
+            <div class="coord-row">
+              <div class="field-group">
+                <label>Latitude</label>
+                <input type="number" id="hfLatA" value="39.8283" step="0.00001">
+              </div>
+              <div class="field-group">
+                <label>Longitude</label>
+                <input type="number" id="hfLngA" value="-98.5795" step="0.00001">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contact Lookup -->
+        <div class="hf-section">
+          <div class="hf-section-title">Heard Station — Site B</div>
+          <div class="site-block">
+            <div class="site-header">
+              <div class="site-dot site-dot-b"></div>
+              <span class="site-label label-b">Callsign Lookup</span>
+            </div>
+            <div class="address-row" style="margin-bottom:8px;">
+              <input class="lic-callsign" type="text" id="hfCallsign"
+                placeholder="Enter callsign…"
+                onkeydown="if(event.key==='Enter')hfLookupCallsign()"
+                style="text-transform:uppercase;">
+              <button class="icon-btn" id="hfLookupBtn" onclick="hfLookupCallsign()" style="white-space:nowrap;">🔍 Look Up</button>
+            </div>
+            <div class="addr-status" id="hfLicStatus"></div>
+            <div class="lic-card" id="hfLicCard" style="display:none;margin-top:8px;">
+              <div class="lic-card-badges" id="hfLicBadges"></div>
+              <div class="lic-card-call" id="hfLicCall">—</div>
+              <div class="lic-card-name" id="hfLicName">—</div>
+              <div class="lic-card-addr" id="hfLicAddr">—</div>
+              <div class="lic-card-note" id="hfLicNote"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Log Entry Form -->
+        <div class="hf-section">
+          <div class="hf-section-title">Log Entry</div>
+
+          <!-- HF Band -->
+          <div style="margin-bottom:8px;">
+            <div style="font-family:'Share Tech Mono',monospace;font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Band</div>
+            <div class="hf-band-grid">
+              <button class="hf-band-btn active" data-band="40m"  onclick="hfSetBand('40m')">40m</button>
+              <button class="hf-band-btn" data-band="20m"  onclick="hfSetBand('20m')">20m</button>
+              <button class="hf-band-btn" data-band="15m"  onclick="hfSetBand('15m')">15m</button>
+              <button class="hf-band-btn" data-band="10m"  onclick="hfSetBand('10m')">10m</button>
+              <button class="hf-band-btn" data-band="80m"  onclick="hfSetBand('80m')">80m</button>
+              <button class="hf-band-btn" data-band="160m" onclick="hfSetBand('160m')">160m</button>
+              <button class="hf-band-btn" data-band="60m"  onclick="hfSetBand('60m')">60m</button>
+              <button class="hf-band-btn" data-band="30m"  onclick="hfSetBand('30m')">30m</button>
+              <button class="hf-band-btn" data-band="17m"  onclick="hfSetBand('17m')">17m</button>
+              <button class="hf-band-btn" data-band="12m"  onclick="hfSetBand('12m')">12m</button>
+            </div>
+          </div>
+
+          <!-- Frequency -->
+          <div class="hf-freq-row">
+            <label>Freq</label>
+            <input type="number" id="hfFreq" step="0.001" min="1.8" max="30" placeholder="7.200">
+            <span class="hf-unit">MHz</span>
+          </div>
+
+          <!-- Mode + Signal Report -->
+          <div class="hf-rst-row">
+            <div>
+              <label>Mode</label>
+              <select class="hf-mode-select" id="hfMode">
+                <option value="SSB">SSB</option>
+                <option value="CW">CW</option>
+                <option value="FT8">FT8</option>
+                <option value="FT4">FT4</option>
+                <option value="AM">AM</option>
+                <option value="FM">FM</option>
+                <option value="RTTY">RTTY</option>
+                <option value="PSK31">PSK31</option>
+                <option value="JS8">JS8</option>
+                <option value="OTHER">Other</option>
+              </select>
+            </div>
+            <div>
+              <label>Signal Report (RST)</label>
+              <input type="text" id="hfRst" placeholder="59" maxlength="6"
+                style="background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:5px;font-family:'Share Tech Mono',monospace;font-size:14px;padding:6px 10px;width:100%;">
+            </div>
+          </div>
+
+          <!-- Date / Time EST -->
+          <div class="hf-datetime-row">
+            <div>
+              <label>Date</label>
+              <input type="date" id="hfDate">
+            </div>
+            <div>
+              <label>Time (EST) <span id="hfTimeLive" style="color:#3DFFA0;font-size:11px;margin-left:4px;"></span></label>
+              <input type="text" id="hfTime" readonly
+                style="background:rgba(61,255,160,0.06);border:1px solid rgba(61,255,160,0.25);color:#3DFFA0;border-radius:5px;font-family:'Share Tech Mono',monospace;font-size:14px;padding:6px 10px;width:100%;cursor:default;"
+                title="Auto-updated to current local time">
+            </div>
+          </div>
+
+          <!-- Notes -->
+          <div class="hf-notes-row">
+            <label>Notes</label>
+            <textarea id="hfNotes" placeholder="Antenna, conditions, remarks…"></textarea>
+          </div>
+
+          <button class="hf-log-btn" onclick="hfLogContact()">📋 Log Contact</button>
+        </div>
+
+      </div><!-- /hf-panel -->
+
+      <!-- HF MAP -->
+      <div class="hf-map-wrap">
+        <div id="hf-map"></div>
+        <div class="hf-map-info" id="hfMapInfo" style="display:none;"></div>
+      </div>
+
+      <!-- HF LOG PANEL -->
+      <div class="hf-log-panel">
+        <div class="hf-log-header">
+          <span class="hf-log-header-title">📋 HF Contact Log</span>
+          <div class="hf-log-actions">
+            <button class="hf-show-all-toggle" id="hfShowAllBtn" onclick="hfToggleShowAll()">
+              Show All
+            </button>
+            <button class="hf-clear-btn" onclick="hfClearLog()">Clear</button>
+          </div>
+        </div>
+        <div class="hf-log-list" id="hfLogList">
+          <div class="hf-log-empty" id="hfLogEmpty">
+            No contacts logged yet.<br>Look up a callsign<br>and log the contact.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /hf-main -->
+
+    <!-- HF Mobile tab bar -->
+    <div class="mob-tabbar" id="hfMobTabbar" style="display:none;">
+      <button class="mob-tab active" id="hfMobTabControls" onclick="hfSwitchMobTab('controls')">
+        <span class="mob-tab-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </span>
+        <span class="tab-label">Controls</span>
+      </button>
+      <button class="mob-tab" id="hfMobTabMap" onclick="hfSwitchMobTab('map')">
+        <span class="mob-tab-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>
+          </svg>
+        </span>
+        <span class="tab-label">Map</span>
+      </button>
+      <button class="mob-tab" id="hfMobTabLog" onclick="hfSwitchMobTab('log')">
+        <span class="mob-tab-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+          </svg>
+        </span>
+        <span class="tab-label">Log</span>
+      </button>
+    </div>
+
+  </div><!-- /hfShell -->
+
 </div><!-- /app-shell -->
 
 <!-- Loading overlay -->
@@ -1715,7 +2243,8 @@ function applyMobileLayout() {
   if (svg) { svg.setAttribute('width','22'); svg.setAttribute('height','22'); }
 
   // Measure header after compacting
-  const headerH = header.offsetHeight;
+  const modeTabbar = document.querySelector('.mode-tabbar');
+  const headerH = header.offsetHeight + (modeTabbar ? modeTabbar.offsetHeight : 0);
   const mainH   = window.innerHeight - headerH - TAB_H;
 
   // .main: exact pixel height, relative positioning context
@@ -4466,11 +4995,609 @@ window.addEventListener('load', () => {
   initChartInteractivity();
   initLinkBudget();
   historyRender();
+  hfInit();
   if (isMobile()) applyMobileLayout();
-  // NOTE: intentionally NOT calling runAnalysis() on boot.
-  // Default coordinates are placeholder values — no point burning an API call
-  // until the user has set real locations. Calculate button is always available.
 });
+
+// ══════════════════════════════════════════════════════════════
+// ── HF MODULE ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+
+const HF_LOG_KEY   = 'rflos_hflog_v1';
+const HF_LOG_MAX   = 200;
+
+let _hfMap         = null;
+let _hfMarkerA     = null;
+let _hfContactMarkers = [];  // all plotted contact markers
+let _hfPolylines   = [];     // lines from A to each contact
+let _hfShowAll     = false;
+let _hfCurrentContact = null; // { callsign, lat, lng, name } from last lookup
+let _hfSelectedBand = '40m';
+let _hfMobTab      = 'controls';
+
+const HF_BANDS = {
+  '160m': { label:'160m', freqMin:1.8,   freqMax:2.0   },
+  '80m':  { label:'80m',  freqMin:3.5,   freqMax:4.0   },
+  '60m':  { label:'60m',  freqMin:5.332, freqMax:5.405 },
+  '40m':  { label:'40m',  freqMin:7.0,   freqMax:7.3   },
+  '30m':  { label:'30m',  freqMin:10.1,  freqMax:10.15 },
+  '20m':  { label:'20m',  freqMin:14.0,  freqMax:14.35 },
+  '17m':  { label:'17m',  freqMin:18.068,freqMax:18.168},
+  '15m':  { label:'15m',  freqMin:21.0,  freqMax:21.45 },
+  '12m':  { label:'12m',  freqMin:24.89, freqMax:24.99 },
+  '10m':  { label:'10m',  freqMin:28.0,  freqMax:29.7  },
+};
+
+// ── Mode switch ────────────────────────────────────────────────
+function switchMode(mode) {
+  const vhfShell = document.getElementById('vhfShell');
+  const hfShell  = document.getElementById('hfShell');
+  const vhfBtn   = document.getElementById('modeTabVhf');
+  const hfBtn    = document.getElementById('modeTabHf');
+  const vhfTabbar = document.getElementById('mobTabbar');
+  const hfTabbar  = document.getElementById('hfMobTabbar');
+
+  if (mode === 'hf') {
+    vhfShell.style.display = 'none';
+    hfShell.classList.add('active');
+    vhfBtn.classList.remove('active');
+    hfBtn.classList.add('active');
+    if (isMobile()) {
+      if (vhfTabbar) vhfTabbar.style.display = 'none';
+      if (hfTabbar)  hfTabbar.style.display  = 'flex';
+      hfApplyMobLayout();
+    }
+    // Invalidate HF map size after becoming visible
+    setTimeout(() => { if (_hfMap) _hfMap.invalidateSize(); }, 80);
+  } else {
+    hfShell.classList.remove('active');
+    vhfShell.style.display = 'flex';
+    hfBtn.classList.remove('active');
+    vhfBtn.classList.add('active');
+    if (isMobile()) {
+      if (hfTabbar)  hfTabbar.style.display  = 'none';
+      if (vhfTabbar) vhfTabbar.style.display = 'flex';
+    }
+    setTimeout(() => { if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 80);
+  }
+}
+
+// ── Init ───────────────────────────────────────────────────────
+function hfInit() {
+  // Live EST clock — updates every second
+  function hfTickClock() {
+    const now = new Date();
+    // Format in US Eastern time
+    const estOpts = { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+    const dateOpts = { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' };
+    const timeStr = now.toLocaleTimeString('en-US', estOpts);   // e.g. "14:32:07"
+    const dateParts = now.toLocaleDateString('en-US', dateOpts).split('/'); // MM/DD/YYYY
+    const dateStr = `${dateParts[2]}-${dateParts[0].padStart(2,'0')}-${dateParts[1].padStart(2,'0')}`;
+
+    const timeEl = document.getElementById('hfTime');
+    const dateEl = document.getElementById('hfDate');
+    const liveEl = document.getElementById('hfTimeLive');
+
+    // Only auto-update date if user hasn't changed it
+    if (dateEl && !dateEl.dataset.userSet) dateEl.value = dateStr;
+    if (timeEl) timeEl.value = timeStr;
+    if (liveEl) liveEl.textContent = '● LIVE';
+  }
+  hfTickClock();
+  setInterval(hfTickClock, 1000);
+
+  // Allow user to manually override the date without auto-reset
+  const dateEl = document.getElementById('hfDate');
+  if (dateEl) dateEl.addEventListener('change', () => { dateEl.dataset.userSet = '1'; });
+
+  // Init HF map
+  _hfMap = L.map('hf-map', {
+    center: [39.8283, -98.5795],
+    zoom: 4,
+    zoomControl: true,
+  });
+
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: 'Imagery © Esri', maxZoom: 19
+  }).addTo(_hfMap);
+
+  // Place Site A marker at default coords
+  const ICON_A = L.divIcon({
+    className: '',
+    html: '<div style="width:14px;height:14px;background:#00e5ff;border:2px solid #fff;border-radius:50%;box-shadow:0 0 8px #00e5ff;"></div>',
+    iconSize: [14,14], iconAnchor: [7,7]
+  });
+  _hfMarkerA = L.marker([39.8283, -98.5795], { icon: ICON_A, draggable: true, title: 'My Station' }).addTo(_hfMap);
+  _hfMarkerA.on('dragend', () => {
+    const ll = _hfMarkerA.getLatLng();
+    document.getElementById('hfLatA').value = ll.lat.toFixed(5);
+    document.getElementById('hfLngA').value = ll.lng.toFixed(5);
+  });
+
+  // Try geolocation on init
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      const { latitude: lat, longitude: lng } = pos.coords;
+      document.getElementById('hfLatA').value = lat.toFixed(5);
+      document.getElementById('hfLngA').value = lng.toFixed(5);
+      _hfMarkerA.setLatLng([lat, lng]);
+      _hfMap.setView([lat, lng], 7);
+      document.getElementById('hfAddrStatusA').textContent = '✓ Located via GPS';
+    }, () => {/* silently ignore denial */});
+  }
+
+  hfRenderLog();
+}
+
+// ── GPS ────────────────────────────────────────────────────────
+function hfUseMyGps() {
+  const btn = document.getElementById('hfGpsA');
+  if (!('geolocation' in navigator)) return;
+  btn.disabled = true; btn.textContent = '⏳ …';
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+    document.getElementById('hfLatA').value = lat.toFixed(5);
+    document.getElementById('hfLngA').value = lng.toFixed(5);
+    if (_hfMarkerA) _hfMarkerA.setLatLng([lat, lng]);
+    if (_hfMap) _hfMap.setView([lat, lng], 7);
+    document.getElementById('hfAddrStatusA').textContent = `✓ Located · ±${Math.round(accuracy)}m`;
+    btn.disabled = false; btn.textContent = '🎯 Use My GPS';
+  }, () => {
+    btn.disabled = false; btn.textContent = '🎯 Use My GPS';
+  });
+}
+
+// ── Geocode Site A ─────────────────────────────────────────────
+async function hfGeocodeA() {
+  const q = document.getElementById('hfAddrA').value.trim();
+  if (!q) return;
+  const statusEl = document.getElementById('hfAddrStatusA');
+  statusEl.textContent = '⏳ Searching…';
+  try {
+    const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`
+      + `?SingleLine=${encodeURIComponent(q)}&f=json&maxLocations=1`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const cand = data?.candidates?.[0];
+    if (!cand || cand.score < 50) throw new Error('No result');
+    const lat = cand.location.y, lng = cand.location.x;
+    document.getElementById('hfLatA').value = lat.toFixed(5);
+    document.getElementById('hfLngA').value = lng.toFixed(5);
+    if (_hfMarkerA) _hfMarkerA.setLatLng([lat, lng]);
+    if (_hfMap) _hfMap.setView([lat, lng], 9);
+    statusEl.textContent = `✓ ${cand.address}`;
+  } catch(e) {
+    statusEl.textContent = '⚠ Address not found';
+  }
+}
+
+// ── Callsign Lookup ────────────────────────────────────────────
+async function hfLookupCallsign() {
+  const callsign = document.getElementById('hfCallsign').value.trim().toUpperCase();
+  document.getElementById('hfCallsign').value = callsign;
+  const statusEl = document.getElementById('hfLicStatus');
+  const cardEl   = document.getElementById('hfLicCard');
+
+  if (!callsign) { statusEl.textContent = '⚠ Enter a callsign'; return; }
+  if (!REPEATER_PROXY) { statusEl.textContent = '⚠ Proxy not configured'; return; }
+
+  cardEl.style.display = 'none';
+  statusEl.textContent = '⏳ Looking up ' + callsign + '…';
+  statusEl.className   = 'lic-status';
+  document.getElementById('hfLookupBtn').disabled = true;
+  _hfCurrentContact = null;
+
+  try {
+    const url  = `${REPEATER_PROXY}?callsign=${encodeURIComponent(callsign)}&type=licensee`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+
+    if (data.error === 'GMRS_NO_API') {
+      statusEl.textContent = '⚠ GMRS callsigns cannot be looked up via API';
+      statusEl.className = 'lic-status err';
+      return;
+    }
+    if (data.error) throw new Error(data.error);
+
+    const name = [data.fname, data.name].filter(Boolean).join(' ') || data.name || '—';
+    const addrParts = [data.addr1, data.addr2, data.state, data.zip].filter(Boolean);
+    const addrStr = addrParts.join(', ');
+
+    // Build badges
+    const isGmrs = data.source === 'fcc_uls';
+    const badgesEl = document.getElementById('hfLicBadges');
+    badgesEl.innerHTML = isGmrs
+      ? '<span class="lic-badge lic-badge-gmrs">GMRS</span>'
+      : '<span class="lic-badge lic-badge-ham">Amateur</span>';
+    if (data.class && !isGmrs) {
+      const classLabels = { T:'Technician', G:'General', A:'Advanced', E:'Extra' };
+      badgesEl.innerHTML += `<span class="lic-badge lic-badge-class">${classLabels[data.class] || data.class}</span>`;
+    }
+
+    document.getElementById('hfLicCall').textContent = data.callsign || callsign;
+    document.getElementById('hfLicName').textContent = name;
+    document.getElementById('hfLicAddr').textContent = addrStr || 'Address not available';
+    cardEl.style.display = 'block';
+    cardEl.classList.add('visible');
+    statusEl.textContent = `✓ Found: ${data.callsign}`;
+    statusEl.className = 'lic-status ok';
+
+    // Place contact marker on map
+    if (data.lat && data.lon) {
+      const lat = parseFloat(data.lat), lng = parseFloat(data.lon);
+      _hfCurrentContact = { callsign: data.callsign || callsign, name, lat, lng };
+      document.getElementById('hfLicNote').textContent = data.grid
+        ? `📍 Grid: ${data.grid}`
+        : '📍 FCC geocoded';
+      hfPlotContact(_hfCurrentContact, false); // preview — not yet logged
+      // Update map info overlay
+      hfUpdateMapInfo(_hfCurrentContact);
+    } else if (addrStr) {
+      document.getElementById('hfLicNote').textContent = '⏳ Geocoding address…';
+      hfGeocodeLicenseeForHf(addrStr, data.callsign || callsign, name);
+    } else {
+      document.getElementById('hfLicNote').textContent = '⚠ No coordinates available';
+    }
+  } catch(err) {
+    statusEl.textContent = `✗ Lookup failed: ${err.message}`;
+    statusEl.className = 'lic-status err';
+  } finally {
+    document.getElementById('hfLookupBtn').disabled = false;
+  }
+}
+
+async function hfGeocodeLicenseeForHf(addrStr, callsign, name) {
+  const noteEl = document.getElementById('hfLicNote');
+  try {
+    const url = `https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates`
+      + `?SingleLine=${encodeURIComponent(addrStr)}&f=json&maxLocations=1`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    const cand = data?.candidates?.[0];
+    if (!cand || cand.score < 60) throw new Error('Low confidence');
+    const lat = cand.location.y, lng = cand.location.x;
+    _hfCurrentContact = { callsign, name, lat, lng };
+    noteEl.textContent = `📍 Geocoded from address`;
+    hfPlotContact(_hfCurrentContact, false);
+    hfUpdateMapInfo(_hfCurrentContact);
+  } catch(e) {
+    noteEl.textContent = `⚠ Geocoding failed — location unknown`;
+  }
+}
+
+// ── Plot a contact on the HF map ───────────────────────────────
+function hfPlotContact(contact, permanent) {
+  if (!_hfMap || !contact) return;
+
+  const latA = parseFloat(document.getElementById('hfLatA').value);
+  const lngA = parseFloat(document.getElementById('hfLngA').value);
+
+  // Remove any existing preview marker (non-permanent) if this is a new preview
+  if (!permanent) {
+    // Remove previous preview
+    if (_hfMap._hfPreviewMarker) {
+      _hfMap.removeLayer(_hfMap._hfPreviewMarker);
+      _hfMap._hfPreviewMarker = null;
+    }
+    if (_hfMap._hfPreviewLine) {
+      _hfMap.removeLayer(_hfMap._hfPreviewLine);
+      _hfMap._hfPreviewLine = null;
+    }
+  }
+
+  const ICON_B = L.divIcon({
+    className: '',
+    html: `<div style="width:12px;height:12px;background:${permanent?'#69ff47':'#ffe066'};border:2px solid #fff;border-radius:50%;box-shadow:0 0 6px ${permanent?'#69ff47':'#ffe066'};"></div>`,
+    iconSize: [12,12], iconAnchor: [6,6]
+  });
+
+  const marker = L.marker([contact.lat, contact.lng], { icon: ICON_B })
+    .bindTooltip(`<strong>${contact.callsign}</strong><br>${contact.name}`, { direction: 'top', offset: [0,-8] })
+    .addTo(_hfMap);
+
+  const line = L.polyline([[latA, lngA], [contact.lat, contact.lng]], {
+    color: permanent ? 'rgba(105,255,71,0.6)' : 'rgba(255,224,102,0.5)',
+    weight: permanent ? 2 : 1.5,
+    dashArray: permanent ? null : '4 4'
+  }).addTo(_hfMap);
+
+  if (permanent) {
+    _hfContactMarkers.push(marker);
+    _hfPolylines.push(line);
+  } else {
+    _hfMap._hfPreviewMarker = marker;
+    _hfMap._hfPreviewLine   = line;
+  }
+
+  // Fit map to show both points
+  _hfMap.fitBounds(L.latLngBounds([[latA, lngA], [contact.lat, contact.lng]]).pad(0.3));
+}
+
+function hfUpdateMapInfo(contact) {
+  const latA = parseFloat(document.getElementById('hfLatA').value);
+  const lngA = parseFloat(document.getElementById('hfLngA').value);
+  if (!contact || isNaN(latA) || isNaN(lngA)) return;
+  const d = hfDistKm(latA, lngA, contact.lat, contact.lng);
+  const bear = bearing(latA, lngA, contact.lat, contact.lng);
+  const infoEl = document.getElementById('hfMapInfo');
+  infoEl.style.display = 'block';
+  infoEl.innerHTML = `${contact.callsign} · ${fmtDist(d*1000, false)} · ${bear.toFixed(0)}°`;
+}
+
+function hfDistKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2-lat1)*Math.PI/180;
+  const dLon = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+// ── Band selector ──────────────────────────────────────────────
+function hfSetBand(band) {
+  _hfSelectedBand = band;
+  document.querySelectorAll('.hf-band-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.band === band);
+  });
+  // Set midpoint frequency as default
+  const b = HF_BANDS[band];
+  if (b) {
+    const mid = ((b.freqMin + b.freqMax) / 2).toFixed(3);
+    document.getElementById('hfFreq').value = mid;
+  }
+}
+
+// ── Log Contact ────────────────────────────────────────────────
+function hfLogContact() {
+  if (!_hfCurrentContact) {
+    alert('Look up a callsign first to get location data before logging.');
+    return;
+  }
+  const freq  = parseFloat(document.getElementById('hfFreq').value);
+  const mode  = document.getElementById('hfMode').value;
+  const rst   = document.getElementById('hfRst').value.trim() || '—';
+  const date  = document.getElementById('hfDate').value;
+  const time  = document.getElementById('hfTime').value;
+  const notes = document.getElementById('hfNotes').value.trim();
+  const latA  = parseFloat(document.getElementById('hfLatA').value);
+  const lngA  = parseFloat(document.getElementById('hfLngA').value);
+
+  if (!freq || isNaN(freq)) { alert('Please enter a frequency.'); return; }
+
+  const d = hfDistKm(latA, lngA, _hfCurrentContact.lat, _hfCurrentContact.lng);
+
+  const entry = {
+    id:       Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+    ts:       `${date} ${time} EST`,
+    callsign: _hfCurrentContact.callsign,
+    name:     _hfCurrentContact.name,
+    lat:      _hfCurrentContact.lat,
+    lng:      _hfCurrentContact.lng,
+    latA, lngA,
+    band:     _hfSelectedBand,
+    freq:     freq.toFixed(3),
+    mode, rst, notes,
+    dist:     fmtDist(d*1000, false),
+  };
+
+  // Save to storage
+  let log = hfLoadLog();
+  log.unshift(entry);
+  if (log.length > HF_LOG_MAX) log = log.slice(0, HF_LOG_MAX);
+  hfSaveLog(log);
+
+  // Plot permanently on map (remove preview)
+  if (_hfMap._hfPreviewMarker) {
+    _hfMap.removeLayer(_hfMap._hfPreviewMarker);
+    _hfMap._hfPreviewMarker = null;
+  }
+  if (_hfMap._hfPreviewLine) {
+    _hfMap.removeLayer(_hfMap._hfPreviewLine);
+    _hfMap._hfPreviewLine = null;
+  }
+  hfPlotContact(_hfCurrentContact, true);
+
+  // Clear form for next entry
+  document.getElementById('hfCallsign').value = '';
+  document.getElementById('hfLicCard').style.display = 'none';
+  document.getElementById('hfLicStatus').textContent = '';
+  document.getElementById('hfRst').value = '';
+  document.getElementById('hfNotes').value = '';
+  document.getElementById('hfMapInfo').style.display = 'none';
+  _hfCurrentContact = null;
+
+  // Advance time by 0 (leave as-is for rapid logging)
+  hfRenderLog();
+
+  if (isMobile()) hfSwitchMobTab('log');
+}
+
+// ── Log storage ────────────────────────────────────────────────
+function hfLoadLog() {
+  try { return JSON.parse(localStorage.getItem(HF_LOG_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+function hfSaveLog(entries) {
+  try { localStorage.setItem(HF_LOG_KEY, JSON.stringify(entries)); }
+  catch(e) { console.warn('HF log save failed:', e); }
+}
+
+function hfClearLog() {
+  if (!confirm('Clear all HF contacts? This cannot be undone.')) return;
+  hfSaveLog([]);
+  // Remove all map markers and lines
+  _hfContactMarkers.forEach(m => _hfMap && _hfMap.removeLayer(m));
+  _hfPolylines.forEach(l => _hfMap && _hfMap.removeLayer(l));
+  _hfContactMarkers = [];
+  _hfPolylines = [];
+  hfRenderLog();
+}
+
+// ── Show All toggle ────────────────────────────────────────────
+function hfToggleShowAll() {
+  _hfShowAll = !_hfShowAll;
+  const btn = document.getElementById('hfShowAllBtn');
+  btn.classList.toggle('on', _hfShowAll);
+  // Replot all contacts when toggled on
+  if (_hfShowAll) {
+    hfReplotAll();
+  }
+}
+
+function hfReplotAll() {
+  // Remove existing permanent markers/lines
+  _hfContactMarkers.forEach(m => _hfMap && _hfMap.removeLayer(m));
+  _hfPolylines.forEach(l => _hfMap && _hfMap.removeLayer(l));
+  _hfContactMarkers = [];
+  _hfPolylines = [];
+  const log = hfLoadLog();
+  log.forEach(e => {
+    hfPlotContact({ callsign: e.callsign, name: e.name, lat: e.lat, lng: e.lng }, true);
+  });
+}
+
+// ── Render log ─────────────────────────────────────────────────
+function hfRenderLog() {
+  const list  = document.getElementById('hfLogList');
+  const empty = document.getElementById('hfLogEmpty');
+  if (!list) return;
+  const log = hfLoadLog();
+
+  list.querySelectorAll('.hf-card').forEach(c => c.remove());
+
+  if (log.length === 0) {
+    if (empty) empty.style.display = 'block';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  log.forEach(e => {
+    const card = document.createElement('div');
+    card.className = 'hf-card';
+    card.dataset.id = e.id;
+    card.innerHTML = `
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
+        <div>
+          <div class="hf-card-call">${e.callsign}</div>
+          <div class="hf-card-name">${e.name || ''}</div>
+        </div>
+        <button class="hf-card-delete" title="Remove"
+          onclick="event.stopPropagation();hfDeleteEntry('${e.id}')">✕</button>
+      </div>
+      <div class="hf-card-meta">
+        <span class="hf-card-band">${e.band}</span>${e.freq} MHz · ${e.mode} · RST ${e.rst}
+      </div>
+      <div class="hf-card-footer">
+        <span class="hf-card-dist">${e.dist}</span>
+        <span style="font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--muted);">${e.ts}</span>
+      </div>
+      ${e.notes ? `<div class="hf-card-ts" style="opacity:0.7;margin-top:5px;">${e.notes}</div>` : ''}
+    `;
+    card.addEventListener('click', () => hfLoadEntry(e.id));
+    list.appendChild(card);
+  });
+}
+
+function hfDeleteEntry(id) {
+  let log = hfLoadLog();
+  log = log.filter(e => e.id !== id);
+  hfSaveLog(log);
+  hfRenderLog();
+}
+
+function hfLoadEntry(id) {
+  const log = hfLoadLog();
+  const e = log.find(e => e.id === id);
+  if (!e) return;
+
+  // Restore Site A
+  document.getElementById('hfLatA').value = e.latA.toFixed(5);
+  document.getElementById('hfLngA').value = e.lngA.toFixed(5);
+  if (_hfMarkerA) _hfMarkerA.setLatLng([e.latA, e.lngA]);
+
+  // Preview this contact on map
+  _hfCurrentContact = { callsign: e.callsign, name: e.name, lat: e.lat, lng: e.lng };
+  hfPlotContact(_hfCurrentContact, false);
+  hfUpdateMapInfo(_hfCurrentContact);
+
+  // Restore form
+  document.getElementById('hfCallsign').value = e.callsign;
+  hfSetBand(e.band);
+  document.getElementById('hfFreq').value  = e.freq;
+  document.getElementById('hfMode').value  = e.mode;
+  document.getElementById('hfRst').value   = e.rst !== '—' ? e.rst : '';
+  document.getElementById('hfNotes').value = e.notes || '';
+
+  // Show licensee card info
+  const cardEl = document.getElementById('hfLicCard');
+  document.getElementById('hfLicCall').textContent = e.callsign;
+  document.getElementById('hfLicName').textContent = e.name || '—';
+  document.getElementById('hfLicAddr').textContent = '';
+  document.getElementById('hfLicNote').textContent = `📍 ${e.dist} · ${e.ts}`;
+  document.getElementById('hfLicBadges').innerHTML = '';
+  cardEl.style.display = 'block';
+  cardEl.classList.add('visible');
+  document.getElementById('hfLicStatus').textContent = `✓ Loaded: ${e.callsign}`;
+  document.getElementById('hfLicStatus').className = 'lic-status ok';
+
+  if (isMobile()) hfSwitchMobTab('map');
+}
+
+// ── Mobile layout ──────────────────────────────────────────────
+function hfApplyMobLayout() {
+  const hfPanel   = document.querySelector('.hf-panel');
+  const hfMapWrap = document.querySelector('.hf-map-wrap');
+  const hfLogPanel= document.querySelector('.hf-log-panel');
+  const hfMain    = document.querySelector('.hf-main');
+  if (!hfMain) return;
+
+  const hdr      = document.querySelector('.header');
+  const modeTabs = document.querySelector('.mode-tabbar');
+  const topOffset = (hdr ? hdr.offsetHeight : 0) + (modeTabs ? modeTabs.offsetHeight : 0);
+
+  hfMain.style.cssText = `
+    display: block !important;
+    position: fixed !important;
+    top: ${topOffset}px !important;
+    left: 0 !important; right: 0 !important;
+    bottom: 72px !important;
+    overflow: hidden !important;
+  `;
+  [hfPanel, hfMapWrap, hfLogPanel].forEach(el => {
+    if (el) {
+      el.style.position = 'absolute';
+      el.style.inset    = '0';
+      el.style.display  = 'none';
+    }
+  });
+
+  hfSwitchMobTab(_hfMobTab);
+}
+
+function hfSwitchMobTab(tab) {
+  _hfMobTab = tab;
+  const hfPanel   = document.querySelector('.hf-panel');
+  const hfMapWrap = document.querySelector('.hf-map-wrap');
+  const hfLogPanel= document.querySelector('.hf-log-panel');
+
+  [hfPanel, hfMapWrap, hfLogPanel].forEach(el => {
+    if (el) el.style.display = 'none';
+  });
+
+  document.querySelectorAll('#hfMobTabbar .mob-tab').forEach(b => b.classList.remove('active'));
+
+  if (tab === 'controls') {
+    if (hfPanel) { hfPanel.style.display = 'block'; hfPanel.style.overflowY = 'auto'; }
+    document.getElementById('hfMobTabControls')?.classList.add('active');
+  } else if (tab === 'map') {
+    if (hfMapWrap) { hfMapWrap.style.display = 'block'; }
+    document.getElementById('hfMobTabMap')?.classList.add('active');
+    setTimeout(() => { if (_hfMap) _hfMap.invalidateSize(); }, 80);
+  } else if (tab === 'log') {
+    if (hfLogPanel) { hfLogPanel.style.display = 'flex'; hfLogPanel.style.flexDirection = 'column'; }
+    document.getElementById('hfMobTabLog')?.classList.add('active');
+  }
+}
+
 </script>
 </body>
 </html>
