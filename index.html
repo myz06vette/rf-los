@@ -143,7 +143,7 @@
   .main {
     flex: 1;
     display: grid;
-    grid-template-columns: var(--panel-w) 1fr;
+    grid-template-columns: var(--panel-w) 1fr 300px;
     grid-template-rows: 1fr 260px;
     min-height: 0;
     overflow: hidden;
@@ -723,6 +723,175 @@
   }
   .mob-tab .tab-label { line-height: 1; }
 
+
+  .mob-tab .tab-label { line-height: 1; }
+
+
+  /* ── HISTORY PANEL ── */
+  .history-panel {
+    width: 300px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+    grid-column: 3;
+    grid-row: 1 / 3;
+  }
+  .history-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .history-header-title {
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .history-clear-btn {
+    background: none; border: 1px solid var(--border);
+    color: var(--muted); border-radius: 4px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase;
+    padding: 3px 8px; cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .history-clear-btn:hover { color: #ff6b35; border-color: #ff6b35; }
+
+  .history-list {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 10px 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .history-empty {
+    text-align: center;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    padding: 32px 16px;
+    opacity: 0.6;
+  }
+  .history-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 12px 13px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .history-card:hover {
+    border-color: rgba(61,255,160,0.35);
+    background: rgba(61,255,160,0.04);
+  }
+  .history-card.is-favorite {
+    border-color: rgba(255,224,102,0.4);
+    background: rgba(255,224,102,0.04);
+  }
+  .history-card.is-favorite:hover {
+    border-color: rgba(255,224,102,0.7);
+  }
+  .hcard-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .hcard-callsign {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 18px; font-weight: 700;
+    color: var(--text);
+    letter-spacing: 0.04em;
+  }
+  .hcard-name {
+    font-family: 'Barlow', sans-serif;
+    font-size: 15px;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .hcard-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .hcard-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 7px;
+  }
+  .hcard-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .hcard-dist {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .hcard-grade {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 3px; border: 1px solid;
+  }
+  .hcard-grade-excellent { color:#3DFFA0; border-color:rgba(61,255,160,0.4); background:rgba(61,255,160,0.08); }
+  .hcard-grade-good      { color:#69ff47; border-color:rgba(105,255,71,0.4); background:rgba(105,255,71,0.08); }
+  .hcard-grade-fair      { color:#ffe066; border-color:rgba(255,224,102,0.4); background:rgba(255,224,102,0.08); }
+  .hcard-grade-poor      { color:#ff9f43; border-color:rgba(255,159,67,0.4); background:rgba(255,159,67,0.08); }
+  .hcard-grade-unlikely  { color:#ff6b35; border-color:rgba(255,107,53,0.4); background:rgba(255,107,53,0.08); }
+  .hcard-actions {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+  }
+  .hcard-star {
+    background: none; border: none;
+    font-size: 20px; cursor: pointer;
+    padding: 6px 7px;
+    color: rgba(255,255,255,0.35);
+    transition: color 0.15s, transform 0.15s;
+    line-height: 1;
+    min-width: 36px; min-height: 36px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hcard-star:hover { color: rgba(255,224,102,0.8); transform: scale(1.15); }
+  .hcard-star.starred { color: #ffe066; }
+  .hcard-star.starred:hover { color: #ffd700; }
+  .hcard-delete {
+    background: none; border: none;
+    font-size: 15px; cursor: pointer;
+    color: rgba(255,255,255,0.3); padding: 6px 7px;
+    transition: color 0.15s;
+    line-height: 1;
+    min-width: 36px; min-height: 36px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .hcard-delete:hover { color: #ff6b35; }
+  .hcard-ts {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; color: var(--muted); opacity: 0.5;
+    margin-top: 5px;
+  }
 
   /* ── GRID SQUARE LOOKUP ── */
   .grid-sq-desc {
@@ -1443,6 +1612,19 @@
     <!-- Mobile-only results pane: shown below chart in Results tab -->
     <div id="mobResultsPane" style="display:none;"></div>
 
+    <!-- History Panel (desktop persistent, mobile via tab) -->
+    <div class="history-panel" id="historyPanel">
+      <div class="history-header">
+        <span class="history-header-title">📋 Previous Contact Lookups</span>
+        <button class="history-clear-btn" onclick="historyClear()">Clear All</button>
+      </div>
+      <div class="history-list" id="historyList">
+        <div class="history-empty" id="historyEmpty">
+          No lookups yet.<br>Run a calculation<br>to start your log.
+        </div>
+      </div>
+    </div>
+
   </div><!-- /main -->
 
   <!-- Mobile tab bar (hidden on desktop via CSS) -->
@@ -1470,6 +1652,14 @@
         </svg>
       </span>
       <span class="tab-label">Results</span>
+    </button>
+    <button class="mob-tab" id="mobTabHistory" onclick="switchMobileTab('history')">
+      <span class="mob-tab-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </span>
+      <span class="tab-label">History</span>
     </button>
   </div>
 </div><!-- /app-shell -->
@@ -1506,6 +1696,10 @@ function applyMobileLayout() {
   // Hide map click widget — not useful when map is on separate tab
   const mapClickSection = document.getElementById('mapClickSection');
   if (mapClickSection) mapClickSection.style.display = 'none';
+
+  // Hide desktop history panel — mobile uses its own tab
+  const histPanel = document.getElementById('historyPanel');
+  if (histPanel) histPanel.style.setProperty('display', 'none', 'important');
 
   // Compact header
   const safeTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue('padding-top')) || 0;
@@ -1582,6 +1776,7 @@ function _applyMobTab(tab) {
   const mapWrap    = document.getElementById('map-wrap');
   const chartWrap  = document.querySelector('.chart-wrap');
   const resultsPane= document.getElementById('mobResultsPane');
+  const histPanel  = document.getElementById('historyPanel');
 
   // Update active button
   document.querySelectorAll('.mob-tab').forEach(b => b.classList.remove('active'));
@@ -1589,11 +1784,12 @@ function _applyMobTab(tab) {
   const activeBtn = document.getElementById(btnId);
   if (activeBtn) activeBtn.classList.add('active');
 
-  // Hide all panes first — use setProperty to ensure !important so stylesheet display:flex on .panel can't win
+  // Hide all panes
   mapWrap.style.setProperty('display', 'none', 'important');
   chartWrap.style.setProperty('display', 'none', 'important');
   panel.style.setProperty('display', 'none', 'important');
   if (resultsPane) resultsPane.style.setProperty('display', 'none', 'important');
+  if (histPanel)   histPanel.style.setProperty('display', 'none', 'important');
 
   if (tab === 'map') {
     mapWrap.style.setProperty('display', 'block', 'important');
@@ -1627,6 +1823,21 @@ function _applyMobTab(tab) {
         }
       });
     });
+
+  } else if (tab === 'history') {
+    if (histPanel) {
+      histPanel.style.removeProperty('display');
+      histPanel.style.setProperty('display', 'flex', 'important');
+      histPanel.style.setProperty('flex-direction', 'column', 'important');
+      histPanel.style.setProperty('position', 'fixed', 'important');
+      histPanel.style.setProperty('top', '0', 'important');
+      histPanel.style.setProperty('left', '0', 'important');
+      histPanel.style.setProperty('right', '0', 'important');
+      histPanel.style.setProperty('bottom', '72px', 'important');
+      histPanel.style.setProperty('width', 'auto', 'important');
+      histPanel.style.setProperty('border-left', 'none', 'important');
+      histPanel.style.setProperty('z-index', '100', 'important');
+    }
   }
 }
 
@@ -1650,6 +1861,9 @@ function resetDesktopLayout() {
   // Strip all inline styles we applied
   [main, panel, mapWrap, chartWrap].forEach(el => { if (el) el.removeAttribute('style'); });
   if (tabbar) tabbar.style.display = 'none';
+  // Restore history panel for desktop
+  const histPanel = document.getElementById('historyPanel');
+  if (histPanel) histPanel.removeAttribute('style');
   if (header) header.removeAttribute('style');
   if (h1)  h1.removeAttribute('style');
   if (hp)  hp.removeAttribute('style');
@@ -1689,6 +1903,243 @@ window.addEventListener('resize', () => {
     resetDesktopLayout();
   }
 });
+
+// ══════════════════════════════════════════════════════
+// ── HISTORY / LOG ──────────────────────────────────────
+// ══════════════════════════════════════════════════════
+const HISTORY_KEY      = 'rflos_history_v1';
+const HISTORY_MAX      = 50;
+const HISTORY_FAV_MAX  = 5;
+
+function historyLoad() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch(e) { return []; }
+}
+
+function historySave(entries) {
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(entries)); }
+  catch(e) { console.warn('History save failed:', e); }
+}
+
+function historyAddEntry(entry) {
+  let entries = historyLoad();
+  // Favorites stay, non-fav capped at HISTORY_MAX
+  entries.unshift(entry);
+  const favs    = entries.filter(e => e.favorite);
+  const nonFavs = entries.filter(e => !e.favorite).slice(0, HISTORY_MAX);
+  entries = [...favs, ...nonFavs];
+  historySave(entries);
+  historyRender();
+}
+
+function historyClear() {
+  if (!confirm('Clear all history? Favorites will also be removed.')) return;
+  historySave([]);
+  historyRender();
+}
+
+function historyToggleFav(id) {
+  let entries = historyLoad();
+  const idx = entries.findIndex(e => e.id === id);
+  if (idx === -1) return;
+  const entry = entries[idx];
+  if (!entry.favorite) {
+    const favCount = entries.filter(e => e.favorite).length;
+    if (favCount >= HISTORY_FAV_MAX) {
+      alert(`Maximum of ${HISTORY_FAV_MAX} favorites allowed. Remove a favorite first.`);
+      return;
+    }
+    entry.favorite = true;
+  } else {
+    entry.favorite = false;
+  }
+  // Re-sort: favorites first
+  entries.sort((a, b) => (b.favorite ? 1 : 0) - (a.favorite ? 1 : 0));
+  historySave(entries);
+  historyRender();
+}
+
+function historyDeleteEntry(id) {
+  let entries = historyLoad();
+  entries = entries.filter(e => e.id !== id);
+  historySave(entries);
+  historyRender();
+}
+
+function historyLoadEntry(id) {
+  const entries = historyLoad();
+  const entry = entries.find(e => e.id === id);
+  if (!entry) return;
+
+  // Set replay flag so this run doesn't create a duplicate log entry
+  _historyReplaying = true;
+
+  // Restore Site A coords and height
+  document.getElementById('latA').value = entry.latA.toFixed(5);
+  document.getElementById('lngA').value = entry.lngA.toFixed(5);
+  if (entry.htA) {
+    document.getElementById('heightA').value = entry.htA;
+    document.getElementById('heightRangeA').value = entry.htA;
+    document.getElementById('heightValA').textContent = entry.htA + ' ft';
+  }
+
+  // Restore Site B mode and coords
+  const mode = entry.callsign ? 'licensee'
+             : entry.repeaterCall ? 'repeater'
+             : 'manual';
+  setSiteBMode(mode);
+
+  // Directly set _siteBCoords so analysis uses saved coords (no live lookup needed)
+  _siteBCoords = { lat: entry.latB, lng: entry.lngB };
+
+  // Also populate the lat/lng fields for reference
+  document.getElementById('latB').value = entry.latB.toFixed(5);
+  document.getElementById('lngB').value = entry.lngB.toFixed(5);
+  if (entry.htB) {
+    document.getElementById('heightB').value = entry.htB;
+    document.getElementById('heightRangeB').value = entry.htB;
+    document.getElementById('heightValB').textContent = entry.htB + ' ft';
+  }
+
+  // Restore licensee UI if applicable
+  if (mode === 'licensee' && entry.callsign) {
+    const callEl = document.getElementById('licCallsign');
+    const cardCall = document.getElementById('licCardCall');
+    const cardName = document.getElementById('licCardName');
+    if (callEl) callEl.value = entry.callsign;
+    if (cardCall) cardCall.textContent = entry.callsign;
+    if (cardName) cardName.textContent = entry.licenseName || '—';
+    const licCard = document.getElementById('licCard');
+    if (licCard) licCard.style.display = 'block';
+  }
+
+  // Restore repeater UI if applicable
+  if (mode === 'repeater' && entry.repeaterCall) {
+    const callEl = document.getElementById('rptrCallsign');
+    if (callEl) callEl.value = entry.repeaterCall;
+    const cardCall = document.getElementById('rptrCardCall');
+    const cardFreq = document.getElementById('rptrCardFreq');
+    const cardLoc  = document.getElementById('rptrCardLoc');
+    if (cardCall) cardCall.textContent = entry.repeaterCall;
+    if (cardFreq) cardFreq.textContent = entry.repeaterFreq ? entry.repeaterFreq + ' MHz' : '—';
+    if (cardLoc)  cardLoc.textContent  = entry.repeaterLoc || '—';
+    const rptrCard = document.getElementById('rptrCard');
+    if (rptrCard) rptrCard.style.display = 'block';
+  }
+
+  // Sync markers
+  if (typeof syncMarkerFromInputs === 'function') {
+    syncMarkerFromInputs('a');
+    syncMarkerFromInputs('b');
+  }
+
+  // On mobile: go to Results tab first; on desktop let analysis update map naturally
+  if (isMobile()) {
+    switchMobileTab('results');
+  }
+
+  // Run analysis; _historyReplaying is cleared in _doAnalysis finally block
+  runAnalysis();
+}
+
+function _historyGradeClass(grade) {
+  const map = { excellent:'hcard-grade-excellent', good:'hcard-grade-good',
+                 fair:'hcard-grade-fair', poor:'hcard-grade-poor', unlikely:'hcard-grade-unlikely' };
+  return map[grade] || 'hcard-grade-fair';
+}
+
+function historyRender() {
+  const list  = document.getElementById('historyList');
+  const empty = document.getElementById('historyEmpty');
+  if (!list) return;
+  const entries = historyLoad();
+
+  if (entries.length === 0) {
+    if (empty) empty.style.display = 'block';
+    // Remove all cards
+    list.querySelectorAll('.history-card').forEach(c => c.remove());
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  // Rebuild all cards
+  list.querySelectorAll('.history-card').forEach(c => c.remove());
+
+  entries.forEach(e => {
+    const card = document.createElement('div');
+    card.className = 'history-card' + (e.favorite ? ' is-favorite' : '');
+    card.dataset.id = e.id;
+
+    // Top identity line
+    let topHtml = '';
+    if (e.callsign) {
+      topHtml = `<div class="hcard-callsign">${e.callsign}</div>`;
+      if (e.licenseName) topHtml += `<div class="hcard-name">${e.licenseName}</div>`;
+    } else if (e.repeaterCall) {
+      topHtml = `<div class="hcard-callsign">${e.repeaterCall}</div>`;
+      if (e.repeaterFreq) topHtml += `<div class="hcard-name">${e.repeaterFreq} MHz</div>`;
+    } else {
+      const bLabel = e.labelB || `${e.latB.toFixed(3)}, ${e.lngB.toFixed(3)}`;
+      topHtml = `<div class="hcard-label">${bLabel}</div>`;
+    }
+
+    // Sub info
+    let subHtml = '';
+    if (e.repeaterLoc) subHtml += `<div>${e.repeaterLoc}</div>`;
+    if (e.band) subHtml += `<div>${e.band}</div>`;
+
+    const starClass = e.favorite ? 'hcard-star starred' : 'hcard-star';
+    const starIcon  = e.favorite ? '★' : '☆';
+
+    card.innerHTML = `
+      <div class="hcard-top">
+        <div style="flex:1;min-width:0;">${topHtml}</div>
+        <div class="hcard-actions">
+          <button class="${starClass}" title="${e.favorite ? 'Unpin favorite' : 'Pin as favorite'}"
+            onclick="event.stopPropagation();historyToggleFav('${e.id}')">${starIcon}</button>
+          <button class="hcard-delete" title="Remove"
+            onclick="event.stopPropagation();historyDeleteEntry('${e.id}')">✕</button>
+        </div>
+      </div>
+      ${subHtml ? `<div class="hcard-sub">${subHtml}</div>` : ''}
+      <div class="hcard-footer">
+        <span class="hcard-dist">${e.dist || '—'}</span>
+        <span class="hcard-grade ${_historyGradeClass(e.grade)}">${(e.gradeLabel || e.grade || '—').toUpperCase()}</span>
+      </div>
+      <div class="hcard-ts">${e.ts || ''}</div>
+    `;
+
+    card.addEventListener('click', () => historyLoadEntry(e.id));
+    list.appendChild(card);
+  });
+}
+
+// Called at end of successful _doAnalysis
+function historyLogResult(params) {
+  if (_historyReplaying) return;  // don't log when loading a history entry
+  const entry = {
+    id:          Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    ts:          new Date().toLocaleString(),
+    favorite:    false,
+    latA: params.latA, lngA: params.lngA,
+    latB: params.latB, lngB: params.lngB,
+    htA:  params.htA,  htB:  params.htB,
+    dist:        params.dist,
+    grade:       params.grade,
+    gradeLabel:  params.gradeLabel,
+    band:        params.band,
+    // Site B identity
+    callsign:    params.callsign    || null,
+    licenseName: params.licenseName || null,
+    repeaterCall:params.repeaterCall|| null,
+    repeaterFreq:params.repeaterFreq|| null,
+    repeaterLoc: params.repeaterLoc || null,
+    labelB:      params.labelB      || null,
+  };
+  historyAddEntry(entry);
+}
+
+// ── HISTORY ─────────────────────────────────────────────
 
 // ── Address clear buttons ──
 function updateAddrClear(site) {
@@ -1796,6 +2247,7 @@ let _analysisTimer   = null;
 let _analysisRunning = false;
 let _siteBMode   = 'manual';  // 'manual' | 'repeater' | 'licensee' | 'grid'
 let _siteBCoords = null;      // { lat, lng } set by lookup; null = use input fields
+let _historyReplaying = false; // suppresses logging when loading a history entry
 
 // Elevation cache: keyed by "latA,lngA,latB,lngB" rounded to 4dp
 // Same two endpoints = same 100 elevation samples; no need to re-fetch.
@@ -3186,6 +3638,35 @@ async function _doAnalysis() {
     clEl.textContent = fmtClearFtM(minClear) + (minClear >= 0 ? ' above LOS' : ' BELOW LOS');
     clEl.className   = 'stat-value '+(minClear>=0?'sv-b':'sv-warn');
 
+    // ── Log to history ──
+    const _histB = (!document.getElementById('siteBModeManual')?.classList.contains('mode-active') && _siteBCoords)
+      ? _siteBCoords : b;
+    const _histMode = _siteBMode;
+    const _histParams = {
+      latA: a.lat, lngA: a.lng,
+      latB: _histB.lat, lngB: _histB.lng,
+      htA:  parseFloat(document.getElementById('heightA').value) || 33,
+      htB:  parseFloat(document.getElementById('heightB').value) || 33,
+      dist:       fmtDist(D, false),
+      grade:      grade.grade,
+      gradeLabel: grade.label,
+      band:       FREQ_BANDS[currentBand].label,
+    };
+    // Site B identity based on mode
+    if (_histMode === 'licensee') {
+      _histParams.callsign    = document.getElementById('licCardCall')?.textContent || null;
+      _histParams.licenseName = document.getElementById('licCardName')?.textContent || null;
+    } else if (_histMode === 'repeater' && typeof _rptrSelected !== 'undefined' && _rptrSelected) {
+      _histParams.repeaterCall = _rptrSelected.Callsign || _rptrSelected['Call Sign'] || null;
+      _histParams.repeaterFreq = parseFloat(_rptrSelected.Frequency || _rptrSelected['Output Frequency'] || 0).toFixed(4);
+      _histParams.repeaterLoc  = [_rptrSelected['Nearest City'] || _rptrSelected.City || '', _rptrSelected.State || ''].filter(Boolean).join(', ');
+    } else if (_histMode === 'grid') {
+      _histParams.labelB = document.getElementById('gridInput')?.value || null;
+    } else {
+      _histParams.labelB = document.getElementById('addrB')?.value || `${_histB.lat.toFixed(4)}, ${_histB.lng.toFixed(4)}`;
+    }
+    historyLogResult(_histParams);
+
   } catch(err) {
     console.error('Analysis error:', err);
     const badge = document.getElementById('headerBadge');
@@ -3205,6 +3686,7 @@ async function _doAnalysis() {
     document.getElementById('loadingOverlay').classList.add('hidden');
     document.getElementById('calcBtn').disabled = false;
     _analysisRunning = false;
+    _historyReplaying = false;  // always clear after analysis completes
   }
 }
 
@@ -3983,6 +4465,7 @@ window.addEventListener('load', () => {
   setMapMode('off');
   initChartInteractivity();
   initLinkBudget();
+  historyRender();
   if (isMobile()) applyMobileLayout();
   // NOTE: intentionally NOT calling runAnalysis() on boot.
   // Default coordinates are placeholder values — no point burning an API call
