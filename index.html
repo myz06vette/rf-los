@@ -135,7 +135,7 @@
   .hf-main {
     flex: 1;
     display: grid;
-    grid-template-columns: var(--panel-w) 1fr 300px;
+    grid-template-columns: var(--panel-w) 1fr var(--hf-log-w, 320px);
     grid-template-rows: 1fr;
     min-height: 0;
     overflow: hidden;
@@ -165,6 +165,40 @@
     border-left: 1px solid var(--border);
     display: flex; flex-direction: column;
     overflow: hidden;
+    position: relative;
+    min-width: 200px;
+    max-width: 600px;
+  }
+  .hf-log-resize-handle {
+    position: absolute;
+    top: 0; left: 0; bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+    z-index: 10;
+    transition: background 0.15s;
+  }
+  .hf-log-resize-handle:hover,
+  .hf-log-resize-handle.dragging {
+    background: rgba(61,255,160,0.3);
+  }
+  /* Serial number badge on HF cards */
+  .hf-card-serial {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    color: var(--muted); opacity: 0.5;
+    letter-spacing: 0.06em;
+    min-width: 28px;
+    padding-top: 2px;
+  }
+  /* Drag-to-reorder states */
+  .hf-card[draggable="true"] { cursor: grab; }
+  .hf-card[draggable="true"]:active { cursor: grabbing; }
+  .hf-card.drag-over {
+    border-color: rgba(61,255,160,0.7) !important;
+    background: rgba(61,255,160,0.08) !important;
+  }
+  .hf-card.dragging-source {
+    opacity: 0.4;
   }
   .hf-log-header {
     padding: 14px 16px 10px;
@@ -202,6 +236,33 @@
     transition: color 0.15s, border-color 0.15s;
   }
   .hf-clear-btn:hover { color: #ff6b35; border-color: #ff6b35; }
+  /* Export bar below log header */
+  .hf-export-bar {
+    display: flex; gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .hf-export-btn {
+    flex: 1;
+    background: linear-gradient(135deg, rgba(61,255,160,0.08), rgba(0,112,243,0.08));
+    border: 1px solid rgba(61,255,160,0.3);
+    color: #3DFFA0;
+    font-family: 'Barlow', sans-serif;
+    font-size: 14px; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 10px 8px; border-radius: 6px; cursor: pointer;
+    transition: background 0.15s, box-shadow 0.15s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .hf-export-btn:hover {
+    background: linear-gradient(135deg, rgba(61,255,160,0.18), rgba(0,112,243,0.18));
+    box-shadow: 0 0 12px rgba(61,255,160,0.15);
+  }
+  .hf-export-btn-sub {
+    font-size: 10px; opacity: 0.7; letter-spacing: 0.08em;
+    display: block; margin-top: 1px;
+  }
   .hf-log-list {
     flex: 1; overflow-y: auto; overflow-x: hidden;
     padding: 10px 10px 16px;
@@ -567,7 +628,8 @@
     font-family:'Share Tech Mono',monospace; letter-spacing:0.07em;
     text-transform:uppercase; margin-bottom:5px;
   }
-  .field-group input[type="number"] {
+  .field-group input[type="number"],
+  .field-group input[type="text"] {
     width:100%; background:var(--bg); border:1px solid var(--border);
     border-radius:5px; color:var(--text);
     font-family:'Share Tech Mono',monospace; font-size:15px;
@@ -575,7 +637,8 @@
     -moz-appearance:textfield;
   }
   .field-group input[type="number"]::-webkit-inner-spin-button { -webkit-appearance:none; }
-  .field-group input[type="number"]:focus { border-color:#3DFFA0; }
+  .field-group input[type="number"]:focus,
+  .field-group input[type="text"]:focus { border-color:#3DFFA0; }
 
   /* Height */
   .height-row { display:flex; align-items:center; gap:10px; }
@@ -2009,6 +2072,12 @@
               <div class="site-dot site-dot-a"></div>
               <span class="site-label label-a">Site Alpha</span>
             </div>
+            <div class="field-group" style="margin-bottom:10px;">
+              <label>My Callsign</label>
+              <input type="text" id="hfMyCall" placeholder="N4MXB"
+                style="text-transform:uppercase;"
+                oninput="this.value=this.value.toUpperCase()">
+            </div>
             <div class="action-row">
               <button class="icon-btn" id="hfGpsA" onclick="hfUseMyGps()">🎯 Use My GPS</button>
             </div>
@@ -2039,14 +2108,30 @@
               <div class="site-dot site-dot-b"></div>
               <span class="site-label label-b">Callsign Lookup</span>
             </div>
-            <div class="address-row" style="margin-bottom:8px;">
-              <input class="lic-callsign" type="text" id="hfCallsign"
-                placeholder="Enter callsign…"
+
+            <!-- Callsign field -->
+            <div class="field-group" style="margin-bottom:8px;">
+              <label>Callsign</label>
+              <input type="text" id="hfCallsign"
+                placeholder="e.g. W4ABC"
                 onkeydown="if(event.key==='Enter')hfLookupCallsign()"
                 style="text-transform:uppercase;">
-              <button class="icon-btn" id="hfLookupBtn" onclick="hfLookupCallsign()" style="white-space:nowrap;">🔍 Look Up</button>
             </div>
+
+            <!-- POTA field — always visible, optional -->
+            <div class="field-group" style="margin-bottom:10px;">
+              <label>POTA Park <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional — leave blank if not a POTA activation)</span></label>
+              <input type="text" id="hfPotaRef"
+                placeholder="e.g. US-0001"
+                onkeydown="if(event.key==='Enter')hfLookupCallsign()"
+                style="text-transform:uppercase;">
+            </div>
+
+            <button class="icon-btn" id="hfLookupBtn" onclick="hfLookupCallsign()" style="width:100%;margin-bottom:10px;">🔍 Look Up</button>
+
             <div class="addr-status" id="hfLicStatus"></div>
+
+            <!-- Callsign result card -->
             <div class="lic-card" id="hfLicCard" style="display:none;margin-top:8px;">
               <div class="lic-card-badges" id="hfLicBadges"></div>
               <div class="lic-card-call" id="hfLicCall">—</div>
@@ -2054,6 +2139,20 @@
               <div class="lic-card-addr" id="hfLicAddr">—</div>
               <div class="lic-card-note" id="hfLicNote"></div>
             </div>
+
+            <!-- POTA result card — only shown when park ref resolved -->
+            <div id="hfPotaCard" style="display:none;margin-top:8px;background:rgba(105,255,71,0.04);border:1px solid rgba(105,255,71,0.2);border-radius:6px;padding:10px 12px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span id="hfPotaBadges"></span>
+                <span class="lic-card-call" id="hfPotaRef2" style="font-size:16px;"></span>
+              </div>
+              <div class="lic-card-name" id="hfPotaName"></div>
+              <div class="lic-card-addr" id="hfPotaLocation"></div>
+              <div class="lic-card-note" id="hfPotaNote"></div>
+              <div style="margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(105,255,71,0.7);">📍 Location set to park — operator QTH overridden</div>
+            </div>
+            <div class="addr-status" id="hfPotaStatus"></div>
+
           </div>
         </div>
 
@@ -2142,14 +2241,23 @@
 
       <!-- HF LOG PANEL -->
       <div class="hf-log-panel">
+        <div class="hf-log-resize-handle" id="hfLogResizeHandle" title="Drag to resize"></div>
         <div class="hf-log-header">
           <span class="hf-log-header-title">📋 HF Contact Log</span>
           <div class="hf-log-actions">
-            <button class="hf-show-all-toggle" id="hfShowAllBtn" onclick="hfToggleShowAll()">
-              Show All
-            </button>
+            <button class="hf-show-all-toggle" id="hfShowAllBtn" onclick="hfToggleShowAll()">Show All</button>
             <button class="hf-clear-btn" onclick="hfClearLog()">Clear</button>
           </div>
+        </div>
+        <div class="hf-export-bar">
+          <button class="hf-export-btn" onclick="hfExportADIF()" title="Import directly to QRZ, LOTW, eQSL, ClubLog, Ham Radio Deluxe">
+            ↓ Export Log
+            <span class="hf-export-btn-sub">ADIF · for QRZ / LOTW</span>
+          </button>
+          <button class="hf-export-btn" onclick="hfExportCSV()" title="Open in Excel, Google Sheets, or any spreadsheet">
+            ↓ Export Log
+            <span class="hf-export-btn-sub">CSV · for spreadsheet</span>
+          </button>
         </div>
         <div class="hf-log-list" id="hfLogList">
           <div class="hf-log-empty" id="hfLogEmpty">
@@ -5127,6 +5235,7 @@ function hfInit() {
   }
 
   hfRenderLog();
+  hfInitLogResize();
 }
 
 // ── GPS ────────────────────────────────────────────────────────
@@ -5171,76 +5280,148 @@ async function hfGeocodeA() {
   }
 }
 
-// ── Callsign Lookup ────────────────────────────────────────────
+// ── POTA optional expand/collapse ─────────────────────────────
+let _hfLookupMode = 'call'; // kept for backwards compat with hfLoadEntry
+
+// ── Unified Callsign + Optional POTA Lookup ───────────────────
 async function hfLookupCallsign() {
   const callsign = document.getElementById('hfCallsign').value.trim().toUpperCase();
   document.getElementById('hfCallsign').value = callsign;
+
+  // Normalize POTA ref if present
+  let potaRaw = document.getElementById('hfPotaRef').value.trim().toUpperCase();
+  if (/^\d+$/.test(potaRaw))   potaRaw = 'US-' + potaRaw.padStart(4, '0');
+  if (/^K-\d+$/.test(potaRaw)) potaRaw = 'US-' + potaRaw.slice(2).padStart(4, '0');
+  document.getElementById('hfPotaRef').value = potaRaw;
+  const hasPota = potaRaw.length >= 4;
+
   const statusEl = document.getElementById('hfLicStatus');
   const cardEl   = document.getElementById('hfLicCard');
+  const potaCardEl = document.getElementById('hfPotaCard');
+  const potaStatusEl = document.getElementById('hfPotaStatus');
 
-  if (!callsign) { statusEl.textContent = '⚠ Enter a callsign'; return; }
+  if (!callsign) { statusEl.textContent = '⚠ Enter a callsign'; statusEl.className = 'lic-status err'; return; }
   if (!REPEATER_PROXY) { statusEl.textContent = '⚠ Proxy not configured'; return; }
 
-  cardEl.style.display = 'none';
-  statusEl.textContent = '⏳ Looking up ' + callsign + '…';
-  statusEl.className   = 'lic-status';
+  // Reset cards
+  cardEl.style.display    = 'none';
+  potaCardEl.style.display = 'none';
+  potaStatusEl.textContent = '';
+  statusEl.textContent    = hasPota ? `⏳ Looking up ${callsign} + ${potaRaw}…` : `⏳ Looking up ${callsign}…`;
+  statusEl.className      = 'lic-status';
   document.getElementById('hfLookupBtn').disabled = true;
   _hfCurrentContact = null;
 
-  try {
-    const url  = `${REPEATER_PROXY}?callsign=${encodeURIComponent(callsign)}&type=licensee`;
-    const resp = await fetch(url);
-    const data = await resp.json();
+  // ── Run callsign + optional POTA lookups in parallel ──
+  const callPromise = fetch(`${REPEATER_PROXY}?callsign=${encodeURIComponent(callsign)}&type=licensee`)
+    .then(r => r.json());
+  const potaPromise = hasPota
+    ? fetch(`https://api.pota.app/park/${encodeURIComponent(potaRaw)}`).then(r => {
+        if (r.status === 404) throw new Error(`Park ${potaRaw} not found`);
+        if (!r.ok)            throw new Error(`POTA API returned ${r.status}`);
+        return r.json();
+      })
+    : Promise.resolve(null);
 
-    if (data.error === 'GMRS_NO_API') {
+  try {
+    const [callData, potaData] = await Promise.all([callPromise, potaPromise]);
+
+    // ── Process callsign result ──
+    if (callData.error === 'GMRS_NO_API') {
       statusEl.textContent = '⚠ GMRS callsigns cannot be looked up via API';
       statusEl.className = 'lic-status err';
       return;
     }
-    if (data.error) throw new Error(data.error);
+    if (callData.error) throw new Error(callData.error);
 
-    const name = [data.fname, data.name].filter(Boolean).join(' ') || data.name || '—';
-    const addrParts = [data.addr1, data.addr2, data.state, data.zip].filter(Boolean);
-    const addrStr = addrParts.join(', ');
+    const name     = [callData.fname, callData.name].filter(Boolean).join(' ') || '—';
+    const addrParts = [callData.addr1, callData.addr2, callData.state, callData.zip].filter(Boolean);
+    const addrStr   = addrParts.join(', ');
+    const isGmrs    = callData.source === 'fcc_uls';
 
-    // Build badges
-    const isGmrs = data.source === 'fcc_uls';
     const badgesEl = document.getElementById('hfLicBadges');
     badgesEl.innerHTML = isGmrs
       ? '<span class="lic-badge lic-badge-gmrs">GMRS</span>'
       : '<span class="lic-badge lic-badge-ham">Amateur</span>';
-    if (data.class && !isGmrs) {
+    if (callData.class && !isGmrs) {
       const classLabels = { T:'Technician', G:'General', A:'Advanced', E:'Extra' };
-      badgesEl.innerHTML += `<span class="lic-badge lic-badge-class">${classLabels[data.class] || data.class}</span>`;
+      badgesEl.innerHTML += `<span class="lic-badge lic-badge-class">${classLabels[callData.class] || callData.class}</span>`;
     }
 
-    document.getElementById('hfLicCall').textContent = data.callsign || callsign;
+    document.getElementById('hfLicCall').textContent = callData.callsign || callsign;
     document.getElementById('hfLicName').textContent = name;
     document.getElementById('hfLicAddr').textContent = addrStr || 'Address not available';
     cardEl.style.display = 'block';
     cardEl.classList.add('visible');
-    statusEl.textContent = `✓ Found: ${data.callsign}`;
-    statusEl.className = 'lic-status ok';
+    statusEl.textContent = `✓ ${callData.callsign}`;
+    statusEl.className   = 'lic-status ok';
 
-    // Place contact marker on map
-    if (data.lat && data.lon) {
-      const lat = parseFloat(data.lat), lng = parseFloat(data.lon);
-      _hfCurrentContact = { callsign: data.callsign || callsign, name, lat, lng };
-      document.getElementById('hfLicNote').textContent = data.grid
-        ? `📍 Grid: ${data.grid}`
-        : '📍 FCC geocoded';
-      hfPlotContact(_hfCurrentContact, false); // preview — not yet logged
-      // Update map info overlay
+    // Get licensee coords
+    let licLat = null, licLng = null;
+    if (callData.lat && callData.lon) {
+      licLat = parseFloat(callData.lat);
+      licLng = parseFloat(callData.lon);
+      document.getElementById('hfLicNote').textContent = callData.grid
+        ? `📍 Grid: ${callData.grid}` : '📍 FCC geocoded';
+    }
+
+    // ── Build contact object ──
+    // Default location = licensee QTH; POTA overrides if present
+    _hfCurrentContact = {
+      callsign: callData.callsign || callsign,
+      name,
+      lat: licLat, lng: licLng,
+      _licLat: licLat, _licLng: licLng,
+    };
+
+    // ── Process POTA result (if present) ──
+    if (potaData) {
+      const parkName  = potaData.name || potaData.parkName || '—';
+      const location  = [potaData.locationName, potaData.entityName].filter(Boolean).join(' — ');
+      const grid      = potaData.grid6 || potaData.grid || '';
+      const parkLat   = parseFloat(potaData.latitude);
+      const parkLng   = parseFloat(potaData.longitude);
+      const website   = potaData.website || '';
+      const active    = potaData.active !== false;
+
+      document.getElementById('hfPotaBadges').innerHTML =
+        `<span class="lic-badge lic-badge-ham" style="background:rgba(105,255,71,0.12);border-color:rgba(105,255,71,0.4);color:#69ff47;">🌲 POTA</span>` +
+        (!active ? `<span class="lic-badge" style="color:#ff6b35;border-color:rgba(255,107,53,0.4);">Inactive</span>` : '');
+      document.getElementById('hfPotaRef2').textContent     = potaRaw;
+      document.getElementById('hfPotaName').textContent     = parkName;
+      document.getElementById('hfPotaLocation').textContent = location || 'Location not available';
+      document.getElementById('hfPotaNote').textContent     =
+        [grid ? `📍 Grid: ${grid}` : '', website ? `🌐 ${website}` : ''].filter(Boolean).join('  ·  ');
+      potaCardEl.style.display   = 'block';
+      potaStatusEl.textContent   = `✓ ${potaRaw} — ${parkName}`;
+      potaStatusEl.className     = 'lic-status ok';
+
+      // Override location with park coords
+      if (!isNaN(parkLat) && !isNaN(parkLng)) {
+        _hfCurrentContact.lat          = parkLat;
+        _hfCurrentContact.lng          = parkLng;
+        _hfCurrentContact.potaRef      = potaRaw;
+        _hfCurrentContact.potaName     = parkName;
+        _hfCurrentContact.potaLocation = location;
+        _hfCurrentContact.potaGrid     = grid;
+      }
+    }
+
+    // ── Plot on map ──
+    if (_hfCurrentContact.lat && _hfCurrentContact.lng) {
+      hfPlotContact(_hfCurrentContact, false);
       hfUpdateMapInfo(_hfCurrentContact);
-    } else if (addrStr) {
+    } else if (addrStr && !potaData) {
+      // Fallback geocode only if no POTA park provided coords
       document.getElementById('hfLicNote').textContent = '⏳ Geocoding address…';
-      hfGeocodeLicenseeForHf(addrStr, data.callsign || callsign, name);
+      hfGeocodeLicenseeForHf(addrStr, callData.callsign || callsign, name);
     } else {
       document.getElementById('hfLicNote').textContent = '⚠ No coordinates available';
     }
+
   } catch(err) {
     statusEl.textContent = `✗ Lookup failed: ${err.message}`;
-    statusEl.className = 'lic-status err';
+    statusEl.className   = 'lic-status err';
   } finally {
     document.getElementById('hfLookupBtn').disabled = false;
   }
@@ -5256,7 +5437,10 @@ async function hfGeocodeLicenseeForHf(addrStr, callsign, name) {
     const cand = data?.candidates?.[0];
     if (!cand || cand.score < 60) throw new Error('Low confidence');
     const lat = cand.location.y, lng = cand.location.x;
-    _hfCurrentContact = { callsign, name, lat, lng };
+    if (_hfCurrentContact) {
+      _hfCurrentContact.lat = lat; _hfCurrentContact.lng = lng;
+      _hfCurrentContact._licLat = lat; _hfCurrentContact._licLng = lng;
+    }
     noteEl.textContent = `📍 Geocoded from address`;
     hfPlotContact(_hfCurrentContact, false);
     hfUpdateMapInfo(_hfCurrentContact);
@@ -5377,6 +5561,11 @@ function hfLogContact() {
     freq:     freq.toFixed(6),
     mode, rst, notes,
     dist:     fmtDist(d*1000, false),
+    // POTA fields (null if callsign lookup)
+    potaRef:      _hfCurrentContact.potaRef      || null,
+    potaName:     _hfCurrentContact.potaName     || null,
+    potaLocation: _hfCurrentContact.potaLocation || null,
+    potaGrid:     _hfCurrentContact.potaGrid     || null,
   };
 
   // Save to storage
@@ -5400,6 +5589,9 @@ function hfLogContact() {
   document.getElementById('hfCallsign').value = '';
   document.getElementById('hfLicCard').style.display = 'none';
   document.getElementById('hfLicStatus').textContent = '';
+  document.getElementById('hfPotaRef').value = '';
+  document.getElementById('hfPotaCard').style.display = 'none';
+  document.getElementById('hfPotaStatus').textContent = '';
   document.getElementById('hfRst').value = '';
   document.getElementById('hfNotes').value = '';
   document.getElementById('hfMapInfo').style.display = 'none';
@@ -5470,15 +5662,22 @@ function hfRenderLog() {
   }
   if (empty) empty.style.display = 'none';
 
-  log.forEach(e => {
+  log.forEach((e, idx) => {
+    const serial = String(idx + 1).padStart(3, '0');
     const card = document.createElement('div');
     card.className = 'hf-card';
     card.dataset.id = e.id;
+    card.draggable = true;
+
     card.innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
-        <div>
-          <div class="hf-card-call">${e.callsign}</div>
-          <div class="hf-card-name">${e.name || ''}</div>
+        <div style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;">
+          <span class="hf-card-serial">#${serial}</span>
+          <div style="flex:1;min-width:0;">
+            <div class="hf-card-call">${e.callsign}</div>
+            <div class="hf-card-name">${e.potaRef ? `🌲 ${e.potaName || e.potaRef}` : (e.name || '')}</div>
+            ${e.potaLocation ? `<div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);margin-top:2px;">${e.potaLocation}</div>` : ''}
+          </div>
         </div>
         <button class="hf-card-delete" title="Remove"
           onclick="event.stopPropagation();hfDeleteEntry('${e.id}')">✕</button>
@@ -5492,10 +5691,123 @@ function hfRenderLog() {
       </div>
       ${e.notes ? `<div class="hf-card-ts" style="opacity:0.7;margin-top:5px;">${e.notes}</div>` : ''}
     `;
+
     card.addEventListener('click', () => hfLoadEntry(e.id));
+
+    // ── Drag-to-reorder events ──
+    card.addEventListener('dragstart', ev => {
+      ev.dataTransfer.effectAllowed = 'move';
+      ev.dataTransfer.setData('text/plain', e.id);
+      card.classList.add('dragging-source');
+    });
+    card.addEventListener('dragend', () => {
+      card.classList.remove('dragging-source');
+      list.querySelectorAll('.hf-card').forEach(c => c.classList.remove('drag-over'));
+    });
+    card.addEventListener('dragover', ev => {
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = 'move';
+      list.querySelectorAll('.hf-card').forEach(c => c.classList.remove('drag-over'));
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('dragleave', () => {
+      card.classList.remove('drag-over');
+    });
+    card.addEventListener('drop', ev => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const draggedId = ev.dataTransfer.getData('text/plain');
+      if (draggedId === e.id) return;
+      hfReorderEntries(draggedId, e.id);
+    });
+
     list.appendChild(card);
   });
+
+  // Touch drag support (mobile)
+  hfInitTouchDrag(list);
 }
+
+// ── Reorder: move draggedId to position of targetId ──
+function hfReorderEntries(draggedId, targetId) {
+  let log = hfLoadLog();
+  const fromIdx = log.findIndex(e => e.id === draggedId);
+  const toIdx   = log.findIndex(e => e.id === targetId);
+  if (fromIdx === -1 || toIdx === -1) return;
+  const [moved] = log.splice(fromIdx, 1);
+  log.splice(toIdx, 0, moved);
+  hfSaveLog(log);
+  hfRenderLog();
+}
+
+// ── Touch drag for mobile reordering ──
+function hfInitTouchDrag(list) {
+  let touchDragId = null, touchPlaceholder = null, lastOver = null;
+
+  list.querySelectorAll('.hf-card').forEach(card => {
+    card.addEventListener('touchstart', ev => {
+      if (ev.touches.length !== 1) return;
+      touchDragId = card.dataset.id;
+      card.classList.add('dragging-source');
+    }, { passive: true });
+
+    card.addEventListener('touchmove', ev => {
+      if (!touchDragId) return;
+      ev.preventDefault();
+      const touch = ev.touches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const target = el?.closest('.hf-card');
+      if (target && target.dataset.id !== touchDragId) {
+        if (lastOver && lastOver !== target) lastOver.classList.remove('drag-over');
+        target.classList.add('drag-over');
+        lastOver = target;
+      }
+    }, { passive: false });
+
+    card.addEventListener('touchend', () => {
+      if (!touchDragId) return;
+      if (lastOver) {
+        hfReorderEntries(touchDragId, lastOver.dataset.id);
+        lastOver = null;
+      } else {
+        card.classList.remove('dragging-source');
+        list.querySelectorAll('.hf-card').forEach(c => c.classList.remove('drag-over'));
+      }
+      touchDragId = null;
+    });
+  });
+}
+
+// ── Log panel resize ──
+function hfInitLogResize() {
+  const handle  = document.getElementById('hfLogResizeHandle');
+  const hfMain  = document.querySelector('.hf-main');
+  if (!handle || !hfMain) return;
+
+  let startX = 0, startW = 0;
+
+  handle.addEventListener('mousedown', ev => {
+    ev.preventDefault();
+    startX = ev.clientX;
+    const logPanel = document.querySelector('.hf-log-panel');
+    startW = logPanel ? logPanel.offsetWidth : 320;
+    handle.classList.add('dragging');
+
+    function onMove(e) {
+      const delta = startX - e.clientX;  // dragging left = wider
+      const newW  = Math.min(600, Math.max(200, startW + delta));
+      hfMain.style.setProperty('--hf-log-w', newW + 'px');
+    }
+    function onUp() {
+      handle.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+}
+
 
 function hfDeleteEntry(id) {
   let log = hfLoadLog();
@@ -5514,30 +5826,52 @@ function hfLoadEntry(id) {
   document.getElementById('hfLngA').value = e.lngA.toFixed(5);
   if (_hfMarkerA) _hfMarkerA.setLatLng([e.latA, e.lngA]);
 
-  // Preview this contact on map
-  _hfCurrentContact = { callsign: e.callsign, name: e.name, lat: e.lat, lng: e.lng };
+  // Restore contact object with POTA fields if applicable
+  _hfCurrentContact = {
+    callsign: e.callsign, name: e.name,
+    lat: e.lat, lng: e.lng,
+    potaRef: e.potaRef || null, potaName: e.potaName || null,
+    potaLocation: e.potaLocation || null, potaGrid: e.potaGrid || null,
+  };
   hfPlotContact(_hfCurrentContact, false);
   hfUpdateMapInfo(_hfCurrentContact);
 
   // Restore form
-  document.getElementById('hfCallsign').value = e.callsign;
   hfSetBand(e.band);
   document.getElementById('hfFreq').value  = e.freq;
   document.getElementById('hfMode').value  = e.mode;
   document.getElementById('hfRst').value   = e.rst !== '—' ? e.rst : '';
   document.getElementById('hfNotes').value = e.notes || '';
 
-  // Show licensee card info
-  const cardEl = document.getElementById('hfLicCard');
-  document.getElementById('hfLicCall').textContent = e.callsign;
-  document.getElementById('hfLicName').textContent = e.name || '—';
-  document.getElementById('hfLicAddr').textContent = '';
-  document.getElementById('hfLicNote').textContent = `📍 ${e.dist} · ${e.ts}`;
-  document.getElementById('hfLicBadges').innerHTML = '';
-  cardEl.style.display = 'block';
-  cardEl.classList.add('visible');
+  // Always restore callsign pane (callsign is always primary)
+  document.getElementById('hfCallsign').value        = e.callsign;
+  document.getElementById('hfLicCall').textContent   = e.callsign;
+  document.getElementById('hfLicName').textContent   = e.name || '—';
+  document.getElementById('hfLicAddr').textContent   = '';
+  document.getElementById('hfLicNote').textContent   = `📍 ${e.dist} · ${e.ts}`;
+  document.getElementById('hfLicBadges').innerHTML   = '';
+  document.getElementById('hfLicCard').style.display = 'block';
+  document.getElementById('hfLicCard').classList.add('visible');
   document.getElementById('hfLicStatus').textContent = `✓ Loaded: ${e.callsign}`;
-  document.getElementById('hfLicStatus').className = 'lic-status ok';
+  document.getElementById('hfLicStatus').className   = 'lic-status ok';
+
+  // Restore POTA overlay if this contact had one
+  if (e.potaRef) {
+    // Auto-expand POTA section and show park data
+    document.getElementById('hfPotaRef').value             = e.potaRef;
+    document.getElementById('hfPotaRef2').textContent      = e.potaRef;
+    document.getElementById('hfPotaName').textContent      = e.potaName || '—';
+    document.getElementById('hfPotaLocation').textContent  = e.potaLocation || '—';
+    document.getElementById('hfPotaNote').textContent      = e.potaGrid ? `📍 Grid: ${e.potaGrid}` : '';
+    document.getElementById('hfPotaBadges').innerHTML      = `<span class="lic-badge lic-badge-ham" style="background:rgba(105,255,71,0.12);border-color:rgba(105,255,71,0.4);color:#69ff47;">🌲 POTA</span>`;
+    document.getElementById('hfPotaCard').style.display    = 'block';
+    document.getElementById('hfPotaStatus').textContent    = `✓ ${e.potaRef} — ${e.potaName || ''}`;
+    document.getElementById('hfPotaStatus').className      = 'lic-status ok';
+  } else {
+    document.getElementById('hfPotaRef').value             = '';
+    document.getElementById('hfPotaCard').style.display    = 'none';
+    document.getElementById('hfPotaStatus').textContent    = '';
+  }
 
   if (isMobile()) hfSwitchMobTab('map');
 }
@@ -5596,6 +5930,198 @@ function hfSwitchMobTab(tab) {
     if (hfLogPanel) { hfLogPanel.style.display = 'flex'; hfLogPanel.style.flexDirection = 'column'; }
     document.getElementById('hfMobTabLog')?.classList.add('active');
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── HF EXPORT ─────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+
+// Convert stored "YYYY-MM-DD HH:MM:SS EST" to UTC QSO_DATE + TIME_ON
+function hfEstToUtc(tsStr) {
+  const m = tsStr.match(/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/);
+  if (!m) return { date: '00000000', time: '000000' };
+  // Build an ISO string and let JS parse it as America/New_York
+  // Strategy: Create a Date by appending -05:00 (EST), then read UTC.
+  // This is accurate for EST; during EDT (Mar-Nov) may be 1hr off — acceptable.
+  // For better accuracy we check if DST is active on that date.
+  const localIso = `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}`;
+  // Detect DST: compare what NY time a UTC Date at that moment would show
+  // We create a temp Date at UTC-5 and check if NY offset on that date is -4 (EDT)
+  const dEst = new Date(`${localIso}-05:00`);
+  const nyOffset = -new Date(dEst).toLocaleString('en-US',
+    { timeZone:'America/New_York', timeZoneName:'shortOffset' })
+    .match(/GMT([+-]\d+)/)?.[1] || 5;
+  // Re-parse with correct offset
+  const offset = parseInt(nyOffset) || -5;
+  const sign = offset >= 0 ? '+' : '-';
+  const absOff = String(Math.abs(offset)).padStart(2,'0');
+  const d = new Date(`${localIso}${sign}${absOff}:00`);
+  return {
+    date: d.getUTCFullYear().toString()
+        + String(d.getUTCMonth()+1).padStart(2,'0')
+        + String(d.getUTCDate()).padStart(2,'0'),
+    time: String(d.getUTCHours()).padStart(2,'0')
+        + String(d.getUTCMinutes()).padStart(2,'0')
+        + String(d.getUTCSeconds()).padStart(2,'0'),
+  };
+}
+
+// Compute 6-char Maidenhead grid from lat/lng
+function hfLatLngToGrid(lat, lng) {
+  const L = lng + 180, l = lat + 90;
+  return (
+    String.fromCharCode(65 + Math.floor(L / 20)) +
+    String.fromCharCode(65 + Math.floor(l / 10)) +
+    Math.floor((L % 20) / 2) +
+    Math.floor(l % 10) +
+    String.fromCharCode(65 + Math.floor((L % 2) * 12)) +
+    String.fromCharCode(65 + Math.floor((l % 1) * 24))
+  ).toUpperCase();
+}
+
+// Build a single ADIF field specifier: <NAME:LEN>VALUE
+function adifField(name, value) {
+  if (value === null || value === undefined || value === '' || value === '—') return '';
+  const v = String(value);
+  return `<${name}:${v.length}>${v}`;
+}
+
+// Convert our band string "40m" → ADIF "40M"
+function hfBandToAdif(band) {
+  return band.toUpperCase();  // e.g. "40m" → "40M"
+}
+
+// Convert our mode string to ADIF-valid mode
+// ADIF mode enumeration: SSB, CW, AM, FM, RTTY, PSK31, FT8, FT4, JS8, etc.
+// Most of ours already match. JS8 → JS8CALL in some loggers but JS8 is valid in ADIF 3.x
+function hfModeToAdif(mode) {
+  const map = { 'JS8': 'JS8', 'PSK31': 'PSK31', 'FT8': 'FT8', 'FT4': 'FT4' };
+  return map[mode] || mode;
+}
+
+// ── ADIF Export ────────────────────────────────────────────────
+function hfExportADIF() {
+  const log = hfLoadLog();
+  if (log.length === 0) { alert('No contacts to export.'); return; }
+
+  const myCall = (document.getElementById('hfMyCall')?.value || '').trim().toUpperCase();
+  const latA   = parseFloat(document.getElementById('hfLatA')?.value);
+  const lngA   = parseFloat(document.getElementById('hfLngA')?.value);
+  const myGrid = (!isNaN(latA) && !isNaN(lngA)) ? hfLatLngToGrid(latA, lngA) : '';
+
+  const now = new Date();
+  const programId  = 'N4MXB RF LOS Tool';
+  const adifVer    = '3.1.7';
+  const created    = now.toISOString().slice(0,19).replace('T',' ') + ' UTC';
+
+  // ── Header ──
+  let out = `HF Contact Log exported from Mike's RF LOS Tool\r\n`;
+  out    += `Created: ${created}\r\n`;
+  if (myCall) out += `Station: ${myCall}\r\n`;
+  out    += `Records: ${log.length}\r\n`;
+  out    += `<adif_ver:${adifVer.length}>${adifVer}`;
+  out    += `<programid:${programId.length}>${programId}`;
+  out    += `<EOH>\r\n\r\n`;
+
+  // ── Records ──
+  log.forEach((e, idx) => {
+    const { date, time } = hfEstToUtc(e.ts);
+    const contactGrid = (!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lng)))
+      ? hfLatLngToGrid(parseFloat(e.lat), parseFloat(e.lng)) : '';
+
+    let rec = '';
+    rec += adifField('CALL',             e.callsign);
+    rec += adifField('QSO_DATE',         date);
+    rec += adifField('TIME_ON',          time);
+    rec += adifField('BAND',             hfBandToAdif(e.band));
+    rec += adifField('FREQ',             e.freq);
+    rec += adifField('MODE',             hfModeToAdif(e.mode));
+    rec += adifField('RST_SENT',         e.rst !== '—' ? e.rst : '');
+    rec += adifField('NAME',             e.name);
+    rec += adifField('COMMENT',          e.notes);
+    rec += adifField('GRIDSQUARE',       e.potaGrid || contactGrid);
+    if (e.potaRef) {
+      rec += adifField('SIG',      'POTA');
+      rec += adifField('SIG_INFO', e.potaRef);
+    }
+    if (myCall)  rec += adifField('STATION_CALLSIGN', myCall);
+    if (myGrid)  rec += adifField('MY_GRIDSQUARE',    myGrid);
+    rec += '<EOR>\r\n\r\n';
+
+    out += rec;
+  });
+
+  // ── Download ──
+  const blob = new Blob([out], { type: 'text/plain;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const dateTag = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.href     = url;
+  a.download = `hf_log_${myCall || 'N4MXB'}_${dateTag}.adi`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// ── CSV Export ────────────────────────────────────────────────
+function hfExportCSV() {
+  const log = hfLoadLog();
+  if (log.length === 0) { alert('No contacts to export.'); return; }
+
+  const myCall = (document.getElementById('hfMyCall')?.value || '').trim().toUpperCase();
+
+  const headers = [
+    'Serial','Date (UTC)','Time (UTC)','My Call','Callsign','Name',
+    'Band','Freq (MHz)','Mode','RST Sent','Distance','Grid',
+    'POTA Ref','POTA Park','POTA Location','Notes'
+  ];
+
+  function csvCell(v) {
+    if (v === null || v === undefined) return '';
+    const s = String(v);
+    if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+      return '"' + s.replace(/"/g,'""') + '"';
+    }
+    return s;
+  }
+
+  let rows = [headers.map(csvCell).join(',')];
+
+  log.forEach((e, idx) => {
+    const { date, time } = hfEstToUtc(e.ts);
+    const dateFormatted = `${date.slice(0,4)}-${date.slice(4,6)}-${date.slice(6,8)}`;
+    const timeFormatted = `${time.slice(0,2)}:${time.slice(2,4)}:${time.slice(4,6)}`;
+    const grid = e.potaGrid || ((!isNaN(parseFloat(e.lat)) && !isNaN(parseFloat(e.lng)))
+      ? hfLatLngToGrid(parseFloat(e.lat), parseFloat(e.lng)) : '');
+
+    rows.push([
+      String(idx+1).padStart(3,'0'),
+      dateFormatted,
+      timeFormatted,
+      myCall,
+      e.callsign,
+      e.name || '',
+      hfBandToAdif(e.band),
+      e.freq,
+      e.mode,
+      e.rst !== '—' ? e.rst : '',
+      e.dist || '',
+      grid,
+      e.potaRef      || '',
+      e.potaName     || '',
+      e.potaLocation || '',
+      e.notes || ''
+    ].map(csvCell).join(','));
+  });
+
+  const csv  = rows.join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const dateTag = new Date().toISOString().slice(0,10).replace(/-/g,'');
+  a.href     = url;
+  a.download = `hf_log_${myCall || 'N4MXB'}_${dateTag}.csv`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
 }
 
 </script>
