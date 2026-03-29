@@ -2072,11 +2072,15 @@
               <div class="site-dot site-dot-a"></div>
               <span class="site-label label-a">Site Alpha</span>
             </div>
-            <div class="field-group" style="margin-bottom:10px;">
+            <div class="field-group" style="margin-bottom:8px;">
               <label>My Callsign</label>
-              <input type="text" id="hfMyCall" placeholder="N4MXB"
-                style="text-transform:uppercase;"
-                oninput="this.value=this.value.toUpperCase()">
+              <div class="address-row" style="margin-bottom:0;">
+                <input type="text" id="hfMyCall" placeholder="N4MXB"
+                  style="text-transform:uppercase;"
+                  oninput="this.value=this.value.toUpperCase();hfSaveStation()">
+                <button class="icon-btn" onclick="hfLookupMyCallsign()" title="Look up QTH from FCC" style="white-space:nowrap;">🔍 QTH</button>
+              </div>
+              <div class="addr-status" id="hfMyCallStatus"></div>
             </div>
             <div class="action-row">
               <button class="icon-btn" id="hfGpsA" onclick="hfUseMyGps()">🎯 Use My GPS</button>
@@ -2090,11 +2094,13 @@
             <div class="coord-row">
               <div class="field-group">
                 <label>Latitude</label>
-                <input type="number" id="hfLatA" value="39.8283" step="0.00001">
+                <input type="number" id="hfLatA" value="39.8283" step="0.00001"
+                  onchange="hfSaveStation()">
               </div>
               <div class="field-group">
                 <label>Longitude</label>
-                <input type="number" id="hfLngA" value="-98.5795" step="0.00001">
+                <input type="number" id="hfLngA" value="-98.5795" step="0.00001"
+                  onchange="hfSaveStation()">
               </div>
             </div>
           </div>
@@ -5119,6 +5125,7 @@ let _hfMarkerA     = null;
 let _hfContactMarkers = [];  // all plotted contact markers
 let _hfPolylines   = [];     // lines from A to each contact
 let _hfShowAll     = true;
+let _hfBulkReplotting = false; // suppresses fitBounds during replotAll
 let _hfCurrentContact = null; // { callsign, lat, lng, name } from last lookup
 let _hfSelectedBand = '40m';
 let _hfMobTab      = 'controls';
@@ -5175,33 +5182,49 @@ function hfInit() {
   // Live EST clock — updates every second
   function hfTickClock() {
     const now = new Date();
-    // Format in US Eastern time
     const estOpts = { timeZone: 'America/New_York', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
     const dateOpts = { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' };
-    const timeStr = now.toLocaleTimeString('en-US', estOpts);   // e.g. "14:32:07"
-    const dateParts = now.toLocaleDateString('en-US', dateOpts).split('/'); // MM/DD/YYYY
+    const timeStr = now.toLocaleTimeString('en-US', estOpts);
+    const dateParts = now.toLocaleDateString('en-US', dateOpts).split('/');
     const dateStr = `${dateParts[2]}-${dateParts[0].padStart(2,'0')}-${dateParts[1].padStart(2,'0')}`;
-
     const timeEl = document.getElementById('hfTime');
     const dateEl = document.getElementById('hfDate');
     const liveEl = document.getElementById('hfTimeLive');
-
-    // Only auto-update date if user hasn't changed it
     if (dateEl && !dateEl.dataset.userSet) dateEl.value = dateStr;
     if (timeEl) timeEl.value = timeStr;
     if (liveEl) liveEl.textContent = '● LIVE';
   }
   hfTickClock();
   setInterval(hfTickClock, 1000);
-
-  // Allow user to manually override the date without auto-reset
   const dateEl = document.getElementById('hfDate');
   if (dateEl) dateEl.addEventListener('change', () => { dateEl.dataset.userSet = '1'; });
 
-  // Init HF map
+  // ── Load saved station (callsign + QTH) ──
+  const saved = hfLoadStation();
+  let initLat = 39.8283, initLng = -98.5795, hasSavedLocation = false;
+
+  if (saved) {
+    if (saved.callsign) {
+      document.getElementById('hfMyCall').value = saved.callsign;
+    }
+    if (saved.lat && saved.lng && !(saved.lat === 39.8283 && saved.lng === -98.5795)) {
+      initLat = saved.lat;
+      initLng = saved.lng;
+      hasSavedLocation = true;
+      document.getElementById('hfLatA').value = initLat.toFixed(5);
+      document.getElementById('hfLngA').value = initLng.toFixed(5);
+      if (saved.addr) {
+        document.getElementById('hfAddrA').value = saved.addr;
+      }
+      document.getElementById('hfAddrStatusA').textContent = '✓ Home QTH restored';
+    }
+  }
+
+  // ── Init HF map ──
   _hfMap = L.map('hf-map', {
-    center: [39.8283, -98.5795],
-    zoom: 4,
+    center: [initLat, initLng],
+    zoom: hasSavedLocation ? 7 : 4,
+    minZoom: 3,
     zoomControl: true,
   });
 
@@ -5209,21 +5232,21 @@ function hfInit() {
     attribution: 'Imagery © Esri', maxZoom: 19
   }).addTo(_hfMap);
 
-  // Place Site A marker at default coords
   const ICON_A = L.divIcon({
     className: '',
     html: '<div style="width:14px;height:14px;background:#00e5ff;border:2px solid #fff;border-radius:50%;box-shadow:0 0 8px #00e5ff;"></div>',
     iconSize: [14,14], iconAnchor: [7,7]
   });
-  _hfMarkerA = L.marker([39.8283, -98.5795], { icon: ICON_A, draggable: true, title: 'My Station' }).addTo(_hfMap);
+  _hfMarkerA = L.marker([initLat, initLng], { icon: ICON_A, draggable: true, title: 'My Station' }).addTo(_hfMap);
   _hfMarkerA.on('dragend', () => {
     const ll = _hfMarkerA.getLatLng();
     document.getElementById('hfLatA').value = ll.lat.toFixed(5);
     document.getElementById('hfLngA').value = ll.lng.toFixed(5);
+    hfSaveStation();
   });
 
-  // Try geolocation on init
-  if ('geolocation' in navigator) {
+  // Only try GPS if no saved location exists
+  if (!hasSavedLocation && 'geolocation' in navigator) {
     navigator.geolocation.getCurrentPosition(pos => {
       const { latitude: lat, longitude: lng } = pos.coords;
       document.getElementById('hfLatA').value = lat.toFixed(5);
@@ -5231,15 +5254,81 @@ function hfInit() {
       _hfMarkerA.setLatLng([lat, lng]);
       _hfMap.setView([lat, lng], 7);
       document.getElementById('hfAddrStatusA').textContent = '✓ Located via GPS';
+      hfSaveStation();
     }, () => {/* silently ignore denial */});
   }
 
   hfRenderLog();
   hfInitLogResize();
-  // Show All is on by default — activate button and plot any saved contacts
   const showAllBtn = document.getElementById('hfShowAllBtn');
   if (showAllBtn) showAllBtn.classList.add('on');
   hfReplotAll();
+}
+
+// ── Station persistence ────────────────────────────────────────
+const HF_STATION_KEY = 'rflos_hf_station_v1';
+
+function hfLoadStation() {
+  try { return JSON.parse(localStorage.getItem(HF_STATION_KEY) || 'null'); }
+  catch(e) { return null; }
+}
+
+function hfSaveStation() {
+  const callsign = document.getElementById('hfMyCall')?.value.trim().toUpperCase() || '';
+  const lat      = parseFloat(document.getElementById('hfLatA')?.value);
+  const lng      = parseFloat(document.getElementById('hfLngA')?.value);
+  const addr     = document.getElementById('hfAddrA')?.value.trim() || '';
+  if (!isNaN(lat) && !isNaN(lng)) {
+    try { localStorage.setItem(HF_STATION_KEY, JSON.stringify({ callsign, lat, lng, addr })); }
+    catch(e) { console.warn('Station save failed:', e); }
+  }
+}
+
+// Look up operator's own callsign to auto-populate home QTH
+async function hfLookupMyCallsign() {
+  const callsign = document.getElementById('hfMyCall').value.trim().toUpperCase();
+  const statusEl = document.getElementById('hfMyCallStatus');
+  if (!callsign) { statusEl.textContent = '⚠ Enter your callsign first'; statusEl.className = 'lic-status err'; return; }
+  if (!REPEATER_PROXY) { statusEl.textContent = '⚠ Proxy not configured'; return; }
+
+  statusEl.textContent = `⏳ Looking up ${callsign}…`;
+  statusEl.className = 'lic-status';
+
+  try {
+    const resp = await fetch(`${REPEATER_PROXY}?callsign=${encodeURIComponent(callsign)}&type=licensee`);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+
+    let lat = null, lng = null;
+    if (data.lat && data.lon) {
+      lat = parseFloat(data.lat);
+      lng = parseFloat(data.lon);
+    }
+
+    if (lat && lng) {
+      document.getElementById('hfLatA').value = lat.toFixed(5);
+      document.getElementById('hfLngA').value = lng.toFixed(5);
+      const addrParts = [data.addr1, data.addr2, data.state, data.zip].filter(Boolean);
+      const addrStr = addrParts.join(', ');
+      if (addrStr) document.getElementById('hfAddrA').value = addrStr;
+
+      if (_hfMarkerA) _hfMarkerA.setLatLng([lat, lng]);
+      if (_hfMap) _hfMap.setView([lat, lng], 9);
+
+      statusEl.textContent = `✓ QTH set — ${data.fname ? data.fname + ' ' : ''}${data.name || ''}${data.grid ? ' · Grid: ' + data.grid : ''}`;
+      statusEl.className = 'lic-status ok';
+      hfSaveStation();
+
+      // Replot all contacts from the correct home QTH
+      if (_hfShowAll) hfReplotAll();
+    } else {
+      statusEl.textContent = '⚠ No coordinates found for this callsign';
+      statusEl.className = 'lic-status err';
+    }
+  } catch(err) {
+    statusEl.textContent = `✗ Lookup failed: ${err.message}`;
+    statusEl.className = 'lic-status err';
+  }
 }
 
 // ── GPS ────────────────────────────────────────────────────────
@@ -5255,6 +5344,7 @@ function hfUseMyGps() {
     if (_hfMap) _hfMap.setView([lat, lng], 7);
     document.getElementById('hfAddrStatusA').textContent = `✓ Located · ±${Math.round(accuracy)}m`;
     btn.disabled = false; btn.textContent = '🎯 Use My GPS';
+    hfSaveStation();
   }, () => {
     btn.disabled = false; btn.textContent = '🎯 Use My GPS';
   });
@@ -5279,6 +5369,7 @@ async function hfGeocodeA() {
     if (_hfMarkerA) _hfMarkerA.setLatLng([lat, lng]);
     if (_hfMap) _hfMap.setView([lat, lng], 9);
     statusEl.textContent = `✓ ${cand.address}`;
+    hfSaveStation();
   } catch(e) {
     statusEl.textContent = '⚠ Address not found';
   }
@@ -5371,11 +5462,17 @@ async function hfLookupCallsign() {
 
     // ── Build contact object ──
     // Default location = licensee QTH; POTA overrides if present
+    // Build city/state from FCC data — addr2 = city, state = state abbrev
+    const city      = (callData.addr2 || '').trim();
+    const state     = (callData.state || '').trim();
+    const cityState = city && state ? `${city}, ${state}` : (city || state || '');
+
     _hfCurrentContact = {
       callsign: callData.callsign || callsign,
       name,
       lat: licLat, lng: licLng,
       _licLat: licLat, _licLng: licLng,
+      cityState,
     };
 
     // ── Process POTA result (if present) ──
@@ -5454,11 +5551,12 @@ async function hfGeocodeLicenseeForHf(addrStr, callsign, name) {
 }
 
 // ── Plot a contact on the HF map ───────────────────────────────
-function hfPlotContact(contact, permanent) {
+function hfPlotContact(contact, permanent, homeLatA, homeLngA) {
   if (!_hfMap || !contact) return;
 
-  const latA = parseFloat(document.getElementById('hfLatA').value);
-  const lngA = parseFloat(document.getElementById('hfLngA').value);
+  // Use passed-in home coords (for replot from log) or current DOM values (for live preview)
+  const latA = homeLatA ?? parseFloat(document.getElementById('hfLatA').value);
+  const lngA = homeLngA ?? parseFloat(document.getElementById('hfLngA').value);
 
   // Remove any existing preview marker (non-permanent) if this is a new preview
   if (!permanent) {
@@ -5497,8 +5595,13 @@ function hfPlotContact(contact, permanent) {
     _hfMap._hfPreviewLine   = line;
   }
 
-  // Fit map to show both points
-  _hfMap.fitBounds(L.latLngBounds([[latA, lngA], [contact.lat, contact.lng]]).pad(0.3));
+  // Don't zoom during bulk replot — preserve the user's current map view
+  if (!_hfBulkReplotting) {
+    _hfMap.fitBounds(
+      L.latLngBounds([[latA, lngA], [contact.lat, contact.lng]]).pad(0.3),
+      { maxZoom: 10, animate: true }
+    );
+  }
 }
 
 function hfUpdateMapInfo(contact) {
@@ -5558,6 +5661,7 @@ function hfLogContact() {
     ts:       `${date} ${time} EST`,
     callsign: _hfCurrentContact.callsign,
     name:     _hfCurrentContact.name,
+    cityState: _hfCurrentContact.cityState || _hfCurrentContact.potaLocation || '',
     lat:      _hfCurrentContact.lat,
     lng:      _hfCurrentContact.lng,
     latA, lngA,
@@ -5646,9 +5750,16 @@ function hfReplotAll() {
   _hfContactMarkers = [];
   _hfPolylines = [];
   const log = hfLoadLog();
+  // Suppress fitBounds during bulk replot — don't let it zoom out to show all contacts
+  _hfBulkReplotting = true;
   log.forEach(e => {
-    hfPlotContact({ callsign: e.callsign, name: e.name, lat: e.lat, lng: e.lng }, true);
+    hfPlotContact(
+      { callsign: e.callsign, name: e.name, lat: e.lat, lng: e.lng },
+      true,
+      e.latA, e.lngA  // use the ORIGINAL site A coords for each logged entry
+    );
   });
+  _hfBulkReplotting = false;
 }
 
 // ── Render log ─────────────────────────────────────────────────
@@ -5674,6 +5785,8 @@ function hfRenderLog() {
     card.draggable = true;
 
     const nameStr = e.potaRef ? `🌲 ${e.potaName || e.potaRef}` : (e.name || '');
+    // Location line: POTA location takes precedence, then licensee city/state
+    const locationLine = e.potaLocation || e.cityState || '';
 
     card.innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
@@ -5681,7 +5794,7 @@ function hfRenderLog() {
           <span class="hf-card-serial">#${serial}</span>
           <div style="flex:1;min-width:0;">
             <div class="hf-card-call">${e.callsign}${nameStr ? `<span style="font-weight:700;font-size:18px;color:var(--text);margin-left:10px;letter-spacing:0.02em;">${nameStr}</span>` : ''}</div>
-            ${e.potaLocation ? `<div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);margin-top:2px;">${e.potaLocation}</div>` : ''}
+            ${locationLine ? `<div style="font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--muted);margin-top:3px;">${locationLine}</div>` : ''}
           </div>
         </div>
         <button class="hf-card-delete" title="Remove"
