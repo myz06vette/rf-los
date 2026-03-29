@@ -184,11 +184,11 @@
   /* Serial number badge on HF cards */
   .hf-card-serial {
     font-family: 'Share Tech Mono', monospace;
-    font-size: 11px; font-weight: 700;
-    color: var(--muted); opacity: 0.5;
-    letter-spacing: 0.06em;
-    min-width: 28px;
-    padding-top: 2px;
+    font-size: 18px; font-weight: 700;
+    color: var(--muted); opacity: 0.55;
+    letter-spacing: 0.04em;
+    min-width: 46px;
+    flex-shrink: 0;
   }
   /* Drag-to-reorder states */
   .hf-card[draggable="true"] { cursor: grab; }
@@ -5118,7 +5118,7 @@ let _hfMap         = null;
 let _hfMarkerA     = null;
 let _hfContactMarkers = [];  // all plotted contact markers
 let _hfPolylines   = [];     // lines from A to each contact
-let _hfShowAll     = false;
+let _hfShowAll     = true;
 let _hfCurrentContact = null; // { callsign, lat, lng, name } from last lookup
 let _hfSelectedBand = '40m';
 let _hfMobTab      = 'controls';
@@ -5236,6 +5236,10 @@ function hfInit() {
 
   hfRenderLog();
   hfInitLogResize();
+  // Show All is on by default — activate button and plot any saved contacts
+  const showAllBtn = document.getElementById('hfShowAllBtn');
+  if (showAllBtn) showAllBtn.classList.add('on');
+  hfReplotAll();
 }
 
 // ── GPS ────────────────────────────────────────────────────────
@@ -5663,19 +5667,20 @@ function hfRenderLog() {
   if (empty) empty.style.display = 'none';
 
   log.forEach((e, idx) => {
-    const serial = String(idx + 1).padStart(3, '0');
+    const serial = String(log.length - idx).padStart(3, '0');
     const card = document.createElement('div');
     card.className = 'hf-card';
     card.dataset.id = e.id;
     card.draggable = true;
+
+    const nameStr = e.potaRef ? `🌲 ${e.potaName || e.potaRef}` : (e.name || '');
 
     card.innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
         <div style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;">
           <span class="hf-card-serial">#${serial}</span>
           <div style="flex:1;min-width:0;">
-            <div class="hf-card-call">${e.callsign}</div>
-            <div class="hf-card-name">${e.potaRef ? `🌲 ${e.potaName || e.potaRef}` : (e.name || '')}</div>
+            <div class="hf-card-call">${e.callsign}${nameStr ? `<span style="font-weight:700;font-size:18px;color:var(--text);margin-left:10px;letter-spacing:0.02em;">${nameStr}</span>` : ''}</div>
             ${e.potaLocation ? `<div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);margin-top:2px;">${e.potaLocation}</div>` : ''}
           </div>
         </div>
