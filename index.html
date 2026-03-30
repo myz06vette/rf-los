@@ -6223,7 +6223,22 @@ function hfLoadEntry(id) {
     potaRef: e.potaRef || null, potaName: e.potaName || null,
     potaLocation: e.potaLocation || null, potaGrid: e.potaGrid || null,
   };
-  hfPlotContact(_hfCurrentContact, false);
+
+  if (_hfShowAll) {
+    // Show All ON — just draw a preview line on top of all existing lines
+    hfPlotContact(_hfCurrentContact, false, e.latA, e.lngA);
+  } else {
+    // Show All OFF — replace the single visible permanent line with this entry
+    _hfContactMarkers.forEach(m => _hfMap && _hfMap.removeLayer(m));
+    _hfPolylines.forEach(l => _hfMap && _hfMap.removeLayer(l));
+    _hfContactMarkers = [];
+    _hfPolylines = [];
+    // Also clear any preview
+    if (_hfMap._hfPreviewMarker) { _hfMap.removeLayer(_hfMap._hfPreviewMarker); _hfMap._hfPreviewMarker = null; }
+    if (_hfMap._hfPreviewLine)   { _hfMap.removeLayer(_hfMap._hfPreviewLine);   _hfMap._hfPreviewLine   = null; }
+    // Plot as permanent (solid green line) using the entry's original Site A coords
+    hfPlotContact(_hfCurrentContact, true, e.latA, e.lngA);
+  }
   hfUpdateMapInfo(_hfCurrentContact);
 
   // Restore form
