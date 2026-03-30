@@ -5308,6 +5308,11 @@ function hfInit() {
     attribution: 'Imagery © Esri', maxZoom: 19
   }).addTo(_hfMap);
 
+  // Overlay: state/country boundaries + city labels on top of satellite
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '', maxZoom: 19, opacity: 1
+  }).addTo(_hfMap);
+
   const ICON_A = L.divIcon({
     className: '',
     html: '<div style="width:14px;height:14px;background:#00e5ff;border:2px solid #fff;border-radius:50%;box-shadow:0 0 8px #00e5ff;"></div>',
