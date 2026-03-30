@@ -1599,19 +1599,25 @@
         <div class="section-title site-b">Targeted Contact — Site B</div>
         <div class="site-block">
 
-          <!-- Mode toggle -->
+          <!-- Mode toggle — row 1: Licensee, Address -->
           <div class="site-mode-row">
+            <button class="site-mode-btn" id="siteBModeLicensee" onclick="setSiteBMode('licensee')">
+              👤 Licensee
+            </button>
             <button class="site-mode-btn mode-active" id="siteBModeManual" onclick="setSiteBMode('manual')">
               📍 Address
+            </button>
+          </div>
+          <!-- Mode toggle — row 2: Grid Sq, Repeater, SOTA -->
+          <div class="site-mode-row" style="margin-top:4px;">
+            <button class="site-mode-btn" id="siteBModeGrid" onclick="setSiteBMode('grid')">
+              🔲 Grid Sq.
             </button>
             <button class="site-mode-btn" id="siteBModeRepeater" onclick="setSiteBMode('repeater')">
               📡 Repeater
             </button>
-            <button class="site-mode-btn" id="siteBModeLicensee" onclick="setSiteBMode('licensee')">
-              👤 Licensee
-            </button>
-            <button class="site-mode-btn" id="siteBModeGrid" onclick="setSiteBMode('grid')">
-              🔲 Grid Sq.
+            <button class="site-mode-btn" id="siteBModeSota" onclick="setSiteBMode('sota')">
+              ⛰️ SOTA
             </button>
           </div>
 
@@ -1716,6 +1722,35 @@
               <div class="grid-card-sq" id="gridCardSq">—</div>
               <div class="grid-card-info" id="gridCardInfo">—</div>
               <div class="grid-card-note">📍 Marker placed at grid square center · precision ≈ 3–70 mi depending on grid size</div>
+            </div>
+          </div>
+
+          <!-- SOTA Summit lookup -->
+          <div id="siteBSota" style="display:none;">
+            <p class="grid-sq-desc">
+              Enter a <strong style="color:#3DFFA0">SOTA summit reference</strong>
+              (e.g. <code>W4G/NG-001</code>). The marker will be placed at the summit location.
+            </p>
+            <div class="grid-row">
+              <input class="grid-input" type="text" id="sotaInput"
+                placeholder="e.g. W4G/NG-001"
+                onkeydown="if(event.key==='Enter')lookupSotaSummit()"
+                oninput="this.value=this.value.toUpperCase().replace(/\\s/g,'')">
+              <button class="grid-btn" id="sotaLookupBtn" onclick="lookupSotaSummit()">
+                ⛰️ Go
+              </button>
+            </div>
+            <div class="grid-status" id="sotaStatus"></div>
+            <div class="grid-card" id="sotaCard" style="display:none;">
+              <div class="grid-card-sq" id="sotaCardRef">—</div>
+              <div class="grid-card-info" id="sotaCardName">—</div>
+              <div class="grid-card-info" id="sotaCardElev" style="font-size:13px;opacity:0.8;"></div>
+              <div class="grid-card-note">📍 Marker placed at summit location</div>
+            </div>
+            <!-- Did You Mean? suggestions -->
+            <div id="sotaSuggest" style="display:none;margin-top:8px;">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;">Did you mean?</div>
+              <div id="sotaSuggestList"></div>
             </div>
           </div>
 
@@ -2124,7 +2159,7 @@
 
             <!-- Callsign field -->
             <div class="field-group" style="margin-bottom:8px;">
-              <label>Callsign</label>
+              <label>👤 Callsign</label>
               <input type="text" id="hfCallsign"
                 placeholder="e.g. W4ABC"
                 onkeydown="if(event.key==='Enter')hfLookupCallsign()"
@@ -2133,16 +2168,25 @@
 
             <!-- POTA field — always visible, optional -->
             <div class="field-group" style="margin-bottom:8px;">
-              <label>POTA Park <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+              <label>🌲 POTA Park <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional — overrides callsign QTH)</span></label>
               <input type="text" id="hfPotaRef"
                 placeholder="e.g. US-0001"
                 onkeydown="if(event.key==='Enter')hfLookupCallsign()"
                 style="text-transform:uppercase;">
             </div>
 
+            <!-- SOTA Summit field — optional -->
+            <div class="field-group" style="margin-bottom:8px;">
+              <label>⛰️ SOTA Summit <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional — overrides callsign QTH)</span></label>
+              <input type="text" id="hfSotaRef"
+                placeholder="e.g. W4G/NG-001"
+                onkeydown="if(event.key==='Enter')hfLookupCallsign()"
+                style="text-transform:uppercase;">
+            </div>
+
             <!-- Grid Square field — optional, alternative location -->
             <div class="field-group" style="margin-bottom:10px;">
-              <label>Grid Square <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional — overrides callsign QTH)</span></label>
+              <label>🔲 Grid Square <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional — overrides callsign QTH)</span></label>
               <input type="text" id="hfGridInput"
                 placeholder="e.g. EM74rj"
                 onkeydown="if(event.key==='Enter')hfLookupCallsign()"
@@ -2183,6 +2227,18 @@
               <div style="margin-top:8px;font-family:'Share Tech Mono',monospace;font-size:12px;color:rgba(105,255,71,0.7);">📍 Location set to park — operator QTH overridden</div>
             </div>
             <div class="addr-status" id="hfPotaStatus"></div>
+
+            <!-- SOTA result card -->
+            <div id="hfSotaCard" style="display:none;margin-top:8px;background:rgba(61,255,160,0.04);border:1px solid rgba(61,255,160,0.25);border-radius:6px;padding:10px 12px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+                <span style="font-size:16px;">⛰️</span>
+                <span style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:700;color:#3DFFA0;" id="hfSotaRef2"></span>
+              </div>
+              <div class="lic-card-name" id="hfSotaName"></div>
+              <div class="lic-card-addr" id="hfSotaElev"></div>
+              <div style="margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(61,255,160,0.6);">📍 Location set to summit — operator QTH overridden</div>
+            </div>
+            <div class="addr-status" id="hfSotaStatus"></div>
 
           </div>
         </div>
@@ -4694,14 +4750,16 @@ function setSiteBMode(mode) {
   const repeater = document.getElementById('siteBRepeater');
   const licensee = document.getElementById('siteBLicensee');
   const grid     = document.getElementById('siteBGrid');
+  const sota     = document.getElementById('siteBSota');
   const btnM     = document.getElementById('siteBModeManual');
   const btnR     = document.getElementById('siteBModeRepeater');
   const btnL     = document.getElementById('siteBModeLicensee');
   const btnG     = document.getElementById('siteBModeGrid');
+  const btnS     = document.getElementById('siteBModeSota');
 
   // Hide all panels, deactivate all buttons
-  [manual, repeater, licensee, grid].forEach(el => { if (el) el.style.display = 'none'; });
-  [btnM, btnR, btnL, btnG].forEach(el => { if (el) el.classList.remove('mode-active'); });
+  [manual, repeater, licensee, grid, sota].forEach(el => { if (el) el.style.display = 'none'; });
+  [btnM, btnR, btnL, btnG, btnS].forEach(el => { if (el) el.classList.remove('mode-active'); });
 
   if (mode === 'repeater') {
     repeater.style.display = 'block';
@@ -4713,6 +4771,9 @@ function setSiteBMode(mode) {
   } else if (mode === 'grid') {
     if (grid) grid.style.display = 'block';
     if (btnG) btnG.classList.add('mode-active');
+  } else if (mode === 'sota') {
+    if (sota) sota.style.display = 'block';
+    if (btnS) btnS.classList.add('mode-active');
   } else {
     manual.style.display = 'block';
     btnM.classList.add('mode-active');
@@ -5069,6 +5130,234 @@ function gridPrecisionNote(sizeLat, sizeLng) {
   if (maxMi < 1) return `Grid precision: < 1 mile`;
   if (maxMi < 5) return `Grid precision: ~${maxMi.toFixed(0)} miles`;
   return `Grid precision: ~${Math.round(maxMi)} miles (${sizeLat.toFixed(sizeLat < 1 ? 2 : 0)}° lat × ${sizeLng.toFixed(sizeLng < 1 ? 2 : 0)}° lng)`;
+}
+
+// ── SOTA Summit Lookup (VHF Site B) ───────────────────────────────────────
+// US SOTA region approximate centroids — used to suggest nearby regions for partial inputs
+const SOTA_US_REGIONS = [
+  { code:'W0C',  lat:38.8,  lng:-105.5, name:'Colorado'           },
+  { code:'W0D',  lat:46.5,  lng:-100.5, name:'Dakotas'            },
+  { code:'W0I',  lat:42.0,  lng:-94.0,  name:'Iowa'               },
+  { code:'W0K',  lat:38.5,  lng:-98.0,  name:'Kansas'             },
+  { code:'W0M',  lat:37.5,  lng:-92.5,  name:'Missouri'           },
+  { code:'W0N',  lat:41.5,  lng:-99.0,  name:'Nebraska'           },
+  { code:'W0O',  lat:36.5,  lng:-97.5,  name:'Oklahoma (W0)'      },
+  { code:'W0W',  lat:44.5,  lng:-107.5, name:'Wyoming'            },
+  { code:'W1/CT',lat:41.5,  lng:-72.7,  name:'Connecticut'        },
+  { code:'W1/HA',lat:42.3,  lng:-72.6,  name:'Hampshire (MA)'     },
+  { code:'W1/ME',lat:45.0,  lng:-69.0,  name:'Maine'              },
+  { code:'W1/NH',lat:43.9,  lng:-71.7,  name:'New Hampshire'      },
+  { code:'W1/RI',lat:41.7,  lng:-71.5,  name:'Rhode Island'       },
+  { code:'W1/VT',lat:44.0,  lng:-72.7,  name:'Vermont'            },
+  { code:'W2/NJ',lat:40.9,  lng:-74.5,  name:'New Jersey'         },
+  { code:'W2/NY',lat:43.5,  lng:-75.5,  name:'New York'           },
+  { code:'W3/DE',lat:39.1,  lng:-75.5,  name:'Delaware'           },
+  { code:'W3/MD',lat:39.5,  lng:-77.0,  name:'Maryland'           },
+  { code:'W3/PA',lat:41.0,  lng:-77.5,  name:'Pennsylvania'       },
+  { code:'W3/VA',lat:37.5,  lng:-79.5,  name:'Virginia'           },
+  { code:'W4A',  lat:34.2,  lng:-86.2,  name:'Alabama'            },
+  { code:'W4C',  lat:35.5,  lng:-82.0,  name:'Carolinas'          },
+  { code:'W4F',  lat:28.0,  lng:-82.5,  name:'Florida'            },
+  { code:'W4G',  lat:34.5,  lng:-83.5,  name:'Georgia'            },
+  { code:'W4K',  lat:37.0,  lng:-84.0,  name:'Kentucky'           },
+  { code:'W4O',  lat:36.0,  lng:-85.5,  name:'Tennessee'          },
+  { code:'W4V',  lat:37.0,  lng:-80.5,  name:'Virginia (W4)'      },
+  { code:'W5A',  lat:34.5,  lng:-92.5,  name:'Arkansas'           },
+  { code:'W5AZ', lat:34.5,  lng:-112.0, name:'Arizona'            },
+  { code:'W5L',  lat:31.5,  lng:-92.5,  name:'Louisiana'          },
+  { code:'W5NM', lat:34.5,  lng:-106.5, name:'New Mexico'         },
+  { code:'W5OK', lat:35.5,  lng:-97.5,  name:'Oklahoma (W5)'      },
+  { code:'W5T',  lat:31.5,  lng:-99.5,  name:'Texas'              },
+  { code:'W6/CT',lat:37.5,  lng:-119.5, name:'California Central' },
+  { code:'W6/NC',lat:39.5,  lng:-121.0, name:'California North'   },
+  { code:'W6/SC',lat:36.5,  lng:-118.5, name:'California South'   },
+  { code:'W7A',  lat:34.5,  lng:-112.0, name:'Arizona (W7)'       },
+  { code:'W7I',  lat:44.0,  lng:-115.0, name:'Idaho'              },
+  { code:'W7M',  lat:47.0,  lng:-110.5, name:'Montana'            },
+  { code:'W7N',  lat:39.5,  lng:-117.0, name:'Nevada'             },
+  { code:'W7O',  lat:44.0,  lng:-120.5, name:'Oregon'             },
+  { code:'W7U',  lat:39.5,  lng:-111.5, name:'Utah'               },
+  { code:'W7W',  lat:47.5,  lng:-120.5, name:'Washington'         },
+  { code:'W8M',  lat:44.5,  lng:-84.5,  name:'Michigan'           },
+  { code:'W8O',  lat:40.5,  lng:-82.5,  name:'Ohio'               },
+  { code:'W8V',  lat:38.5,  lng:-80.5,  name:'West Virginia'      },
+  { code:'W9I',  lat:40.5,  lng:-89.0,  name:'Illinois'           },
+  { code:'W9IN', lat:39.5,  lng:-86.0,  name:'Indiana'            },
+  { code:'W9WI', lat:45.0,  lng:-90.0,  name:'Wisconsin'          },
+  { code:'KH6',  lat:20.5,  lng:-157.0, name:'Hawaii'             },
+  { code:'KL7',  lat:64.0,  lng:-153.0, name:'Alaska'             },
+  { code:'KP4',  lat:18.2,  lng:-66.5,  name:'Puerto Rico'        },
+];
+
+// Normalise SOTA input to canonical form W4G/NG-001
+function normaliseSotaRef(raw) {
+  const s = raw.toUpperCase().replace(/\s+/g, '').replace(/[–—]/g, '-');
+  // Already looks like full ref: W4G/NG-001 or W4G/NG001 etc.
+  if (/^[A-Z0-9]+\/[A-Z]+-?\d+$/.test(s)) {
+    // Ensure dash in summit code: NG001 → NG-001
+    return s.replace(/^([A-Z0-9]+\/)([A-Z]+)(\d+)$/, '$1$2-$3');
+  }
+  // Has dash separator instead of slash: W4G-NG-001 → W4G/NG-001
+  const dashMatch = s.match(/^([A-Z0-9]{2,4})-([A-Z]+-?\d+)$/);
+  if (dashMatch) return `${dashMatch[1]}/${dashMatch[2].replace(/^([A-Z]+)(\d+)$/, '$1-$2')}`;
+  return null; // couldn't normalise
+}
+
+// Find nearest SOTA regions to given lat/lng (returns top N by distance)
+function nearestSotaRegions(lat, lng, n = 3) {
+  return SOTA_US_REGIONS
+    .map(r => ({ ...r, dist: Math.hypot(r.lat - lat, r.lng - lng) }))
+    .sort((a, b) => a.dist - b.dist)
+    .slice(0, n);
+}
+
+async function lookupSotaSummit() {
+  const rawInput = document.getElementById('sotaInput').value.trim();
+  const statusEl = document.getElementById('sotaStatus');
+  const cardEl   = document.getElementById('sotaCard');
+  const suggestEl= document.getElementById('sotaSuggest');
+
+  if (!rawInput) {
+    statusEl.textContent = '⚠ Enter a summit reference (e.g. W4G/NG-001)';
+    statusEl.className = 'grid-status error';
+    return;
+  }
+
+  cardEl.style.display    = 'none';
+  suggestEl.style.display = 'none';
+  statusEl.className      = 'grid-status';
+  document.getElementById('sotaLookupBtn').disabled = true;
+
+  // Try to normalise the input
+  const normRef = normaliseSotaRef(rawInput);
+
+  if (normRef) {
+    // We have a plausible full reference — try direct lookup
+    document.getElementById('sotaInput').value = normRef;
+    statusEl.textContent = `⏳ Looking up ${normRef}…`;
+    const result = await sotaDirectLookup(normRef);
+    if (result.ok) {
+      sotaApplyResult(result.data, normRef);
+    } else if (result.notFound) {
+      statusEl.textContent = `✗ Summit ${normRef} not found`;
+      statusEl.className = 'grid-status error';
+      await sotaDidYouMean(rawInput, statusEl, suggestEl);
+    } else {
+      statusEl.textContent = `✗ ${result.error}`;
+      statusEl.className = 'grid-status error';
+    }
+  } else {
+    // Can't parse as a reference — show Did You Mean?
+    statusEl.textContent = `⚠ Couldn't parse "${rawInput}" as a SOTA reference`;
+    statusEl.className = 'grid-status error';
+    await sotaDidYouMean(rawInput, statusEl, suggestEl);
+  }
+
+  document.getElementById('sotaLookupBtn').disabled = false;
+}
+
+async function sotaDirectLookup(ref) {
+  if (!REPEATER_PROXY) return { ok: false, error: 'Proxy not configured' };
+  try {
+    const resp = await fetch(`${REPEATER_PROXY}?type=sota&summit=${encodeURIComponent(ref)}`);
+    const data = await resp.json();
+    if (resp.status === 404 || data.code === 'NOT_FOUND') return { ok: false, notFound: true };
+    if (!resp.ok || data.error) return { ok: false, error: data.error || `HTTP ${resp.status}` };
+    return { ok: true, data };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+function sotaApplyResult(data, ref) {
+  const statusEl = document.getElementById('sotaStatus');
+  const cardEl   = document.getElementById('sotaCard');
+
+  const lat = parseFloat(data.lat), lng = parseFloat(data.lng);
+  if (isNaN(lat) || isNaN(lng)) {
+    statusEl.textContent = `✓ Found ${ref} but no coordinates available`;
+    statusEl.className = 'grid-status ok';
+    return;
+  }
+
+  document.getElementById('sotaCardRef').textContent  = data.summitCode || ref;
+  document.getElementById('sotaCardName').textContent = data.name || '—';
+  document.getElementById('sotaCardElev').textContent =
+    [data.altM ? `${data.altM}m / ${data.altFt || Math.round(data.altM*3.281)}ft` : '',
+     data.points ? `${data.points} pts` : '',
+     data.associationName || '',
+    ].filter(Boolean).join('  ·  ');
+  cardEl.style.display = 'flex';
+
+  document.getElementById('latB').value  = lat.toFixed(5);
+  document.getElementById('lngB').value  = lng.toFixed(5);
+  _siteBCoords = { lat, lng };
+  if (typeof markerB !== 'undefined' && markerB) markerB.setLatLng([lat, lng]);
+  if (typeof map !== 'undefined' && map) map.setView([lat, lng], 12);
+
+  statusEl.textContent = `✓ ${data.summitCode || ref} — ${data.name}`;
+  statusEl.className = 'grid-status ok';
+}
+
+async function sotaDidYouMean(input, statusEl, suggestEl) {
+  if (!REPEATER_PROXY) return;
+  const latA = parseFloat(document.getElementById('latA')?.value);
+  const lngA = parseFloat(document.getElementById('lngA')?.value);
+  if (isNaN(latA) || isNaN(lngA)) return;
+
+  // Find the 2 nearest regions and fetch their summit lists
+  const nearest = nearestSotaRegions(latA, lngA, 2);
+  let candidates = [];
+
+  for (const region of nearest) {
+    try {
+      const resp = await fetch(`${REPEATER_PROXY}?type=sota_list&assoc=${encodeURIComponent(region.code)}`);
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      if (data.summits) candidates.push(...data.summits.map(s => ({ ...s, region: region.name })));
+    } catch(_) {}
+  }
+
+  if (candidates.length === 0) return;
+
+  // Score candidates: fuzzy match on name + code, weighted by proximity to Site A
+  const inputLower = input.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const scored = candidates.map(s => {
+    const nameLower = s.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const codeLower = s.code.toLowerCase().replace(/[^a-z0-9]/g, '');
+    let score = 0;
+    if (codeLower.includes(inputLower) || inputLower.includes(codeLower.split('/')[1] || '')) score += 50;
+    if (nameLower.includes(inputLower)) score += 40;
+    // Partial word match
+    const words = s.name.toLowerCase().split(/\s+/);
+    for (const w of words) { if (w.startsWith(inputLower.slice(0, 4))) score += 20; }
+    // Proximity bonus (closer to Site A = higher score)
+    const dist = Math.hypot((s.lat || 0) - latA, (s.lng || 0) - lngA);
+    score += Math.max(0, 20 - dist * 2);
+    return { ...s, score };
+  }).filter(s => s.score > 10).sort((a, b) => b.score - a.score).slice(0, 5);
+
+  if (scored.length === 0) return;
+
+  const listEl = document.getElementById('sotaSuggestList');
+  listEl.innerHTML = '';
+  for (const s of scored) {
+    const btn = document.createElement('button');
+    btn.style.cssText = `display:block;width:100%;text-align:left;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;padding:6px 10px;margin-bottom:4px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);`;
+    btn.innerHTML = `<span style="color:#3DFFA0;">${s.code}</span> — ${s.name}` +
+      (s.altM ? ` <span style="opacity:0.6;">${s.altM}m · ${s.points}pt</span>` : '');
+    btn.onclick = () => {
+      document.getElementById('sotaInput').value = s.code;
+      suggestEl.style.display = 'none';
+      statusEl.textContent = `⏳ Looking up ${s.code}…`;
+      statusEl.className = 'grid-status';
+      sotaApplyResult(s, s.code);
+      statusEl.textContent = `✓ ${s.code} — ${s.name}`;
+      statusEl.className = 'grid-status ok';
+    };
+    listEl.appendChild(btn);
+  }
+  suggestEl.style.display = 'block';
 }
 
 /** Main lookup handler */
@@ -5452,7 +5741,7 @@ async function hfEnrichMissingCityState() {
   if (!REPEATER_PROXY) return;
   const log = hfLoadLog();
   // Find entries missing cityState (and not POTA entries which use potaLocation)
-  const missing = log.filter(e => !e.cityState && !e.potaRef && e.callsign);
+  const missing = log.filter(e => !e.cityState && !e.potaRef && !e.sotaRef && e.callsign);
   if (missing.length === 0) return;
 
   let changed = false;
@@ -5542,6 +5831,17 @@ async function hfLookupCallsign() {
   document.getElementById('hfPotaRef').value = potaRaw;
   const hasPota = potaRaw.length >= 4;
 
+  // SOTA summit (optional — overrides location with summit coords)
+  const sotaRawInput = document.getElementById('hfSotaRef').value.trim().toUpperCase().replace(/\s/g,'');
+  const sotaNorm     = sotaRawInput ? normaliseSotaRef(sotaRawInput) : null;
+  if (sotaNorm) document.getElementById('hfSotaRef').value = sotaNorm;
+  const hasSota = !!(sotaNorm || (sotaRawInput && sotaRawInput.length >= 4));
+  const sotaRef = sotaNorm || sotaRawInput;
+  const sotaCardEl   = document.getElementById('hfSotaCard');
+  const sotaStatusEl = document.getElementById('hfSotaStatus');
+  if (sotaCardEl)   sotaCardEl.style.display  = 'none';
+  if (sotaStatusEl) sotaStatusEl.textContent  = '';
+
   // Grid square (optional — overrides location if callsign has no coords or no callsign)
   const gridRaw = document.getElementById('hfGridInput').value.trim().toUpperCase();
   const hasGrid = gridRaw.length === 4 || gridRaw.length === 6;
@@ -5556,7 +5856,7 @@ async function hfLookupCallsign() {
   const potaStatusEl = document.getElementById('hfPotaStatus');
 
   // Grid-only mode: no callsign needed if a grid square is provided
-  if (!callsign && hasGrid) {
+  if (!callsign && hasGrid && !hasSota) {
     const result = gridSquareToLatLng(gridRaw);
     if (!result) {
       gridStatusEl.textContent = `⚠ "${gridRaw}" is not a valid Maidenhead grid square`;
@@ -5599,9 +5899,12 @@ async function hfLookupCallsign() {
         return r.json();
       })
     : Promise.resolve(null);
+  const sotaPromise = hasSota
+    ? fetch(`${REPEATER_PROXY}?type=sota&summit=${encodeURIComponent(sotaRef)}`).then(r => r.json())
+    : Promise.resolve(null);
 
   try {
-    const [callData, potaData] = await Promise.all([callPromise, potaPromise]);
+    const [callData, potaData, sotaData] = await Promise.all([callPromise, potaPromise, sotaPromise]);
 
     // ── Process callsign result ──
     if (callData.error === 'GMRS_NO_API') {
@@ -5688,6 +5991,36 @@ async function hfLookupCallsign() {
         _hfCurrentContact.potaLocation = location;
         _hfCurrentContact.potaGrid     = grid;
       }
+    }
+
+    // ── Process SOTA result (if present) — overrides QTH with summit location ──
+    if (sotaData && !sotaData.error) {
+      const summitLat = parseFloat(sotaData.lat), summitLng = parseFloat(sotaData.lng);
+      if (!isNaN(summitLat) && !isNaN(summitLng)) {
+        const elevStr = [
+          sotaData.altM ? `${sotaData.altM}m / ${sotaData.altFt || Math.round(sotaData.altM*3.281)}ft` : '',
+          sotaData.points ? `${sotaData.points} pts` : '',
+          sotaData.associationName || '',
+        ].filter(Boolean).join('  ·  ');
+
+        document.getElementById('hfSotaRef2').textContent = sotaData.summitCode || sotaRef;
+        document.getElementById('hfSotaName').textContent = sotaData.name || '—';
+        document.getElementById('hfSotaElev').textContent = elevStr;
+        sotaCardEl.style.display   = 'block';
+        sotaStatusEl.textContent   = `✓ ${sotaData.summitCode || sotaRef} — ${sotaData.name}`;
+        sotaStatusEl.className     = 'lic-status ok';
+
+        _hfCurrentContact.lat          = summitLat;
+        _hfCurrentContact.lng          = summitLng;
+        _hfCurrentContact.sotaRef      = sotaData.summitCode || sotaRef;
+        _hfCurrentContact.sotaName     = sotaData.name;
+        _hfCurrentContact.sotaAltM     = sotaData.altM;
+        _hfCurrentContact.sotaPoints   = sotaData.points;
+        _hfCurrentContact.sotaAssoc    = sotaData.associationName;
+      }
+    } else if (hasSota && sotaData?.error) {
+      sotaStatusEl.textContent = `⚠ SOTA: ${sotaData.error}`;
+      sotaStatusEl.className   = 'lic-status err';
     }
 
     // ── Grid square override: overrides callsign QTH location ──
@@ -5874,6 +6207,12 @@ function hfLogContact() {
     potaName:     _hfCurrentContact.potaName     || null,
     potaLocation: _hfCurrentContact.potaLocation || null,
     potaGrid:     _hfCurrentContact.potaGrid     || null,
+    // Heard station SOTA fields (chaser log)
+    sotaRef:    _hfCurrentContact.sotaRef    || null,
+    sotaName:   _hfCurrentContact.sotaName   || null,
+    sotaAltM:   _hfCurrentContact.sotaAltM   || null,
+    sotaPoints: _hfCurrentContact.sotaPoints || null,
+    sotaAssoc:  _hfCurrentContact.sotaAssoc  || null,
     // My activating park fields (activator log)
     myPotaRef:  _hfMyParkRef  || null,
     myPotaName: _hfMyParkData ? _hfMyParkData.name : null,
@@ -5914,6 +6253,9 @@ function hfLogContact() {
   document.getElementById('hfPotaRef').value = '';
   document.getElementById('hfPotaCard').style.display = 'none';
   document.getElementById('hfPotaStatus').textContent = '';
+  document.getElementById('hfSotaRef').value = '';
+  document.getElementById('hfSotaCard').style.display = 'none';
+  document.getElementById('hfSotaStatus').textContent = '';
   document.getElementById('hfRst').value = '';
   document.getElementById('hfNotes').value = '';
   document.getElementById('hfMapInfo').style.display = 'none';
@@ -6014,9 +6356,16 @@ function hfRenderLog() {
     card.dataset.id = e.id;
     card.draggable = true;
 
-    const nameStr = e.potaRef ? `🌲 ${e.potaName || e.potaRef}` : (e.name || '');
-    // Location line: POTA location takes precedence, then licensee city/state
-    const locationLine = e.potaLocation || e.cityState || '';
+    const nameStr = e.sotaRef
+      ? `⛰️ ${e.sotaName || e.sotaRef}`
+      : e.potaRef
+        ? `🌲 ${e.potaName || e.potaRef}`
+        : (e.name || '');
+    // Secondary location line
+    const sotaDetail = e.sotaRef
+      ? [e.sotaRef, e.sotaAltM ? `${e.sotaAltM}m` : '', e.sotaPoints ? `${e.sotaPoints}pts` : '', e.sotaAssoc || ''].filter(Boolean).join(' · ')
+      : '';
+    const locationLine = sotaDetail || e.potaLocation || e.cityState || '';
 
     card.innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
@@ -6174,13 +6523,16 @@ function hfLoadEntry(id) {
   document.getElementById('hfLngA').value = e.lngA.toFixed(5);
   if (_hfMarkerA) _hfMarkerA.setLatLng([e.latA, e.lngA]);
 
-  // Restore contact object with POTA fields if applicable
+  // Restore contact object with POTA and SOTA fields if applicable
   _hfCurrentContact = {
     callsign: e.callsign, name: e.name,
     lat: e.lat, lng: e.lng,
     cityState: e.cityState || '',
     potaRef: e.potaRef || null, potaName: e.potaName || null,
     potaLocation: e.potaLocation || null, potaGrid: e.potaGrid || null,
+    sotaRef: e.sotaRef || null, sotaName: e.sotaName || null,
+    sotaAltM: e.sotaAltM || null, sotaPoints: e.sotaPoints || null,
+    sotaAssoc: e.sotaAssoc || null,
   };
 
   if (_hfShowAll) {
@@ -6235,6 +6587,26 @@ function hfLoadEntry(id) {
     document.getElementById('hfPotaRef').value             = '';
     document.getElementById('hfPotaCard').style.display    = 'none';
     document.getElementById('hfPotaStatus').textContent    = '';
+  }
+
+  // Restore SOTA overlay if this contact had one
+  if (e.sotaRef) {
+    const elevStr = [
+      e.sotaAltM ? `${e.sotaAltM}m / ${e.sotaAltM ? Math.round(e.sotaAltM*3.281) : ''}ft` : '',
+      e.sotaPoints ? `${e.sotaPoints} pts` : '',
+      e.sotaAssoc || '',
+    ].filter(Boolean).join('  ·  ');
+    document.getElementById('hfSotaRef').value            = e.sotaRef;
+    document.getElementById('hfSotaRef2').textContent     = e.sotaRef;
+    document.getElementById('hfSotaName').textContent     = e.sotaName || '—';
+    document.getElementById('hfSotaElev').textContent     = elevStr;
+    document.getElementById('hfSotaCard').style.display   = 'block';
+    document.getElementById('hfSotaStatus').textContent   = `✓ ${e.sotaRef} — ${e.sotaName || ''}`;
+    document.getElementById('hfSotaStatus').className     = 'lic-status ok';
+  } else {
+    document.getElementById('hfSotaRef').value            = '';
+    document.getElementById('hfSotaCard').style.display   = 'none';
+    document.getElementById('hfSotaStatus').textContent   = '';
   }
 
   if (isMobile()) hfSwitchMobTab('map');
@@ -6442,6 +6814,9 @@ function hfExportADIF() {
       rec += adifField('SIG',      'POTA');
       rec += adifField('SIG_INFO', e.potaRef);
     }
+    if (e.sotaRef) {
+      rec += adifField('SOTA_REF', e.sotaRef);
+    }
     if (e.myPotaRef) {
       rec += adifField('MY_SIG',      'POTA');
       rec += adifField('MY_SIG_INFO', e.myPotaRef);
@@ -6474,7 +6849,9 @@ function hfExportCSV() {
   const headers = [
     'Serial','Date (UTC)','Time (UTC)','My Call','Callsign','Name',
     'Band','Freq (MHz)','Mode','RST Sent','Distance','Grid',
-    'POTA Ref','POTA Park','POTA Location','Notes'
+    'POTA Ref','POTA Park','POTA Location',
+    'SOTA Ref','SOTA Summit','SOTA Elev (m)','SOTA Points',
+    'Notes'
   ];
 
   function csvCell(v) {
@@ -6511,6 +6888,10 @@ function hfExportCSV() {
       e.potaRef      || '',
       e.potaName     || '',
       e.potaLocation || '',
+      e.sotaRef      || '',
+      e.sotaName     || '',
+      e.sotaAltM     || '',
+      e.sotaPoints   || '',
       e.notes || ''
     ].map(csvCell).join(','));
   });
