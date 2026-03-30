@@ -5926,7 +5926,7 @@ function hfLogContact() {
   if (log.length > HF_LOG_MAX) log = log.slice(0, HF_LOG_MAX);
   hfSaveLog(log);
 
-  // Plot permanently on map (remove preview)
+  // Plot on map (remove preview first)
   if (_hfMap._hfPreviewMarker) {
     _hfMap.removeLayer(_hfMap._hfPreviewMarker);
     _hfMap._hfPreviewMarker = null;
@@ -5935,7 +5935,18 @@ function hfLogContact() {
     _hfMap.removeLayer(_hfMap._hfPreviewLine);
     _hfMap._hfPreviewLine = null;
   }
-  hfPlotContact(_hfCurrentContact, true);
+
+  if (_hfShowAll) {
+    // Show All ON — add this contact to the permanent set
+    hfPlotContact(_hfCurrentContact, true);
+  } else {
+    // Show All OFF — remove previous "latest only" marker, plot only this new entry
+    _hfContactMarkers.forEach(m => _hfMap && _hfMap.removeLayer(m));
+    _hfPolylines.forEach(l => _hfMap && _hfMap.removeLayer(l));
+    _hfContactMarkers = [];
+    _hfPolylines = [];
+    hfPlotContact(_hfCurrentContact, true);
+  }
 
   // Clear form for next entry
   document.getElementById('hfCallsign').value = '';
@@ -5981,9 +5992,25 @@ function hfToggleShowAll() {
   _hfShowAll = !_hfShowAll;
   const btn = document.getElementById('hfShowAllBtn');
   btn.classList.toggle('on', _hfShowAll);
-  // Replot all contacts when toggled on
+
   if (_hfShowAll) {
+    // Show All ON — plot every logged contact
     hfReplotAll();
+  } else {
+    // Show All OFF — remove all permanent markers/lines, then plot only the most recent entry
+    _hfContactMarkers.forEach(m => _hfMap && _hfMap.removeLayer(m));
+    _hfPolylines.forEach(l => _hfMap && _hfMap.removeLayer(l));
+    _hfContactMarkers = [];
+    _hfPolylines = [];
+    const log = hfLoadLog();
+    if (log.length > 0) {
+      const e = log[0]; // newest entry (log is newest-first)
+      hfPlotContact(
+        { callsign: e.callsign, name: e.name, lat: e.lat, lng: e.lng },
+        true,
+        e.latA, e.lngA
+      );
+    }
   }
 }
 
