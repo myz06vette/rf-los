@@ -135,7 +135,7 @@
   .hf-main {
     flex: 1;
     display: grid;
-    grid-template-columns: var(--panel-w) 1fr var(--hf-log-w, 520px);
+    grid-template-columns: var(--panel-w) 1fr var(--hf-log-w, 600px);
     grid-template-rows: 1fr;
     min-height: 0;
     overflow: hidden;
@@ -167,7 +167,7 @@
     overflow: hidden;
     position: relative;
     min-width: 200px;
-    max-width: 600px;
+    max-width: 700px;
   }
   .hf-log-resize-handle {
     position: absolute;
@@ -2239,6 +2239,11 @@
               <div style="margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(61,255,160,0.6);">📍 Location set to summit — operator QTH overridden</div>
             </div>
             <div class="addr-status" id="hfSotaStatus"></div>
+            <!-- HF SOTA Did You Mean? suggestions -->
+            <div id="hfSotaSuggest" style="display:none;margin-top:6px;">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;">Did you mean?</div>
+              <div id="hfSotaSuggestList"></div>
+            </div>
 
           </div>
         </div>
@@ -5301,15 +5306,33 @@ function sotaApplyResult(data, ref) {
 
 async function sotaDidYouMean(input, statusEl, suggestEl) {
   if (!REPEATER_PROXY) return;
-  const latA = parseFloat(document.getElementById('latA')?.value);
-  const lngA = parseFloat(document.getElementById('lngA')?.value);
-  if (isNaN(latA) || isNaN(lngA)) return;
 
-  // Find the 2 nearest regions and fetch their summit lists
-  const nearest = nearestSotaRegions(latA, lngA, 2);
+  // Read Site A from either VHF inputs (latA/lngA) or HF inputs (hfLatA/hfLngA)
+  const latA = parseFloat(document.getElementById('latA')?.value  || document.getElementById('hfLatA')?.value  || '');
+  const lngA = parseFloat(document.getElementById('lngA')?.value  || document.getElementById('hfLngA')?.value  || '');
+
+  // Detect if input looks like a bare region/summit code: e.g. "NG-017" or "NG017"
+  const bareCodeMatch = input.match(/^([A-Z]{2,3})-?0*([0-9]{1,4})$/i);
+  const isBareCode  = !!bareCodeMatch;
+  const bareRegion  = bareCodeMatch ? bareCodeMatch[1].toUpperCase() : null;  // e.g. "NG"
+  const bareNumber  = bareCodeMatch ? bareCodeMatch[2].padStart(3,'0') : null; // e.g. "017"
+
+  // Is Site A at the US default center? If so proximity is unreliable
+  const atDefault = isNaN(latA) || isNaN(lngA) ||
+    (Math.abs(latA - 39.8283) < 1.5 && Math.abs(lngA - (-98.5795)) < 1.5);
+
+  // Determine which regions to scan
+  let regionsToScan;
+  if (atDefault) {
+    // No reliable location — scan most-activated US regions broadly
+    regionsToScan = ['W4G','W4C','W4O','W7W','W7O','W0C','W6/NC','W5T','W8V','W3/PA']
+      .map(code => SOTA_US_REGIONS.find(r => r.code === code)).filter(Boolean);
+  } else {
+    regionsToScan = nearestSotaRegions(latA, lngA, isBareCode ? 5 : 3);
+  }
+
   let candidates = [];
-
-  for (const region of nearest) {
+  for (const region of regionsToScan) {
     try {
       const resp = await fetch(`${REPEATER_PROXY}?type=sota_list&assoc=${encodeURIComponent(region.code)}`);
       if (!resp.ok) continue;
@@ -5320,22 +5343,41 @@ async function sotaDidYouMean(input, statusEl, suggestEl) {
 
   if (candidates.length === 0) return;
 
-  // Score candidates: fuzzy match on name + code, weighted by proximity to Site A
   const inputLower = input.toLowerCase().replace(/[^a-z0-9]/g, '');
+
   const scored = candidates.map(s => {
-    const nameLower = s.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const codeLower = s.code.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const nameLower   = s.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const codeFull    = s.code.toLowerCase();                      // "w4g/ng-017"
+    const codeSuffix  = codeFull.split('/')[1] || '';               // "ng-017"
+    const codeSuffixC = codeSuffix.replace(/[^a-z0-9]/g, '');      // "ng017"
     let score = 0;
-    if (codeLower.includes(inputLower) || inputLower.includes(codeLower.split('/')[1] || '')) score += 50;
-    if (nameLower.includes(inputLower)) score += 40;
-    // Partial word match
-    const words = s.name.toLowerCase().split(/\s+/);
-    for (const w of words) { if (w.startsWith(inputLower.slice(0, 4))) score += 20; }
-    // Proximity bonus (closer to Site A = higher score)
-    const dist = Math.hypot((s.lat || 0) - latA, (s.lng || 0) - lngA);
-    score += Math.max(0, 20 - dist * 2);
+
+    if (isBareCode && bareRegion && bareNumber) {
+      const targetClean = (bareRegion + bareNumber).toLowerCase();  // "ng017"
+      if (codeSuffixC === targetClean) {
+        score += 200; // exact match — this is the one
+      } else if (codeSuffix.startsWith(bareRegion.toLowerCase() + '-')) {
+        // Same region letters, different number — rank by numeric proximity
+        const codeNum   = parseInt(codeSuffix.match(/\d+/)?.[0] || '999');
+        const targetNum = parseInt(bareNumber);
+        score += Math.max(0, 50 - Math.abs(codeNum - targetNum) * 2);
+      }
+    } else {
+      // Fuzzy text match
+      if (codeFull.includes(inputLower) || codeSuffixC.includes(inputLower)) score += 50;
+      if (nameLower.includes(inputLower)) score += 40;
+      const words = s.name.toLowerCase().split(/\s+/);
+      for (const w of words) { if (w.startsWith(inputLower.slice(0, 4))) score += 20; }
+    }
+
+    // Proximity bonus when we have a real location
+    if (!atDefault) {
+      const dist = Math.hypot((s.lat || 0) - latA, (s.lng || 0) - lngA);
+      score += Math.max(0, 15 - dist * 2);
+    }
+
     return { ...s, score };
-  }).filter(s => s.score > 10).sort((a, b) => b.score - a.score).slice(0, 5);
+  }).filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
 
   if (scored.length === 0) return;
 
@@ -5345,15 +5387,114 @@ async function sotaDidYouMean(input, statusEl, suggestEl) {
     const btn = document.createElement('button');
     btn.style.cssText = `display:block;width:100%;text-align:left;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;padding:6px 10px;margin-bottom:4px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);`;
     btn.innerHTML = `<span style="color:#3DFFA0;">${s.code}</span> — ${s.name}` +
-      (s.altM ? ` <span style="opacity:0.6;">${s.altM}m · ${s.points}pt</span>` : '');
+      (s.altM ? ` <span style="opacity:0.6;">${s.altM}m · ${s.points || '?'}pt</span>` : '');
     btn.onclick = () => {
       document.getElementById('sotaInput').value = s.code;
       suggestEl.style.display = 'none';
       statusEl.textContent = `⏳ Looking up ${s.code}…`;
       statusEl.className = 'grid-status';
-      sotaApplyResult(s, s.code);
+      sotaDirectLookup(s.code).then(result => {
+        if (result.ok) sotaApplyResult(result.data, s.code);
+        else sotaApplyResult(s, s.code); // fallback to list data if API unavailable
+      });
+    };
+    listEl.appendChild(btn);
+  }
+  suggestEl.style.display = 'block';
+}
+
+// ── HF SOTA Did You Mean? (wired to HF UI elements, shared logic with VHF) ──
+async function hfSotaDidYouMean(input, statusEl, suggestEl) {
+  // Reuse VHF logic but read Site A from HF coords
+  const latA = parseFloat(document.getElementById('hfLatA')?.value || '');
+  const lngA = parseFloat(document.getElementById('hfLngA')?.value || '');
+
+  const bareCodeMatch = input.match(/^([A-Z]{2,3})-?0*([0-9]{1,4})$/i);
+  const isBareCode  = !!bareCodeMatch;
+  const bareRegion  = bareCodeMatch ? bareCodeMatch[1].toUpperCase() : null;
+  const bareNumber  = bareCodeMatch ? bareCodeMatch[2].padStart(3,'0') : null;
+
+  const atDefault = isNaN(latA) || isNaN(lngA) ||
+    (Math.abs(latA - 39.8283) < 1.5 && Math.abs(lngA - (-98.5795)) < 1.5);
+
+  let regionsToScan;
+  if (atDefault) {
+    regionsToScan = ['W4G','W4C','W4O','W7W','W7O','W0C','W6/NC','W5T','W8V','W3/PA']
+      .map(code => SOTA_US_REGIONS.find(r => r.code === code)).filter(Boolean);
+  } else {
+    regionsToScan = nearestSotaRegions(latA, lngA, isBareCode ? 5 : 3);
+  }
+
+  let candidates = [];
+  for (const region of regionsToScan) {
+    try {
+      const resp = await fetch(`${REPEATER_PROXY}?type=sota_list&assoc=${encodeURIComponent(region.code)}`);
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      if (data.summits) candidates.push(...data.summits.map(s => ({ ...s, region: region.name })));
+    } catch(_) {}
+  }
+  if (candidates.length === 0) return;
+
+  const inputLower = input.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const scored = candidates.map(s => {
+    const nameLower   = s.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const codeFull    = s.code.toLowerCase();
+    const codeSuffix  = codeFull.split('/')[1] || '';
+    const codeSuffixC = codeSuffix.replace(/[^a-z0-9]/g, '');
+    let score = 0;
+    if (isBareCode && bareRegion && bareNumber) {
+      const targetClean = (bareRegion + bareNumber).toLowerCase();
+      if (codeSuffixC === targetClean) score += 200;
+      else if (codeSuffix.startsWith(bareRegion.toLowerCase() + '-')) {
+        const codeNum   = parseInt(codeSuffix.match(/\d+/)?.[0] || '999');
+        const targetNum = parseInt(bareNumber);
+        score += Math.max(0, 50 - Math.abs(codeNum - targetNum) * 2);
+      }
+    } else {
+      if (codeFull.includes(inputLower) || codeSuffixC.includes(inputLower)) score += 50;
+      if (nameLower.includes(inputLower)) score += 40;
+      const words = s.name.toLowerCase().split(/\s+/);
+      for (const w of words) { if (w.startsWith(inputLower.slice(0, 4))) score += 20; }
+    }
+    if (!atDefault) {
+      const dist = Math.hypot((s.lat || 0) - latA, (s.lng || 0) - lngA);
+      score += Math.max(0, 15 - dist * 2);
+    }
+    return { ...s, score };
+  }).filter(s => s.score > 0).sort((a, b) => b.score - a.score).slice(0, 5);
+
+  if (scored.length === 0) return;
+
+  const listEl = document.getElementById('hfSotaSuggestList');
+  listEl.innerHTML = '';
+  for (const s of scored) {
+    const btn = document.createElement('button');
+    btn.style.cssText = `display:block;width:100%;text-align:left;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:5px;padding:6px 10px;margin-bottom:4px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--text);`;
+    btn.innerHTML = `<span style="color:#3DFFA0;">${s.code}</span> — ${s.name}` +
+      (s.altM ? ` <span style="opacity:0.6;">${s.altM}m · ${s.points || '?'}pt</span>` : '');
+    btn.onclick = () => {
+      document.getElementById('hfSotaRef').value = s.code;
+      suggestEl.style.display = 'none';
       statusEl.textContent = `✓ ${s.code} — ${s.name}`;
-      statusEl.className = 'grid-status ok';
+      statusEl.className   = 'lic-status ok';
+      // Fill in the SOTA card directly from list data
+      const elevStr = [s.altM ? `${s.altM}m / ${Math.round(s.altM*3.281)}ft` : '', s.points ? `${s.points} pts` : ''].filter(Boolean).join('  ·  ');
+      document.getElementById('hfSotaRef2').textContent   = s.code;
+      document.getElementById('hfSotaName').textContent   = s.name;
+      document.getElementById('hfSotaElev').textContent   = elevStr;
+      document.getElementById('hfSotaCard').style.display = 'block';
+      // Update contact location with summit coords
+      if (s.lat && s.lng && _hfCurrentContact) {
+        _hfCurrentContact.lat        = s.lat;
+        _hfCurrentContact.lng        = s.lng;
+        _hfCurrentContact.sotaRef    = s.code;
+        _hfCurrentContact.sotaName   = s.name;
+        _hfCurrentContact.sotaAltM   = s.altM;
+        _hfCurrentContact.sotaPoints = s.points;
+        hfPlotContact(_hfCurrentContact, false);
+        hfUpdateMapInfo(_hfCurrentContact);
+      }
     };
     listEl.appendChild(btn);
   }
@@ -5835,8 +5976,11 @@ async function hfLookupCallsign() {
   const sotaRawInput = document.getElementById('hfSotaRef').value.trim().toUpperCase().replace(/\s/g,'');
   const sotaNorm     = sotaRawInput ? normaliseSotaRef(sotaRawInput) : null;
   if (sotaNorm) document.getElementById('hfSotaRef').value = sotaNorm;
-  const hasSota = !!(sotaNorm || (sotaRawInput && sotaRawInput.length >= 4));
-  const sotaRef = sotaNorm || sotaRawInput;
+  // hasSota only true if we have a normalisable full reference
+  const hasSota      = !!sotaNorm;
+  // sotaPartial: bare code entry (like NG-001) that couldn't be normalised — trigger Did You Mean? after lookup
+  const sotaPartial  = !sotaNorm && sotaRawInput.length >= 3;
+  const sotaRef      = sotaNorm || sotaRawInput;
   const sotaCardEl   = document.getElementById('hfSotaCard');
   const sotaStatusEl = document.getElementById('hfSotaStatus');
   if (sotaCardEl)   sotaCardEl.style.display  = 'none';
@@ -5955,6 +6099,7 @@ async function hfLookupCallsign() {
     _hfCurrentContact = {
       callsign: callData.callsign || callsign,
       name,
+      licClass: callData.class || null,
       lat: licLat, lng: licLng,
       _licLat: licLat, _licLng: licLng,
       cityState,
@@ -6019,8 +6164,23 @@ async function hfLookupCallsign() {
         _hfCurrentContact.sotaAssoc    = sotaData.associationName;
       }
     } else if (hasSota && sotaData?.error) {
-      sotaStatusEl.textContent = `⚠ SOTA: ${sotaData.error}`;
+      const hfSuggestEl = document.getElementById('hfSotaSuggest');
+      if (sotaData.code === 'NOT_FOUND' || sotaData.error?.includes('not found')) {
+        sotaStatusEl.textContent = `⚠ SOTA: Summit ${sotaRef} not found`;
+        sotaStatusEl.className   = 'lic-status err';
+        if (hfSuggestEl) await hfSotaDidYouMean(sotaRawInput, sotaStatusEl, hfSuggestEl);
+      } else {
+        sotaStatusEl.textContent = `⚠ SOTA: ${sotaData.error}`;
+        sotaStatusEl.className   = 'lic-status err';
+      }
+    }
+
+    // ── SOTA Did You Mean? for partial/bare entries (e.g. NG-001) ──
+    if (sotaPartial) {
+      const hfSuggestEl = document.getElementById('hfSotaSuggest');
+      sotaStatusEl.textContent = `⚠ SOTA: Couldn't parse "${sotaRawInput}" — did you mean one of these?`;
       sotaStatusEl.className   = 'lic-status err';
+      if (hfSuggestEl) await hfSotaDidYouMean(sotaRawInput, sotaStatusEl, hfSuggestEl);
     }
 
     // ── Grid square override: overrides callsign QTH location ──
@@ -6194,6 +6354,7 @@ function hfLogContact() {
     ts:       `${date} ${time} EST`,
     callsign: _hfCurrentContact.callsign,
     name:     _hfCurrentContact.name,
+    licClass: _hfCurrentContact.licClass || null,
     cityState: _hfCurrentContact.cityState || _hfCurrentContact.potaLocation || '',
     lat:      _hfCurrentContact.lat,
     lng:      _hfCurrentContact.lng,
@@ -6256,6 +6417,8 @@ function hfLogContact() {
   document.getElementById('hfSotaRef').value = '';
   document.getElementById('hfSotaCard').style.display = 'none';
   document.getElementById('hfSotaStatus').textContent = '';
+  const _hfSuggestReset = document.getElementById('hfSotaSuggest');
+  if (_hfSuggestReset) _hfSuggestReset.style.display = 'none';
   document.getElementById('hfRst').value = '';
   document.getElementById('hfNotes').value = '';
   document.getElementById('hfMapInfo').style.display = 'none';
@@ -6367,12 +6530,15 @@ function hfRenderLog() {
       : '';
     const locationLine = sotaDetail || e.potaLocation || e.cityState || '';
 
+    const classLabels = { T:'Tech', G:'General', A:'Advanced', E:'Extra' };
+    const classTag = e.licClass ? classLabels[e.licClass] || e.licClass : null;
+
     card.innerHTML = `
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:6px;">
         <div style="display:flex;align-items:flex-start;gap:8px;flex:1;min-width:0;">
           <span class="hf-card-serial">#${serial}</span>
           <div style="flex:1;min-width:0;">
-            <div class="hf-card-call">${e.callsign}${nameStr ? `<span style="font-weight:700;font-size:18px;color:var(--text);margin-left:10px;letter-spacing:0.02em;">${nameStr}</span>` : ''}</div>
+            <div class="hf-card-call" style="display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;">${e.callsign}${nameStr ? `<span style="font-weight:700;font-size:18px;color:var(--text);letter-spacing:0.02em;">${nameStr}</span>` : ''}${classTag ? `<span style="font-family:'Share Tech Mono',monospace;font-size:11px;font-weight:600;padding:1px 5px;border-radius:3px;background:rgba(0,229,255,0.1);border:1px solid rgba(0,229,255,0.3);color:#00e5ff;text-transform:uppercase;white-space:nowrap;">${classTag}</span>` : ''}</div>
             ${locationLine ? `<div style="font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--muted);margin-top:3px;">${locationLine}</div>` : ''}
           </div>
         </div>
@@ -6526,6 +6692,7 @@ function hfLoadEntry(id) {
   // Restore contact object with POTA and SOTA fields if applicable
   _hfCurrentContact = {
     callsign: e.callsign, name: e.name,
+    licClass: e.licClass || null,
     lat: e.lat, lng: e.lng,
     cityState: e.cityState || '',
     potaRef: e.potaRef || null, potaName: e.potaName || null,
