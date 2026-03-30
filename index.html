@@ -7,7 +7,7 @@
 <!-- Primary SEO -->
 <title>Mike's Ham Radio Mapping Tools | N4MXB</title>
 <meta name="description" content="Radio line of sight and mapping tool for VHF and UHF with elevation profile along a path between two points. Lookup other stations via FCC callsign, grid square, POTA park, or GPS lat / long coordinates. Also includes an HF log and mapping feature with call-sign and POTA park lookup (optional), useful for POTA hunters. HF Log can be exported in ADIF and/or CSV format for import into other common logbooks. Mapping visualizations show you all contacts made from your location.">
-<meta name="keywords" content="RF line of sight calculator, ham radio line of sight, GMRS line of sight, VHF UHF LOS tool, terrain elevation profile, Fresnel zone calculator, knife edge diffraction, link budget calculator, RF path loss, repeater coverage tool, amateur radio LOS, N4MXB">
+<meta name="keywords" content="ham radio, GMRS, VHF, UHF, HF, line of sight, RF propagation, link budget, Fresnel zone, terrain analysis, ham radio logbook, HF logbook, HF log, ham radio maps, mapping, POTA, Parks on the Air, POTA logbook, POTA hunter, POTA activator, QSO logging, ADIF export, contact log, grid square, Maidenhead grid, callsign lookup, FCC callsign, N4MXB, repeater lookup, elevation profile, knife edge diffraction">
 <meta name="author" content="Mike Beauchamp N4MXB">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://myz06vette.github.io/rf-los/">
@@ -30,7 +30,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="RF LOS Tool">
+<meta name="apple-mobile-web-app-title" content="Mike's Ham Radio Mapping Tools">
 
 <!-- Structured Data -->
 <script type="application/ld+json">
@@ -38,7 +38,7 @@
   "@context": "https://schema.org",
   "@type": "WebApplication",
   "name": "Mike's Ham Radio Mapping Tools",
-  "description": "Terrain-aware RF line-of-sight and link budget calculator for ham radio and GMRS operators. Features elevation profile, Earth curvature correction, Fresnel zone analysis, knife-edge diffraction, and repeater lookup.",
+  "description": "Radio line of sight and mapping tool for VHF and UHF with elevation profile along a path between two points. Lookup other stations via FCC callsign, grid square, POTA park, or GPS lat / long coordinates. Also includes an HF log and mapping feature with call-sign and POTA park lookup (optional), useful for POTA hunters. HF Log can be exported in ADIF and/or CSV format for import into other common logbooks. Mapping visualizations show you all contacts made from your location.",
   "url": "https://myz06vette.github.io/rf-los/",
   "author": {
     "@type": "Person",
@@ -52,7 +52,7 @@
     "price": "0",
     "priceCurrency": "USD"
   },
-  "keywords": "ham radio, GMRS, line of sight, RF propagation, link budget, VHF, UHF, Fresnel zone, terrain analysis"
+  "keywords": "ham radio, GMRS, VHF, UHF, HF, line of sight, RF propagation, link budget, Fresnel zone, terrain analysis, ham radio logbook, HF logbook, HF log, ham radio maps, mapping, POTA, Parks on the Air, POTA logbook, POTA hunter, POTA activator, QSO logging, ADIF export, contact log, grid square, Maidenhead grid, callsign lookup, FCC callsign, N4MXB, repeater lookup, elevation profile, knife edge diffraction"
 }
 </script>
 
@@ -293,10 +293,6 @@
     font-size: 18px; font-weight: 700;
     color: #69ff47; letter-spacing: 0.04em;
   }
-  .hf-card-name {
-    font-family: 'Barlow', sans-serif;
-    font-size: 15px; color: var(--muted);
-  }
   .hf-card-meta {
     font-family: 'Share Tech Mono', monospace;
     font-size: 15px; color: var(--muted);
@@ -320,9 +316,6 @@
   .hf-card-dist {
     font-family: 'Share Tech Mono', monospace;
     font-size: 14px; color: var(--muted);
-  }
-  .hf-card-actions {
-    display: flex; gap: 2px; align-items: center;
   }
   .hf-card-delete {
     background: none; border: none;
@@ -592,13 +585,7 @@
     border-radius: 10px; padding: 15px; margin-bottom: 12px;
   }
   .site-block:last-child { margin-bottom: 0; }
-  .site-header { display:flex; align-items:center; gap:10px; margin-bottom:13px; }
   .site-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
-  .site-dot-a { background:#00e5ff; box-shadow:0 0 8px #00e5ff; }
-  .site-dot-b { background:var(--accent-b); box-shadow:0 0 8px var(--accent-b); }
-  .site-label { font-size:16px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
-  .label-a { color:#3DFFA0; }
-  .label-b { color:var(--accent-b); }
 
   /* Action buttons */
   .action-row { display:flex; gap:8px; margin-bottom:12px; }
@@ -901,32 +888,6 @@
     margin-top: 10px; line-height: 1.6;
   }
   .lbr-hint strong { color: var(--text); }
-
-  /* Corrected margin secondary display */
-  .lbr-corrected-block {
-    margin: 12px 0 4px;
-    padding: 10px 12px;
-    background: rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 7px;
-  }
-  .lbr-corrected-label {
-    font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); font-family: 'Share Tech Mono', monospace; margin-bottom: 6px;
-  }
-  .lbr-corrected-row {
-    display: flex; align-items: baseline; gap: 8px; margin-bottom: 4px;
-  }
-  .lbr-corrected-val {
-    font-family: 'Share Tech Mono', monospace; font-size: 22px; font-weight: 700;
-  }
-  .lbr-corrected-val.pos  { color: #3DFFA0; }
-  .lbr-corrected-val.neu  { color: #ffe066; }
-  .lbr-corrected-val.neg  { color: #ff6b35; }
-  .lbr-corrected-sub {
-    font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted);
-    line-height: 1.5;
-  }
   .lbr-correction-breakdown {
     font-family: 'Share Tech Mono', monospace; font-size: 13px;
     color: var(--muted); margin-top: 4px; line-height: 1.7;
@@ -1022,7 +983,6 @@
   .loading-overlay.hidden { display:none; }
 
   .info-note { font-size:15px; color:var(--muted); line-height:1.8; font-family:'Share Tech Mono',monospace; }
-  .api-note  { font-size:15px; color:var(--muted); line-height:1.7; font-family:'Share Tech Mono',monospace; background:rgba(255,107,53,0.06); border:1px solid rgba(255,107,53,0.2); border-radius:6px; padding:11px 13px; margin-top:8px; }
 
   /* ── LAYER SWITCHER ── */
   .layer-switcher {
@@ -5569,7 +5529,6 @@ async function hfGeocodeA() {
 }
 
 // ── POTA optional expand/collapse ─────────────────────────────
-let _hfLookupMode = 'call'; // kept for backwards compat with hfLoadEntry
 
 // ── Unified Callsign + Optional POTA Lookup ───────────────────
 async function hfLookupCallsign() {
@@ -6454,7 +6413,7 @@ function hfExportADIF() {
   const created    = now.toISOString().slice(0,19).replace('T',' ') + ' UTC';
 
   // ── Header ──
-  let out = `HF Contact Log exported from Mike's RF LOS Tool\r\n`;
+  let out = `HF Contact Log exported from Mike's Ham Radio Mapping Tools\r\n`;
   out    += `Created: ${created}\r\n`;
   if (myCall) out += `Station: ${myCall}\r\n`;
   out    += `Records: ${log.length}\r\n`;
