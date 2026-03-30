@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
 <!-- Primary SEO -->
-<title>RF Line of Sight Calculator | Ham Radio & GMRS LOS Tool</title>
-<meta name="description" content="Free RF line-of-sight calculator for ham radio and GMRS operators. Enter two locations to get terrain elevation profile, Earth curvature correction, Fresnel zone clearance, diffraction loss, and full link budget analysis. Supports VHF/UHF bands, repeater lookup, and callsign search.">
+<title>Mike's Ham Radio Mapping Tools | N4MXB</title>
+<meta name="description" content="Radio line of sight and mapping tool for VHF and UHF with elevation profile along a path between two points. Lookup other stations via FCC callsign, grid square, POTA park, or GPS lat / long coordinates. Also includes an HF log and mapping feature with call-sign and POTA park lookup (optional), useful for POTA hunters. HF Log can be exported in ADIF and/or CSV format for import into other common logbooks. Mapping visualizations show you all contacts made from your location.">
 <meta name="keywords" content="RF line of sight calculator, ham radio line of sight, GMRS line of sight, VHF UHF LOS tool, terrain elevation profile, Fresnel zone calculator, knife edge diffraction, link budget calculator, RF path loss, repeater coverage tool, amateur radio LOS, N4MXB">
 <meta name="author" content="Mike Beauchamp N4MXB">
 <meta name="robots" content="index, follow">
@@ -15,14 +15,14 @@
 <!-- Open Graph (Facebook, LinkedIn, Discord) -->
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://myz06vette.github.io/rf-los/">
-<meta property="og:title" content="RF Line of Sight Calculator — Ham Radio & GMRS LOS Tool">
-<meta property="og:description" content="Free RF line-of-sight calculator for ham radio and GMRS operators. Terrain elevation profile, Earth curvature, Fresnel zone, diffraction loss, and link budget — all in one place. No login required.">
+<meta property="og:title" content="Mike's Ham Radio Mapping Tools — N4MXB">
+<meta property="og:description" content="Radio line of sight and mapping tool for VHF and UHF with elevation profile along a path between two points. Lookup other stations via FCC callsign, grid square, POTA park, or GPS lat / long coordinates. Also includes an HF log and mapping feature with call-sign and POTA park lookup (optional), useful for POTA hunters. HF Log can be exported in ADIF and/or CSV format for import into other common logbooks. Mapping visualizations show you all contacts made from your location.">
 <meta property="og:image" content="https://myz06vette.github.io/rf-los/og-image.png">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="RF Line of Sight Calculator — Ham Radio & GMRS LOS Tool">
-<meta name="twitter:description" content="Free terrain-aware RF line-of-sight tool. VHF/UHF LOS analysis, Fresnel zone, diffraction loss, link budget. Built for ham radio and GMRS operators.">
+<meta name="twitter:title" content="Mike's Ham Radio Mapping Tools — N4MXB">
+<meta name="twitter:description" content="Radio line of sight and mapping tool for VHF and UHF with elevation profile along a path between two points. Lookup other stations via FCC callsign, grid square, POTA park, or GPS lat / long coordinates. Also includes an HF log and mapping feature with call-sign and POTA park lookup (optional), useful for POTA hunters. HF Log can be exported in ADIF and/or CSV format for import into other common logbooks. Mapping visualizations show you all contacts made from your location.">
 <meta name="twitter:image" content="https://myz06vette.github.io/rf-los/og-image.png">
 
 <!-- Mobile / PWA -->
@@ -37,7 +37,7 @@
 {
   "@context": "https://schema.org",
   "@type": "WebApplication",
-  "name": "RF Line of Sight Calculator",
+  "name": "Mike's Ham Radio Mapping Tools",
   "description": "Terrain-aware RF line-of-sight and link budget calculator for ham radio and GMRS operators. Features elevation profile, Earth curvature correction, Fresnel zone analysis, knife-edge diffraction, and repeater lookup.",
   "url": "https://myz06vette.github.io/rf-los/",
   "author": {
@@ -350,6 +350,21 @@
     display: flex; align-items: center; gap: 10px;
   }
   .hf-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+  /* Colored site section titles matching map dot colors */
+  .hf-section-title.site-a {
+    color: #00e5ff;
+    text-shadow: 0 0 12px rgba(0,229,255,0.4);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .hf-section-title.site-b {
+    color: #69ff47;
+    text-shadow: 0 0 12px rgba(105,255,71,0.4);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .hf-section-title.site-a::after,
+  .hf-section-title.site-b::after { display: none; }
   .hf-band-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -554,6 +569,20 @@
     margin-bottom: 14px; display: flex; align-items: center; gap: 10px;
   }
   .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+  .section-title.site-a {
+    color: #00e5ff;
+    text-shadow: 0 0 12px rgba(0,229,255,0.4);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .section-title.site-b {
+    color: #69ff47;
+    text-shadow: 0 0 12px rgba(105,255,71,0.4);
+    font-size: 14px;
+    margin-bottom: 12px;
+  }
+  .section-title.site-a::after,
+  .section-title.site-b::after { display: none; }
 
   /* ── SITE BLOCK ── */
   .site-block {
@@ -564,7 +593,7 @@
   .site-block:last-child { margin-bottom: 0; }
   .site-header { display:flex; align-items:center; gap:10px; margin-bottom:13px; }
   .site-dot { width:14px; height:14px; border-radius:50%; flex-shrink:0; }
-  .site-dot-a { background:#3DFFA0; box-shadow:0 0 8px #3DFFA0; }
+  .site-dot-a { background:#00e5ff; box-shadow:0 0 8px #00e5ff; }
   .site-dot-b { background:var(--accent-b); box-shadow:0 0 8px var(--accent-b); }
   .site-label { font-size:16px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; }
   .label-a { color:#3DFFA0; }
@@ -1540,7 +1569,7 @@
       </svg>
     </div>
     <div>
-      <h1>Mike's RF Line of Sight Tool</h1>
+      <h1>Mike's Ham Radio Mapping Tools</h1>
       <p>Developed by N4MXB</p>
     </div>
     <div class="status-badge">
@@ -1577,12 +1606,8 @@
 
       <!-- Site A -->
       <div class="section">
-        <div class="section-title">Site A — Your Station</div>
+        <div class="section-title site-a">My Station — Site A</div>
         <div class="site-block">
-          <div class="site-header">
-            <div class="site-dot site-dot-a"></div>
-            <span class="site-label label-a">Site Alpha</span>
-          </div>
           <div class="action-row">
             <button class="icon-btn" id="gpsA" onclick="useMyLocation('a')">🎯 Use My GPS</button>
             <button class="icon-btn" id="mapBtnA" onclick="setMapMode('a')">🗺 Pick on Map</button>
@@ -1610,12 +1635,8 @@
 
       <!-- Site B -->
       <div class="section">
-        <div class="section-title">Site B — Targeted Contact</div>
+        <div class="section-title site-b">Targeted Contact — Site B</div>
         <div class="site-block">
-          <div class="site-header">
-            <div class="site-dot site-dot-b"></div>
-            <span class="site-label label-b">Site Bravo</span>
-          </div>
 
           <!-- Mode toggle -->
           <div class="site-mode-row">
@@ -1757,7 +1778,7 @@
 
       <!-- Frequency Band (above Calculate) -->
       <div class="section">
-        <div class="section-title">RF Band</div>
+        <div class="section-title site-a">RF Band</div>
         <div class="freq-bar">
           <span class="freq-label">📻 Band</span>
           <button class="freq-opt" id="fVLow"  onclick="setFreqBand('vhf-low')"  title="VHF Low: 30–88 MHz">VHF Lo</button>
@@ -2066,54 +2087,81 @@
 
         <!-- My Station -->
         <div class="hf-section">
-          <div class="hf-section-title">My Station — Site A</div>
+          <div class="hf-section-title site-a">My Station — Site A</div>
           <div class="site-block">
-            <div class="site-header">
-              <div class="site-dot site-dot-a"></div>
-              <span class="site-label label-a">Site Alpha</span>
+
+            <!-- GPS button compact, top of section -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);opacity:0.6;letter-spacing:0.04em;">SITE A — YOUR LOCATION</div>
+              <button class="icon-btn" id="hfGpsA" onclick="hfUseMyGps()" style="padding:4px 10px;font-size:12px;white-space:nowrap;">🎯 GPS</button>
             </div>
+
             <div class="field-group" style="margin-bottom:8px;">
               <label>My Callsign</label>
               <div class="address-row" style="margin-bottom:0;">
                 <input type="text" id="hfMyCall" placeholder="N4MXB"
                   style="text-transform:uppercase;"
                   oninput="this.value=this.value.toUpperCase();hfSaveStation()">
-                <button class="icon-btn" onclick="hfLookupMyCallsign()" title="Look up QTH from FCC" style="white-space:nowrap;">🔍 QTH</button>
+                <button class="icon-btn" onclick="hfLookupMyCallsign()" title="Look up home QTH from FCC" style="white-space:nowrap;">🏠 Home QTH</button>
               </div>
               <div class="addr-status" id="hfMyCallStatus"></div>
             </div>
-            <div class="action-row">
-              <button class="icon-btn" id="hfGpsA" onclick="hfUseMyGps()">🎯 Use My GPS</button>
-            </div>
-            <div class="address-row">
-              <input type="text" id="hfAddrA" placeholder="Address or place name…"
-                onkeydown="if(event.key==='Enter')hfGeocodeA()">
-              <button class="addr-btn" onclick="hfGeocodeA()" title="Search">🔍</button>
-            </div>
-            <div class="addr-status" id="hfAddrStatusA"></div>
-            <div class="coord-row">
-              <div class="field-group">
-                <label>Latitude</label>
-                <input type="number" id="hfLatA" value="39.8283" step="0.00001"
-                  onchange="hfSaveStation()">
+
+            <!-- My POTA Park (optional — for activators) -->
+            <div style="margin-bottom:8px;">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:5px;">
+                🌲 Activating Park <span style="font-size:11px;opacity:0.5;text-transform:none;letter-spacing:0;">(optional)</span>
               </div>
-              <div class="field-group">
-                <label>Longitude</label>
-                <input type="number" id="hfLngA" value="-98.5795" step="0.00001"
-                  onchange="hfSaveStation()">
+              <div class="address-row" style="margin-bottom:4px;">
+                <input type="text" id="hfMyPotaRef" placeholder="e.g. US-3452"
+                  onkeydown="if(event.key==='Enter')hfLookupMyPark()"
+                  style="text-transform:uppercase;">
+                <button class="icon-btn" id="hfMyPotaBtn" onclick="hfLookupMyPark()" style="white-space:nowrap;">🔍 Look Up</button>
+              </div>
+              <div class="addr-status" id="hfMyPotaStatus"></div>
+              <div id="hfMyPotaCard" style="display:none;margin-top:6px;background:rgba(105,255,71,0.04);border:1px solid rgba(105,255,71,0.2);border-radius:6px;padding:8px 11px;">
+                <div style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:700;color:#69ff47;" id="hfMyPotaRefDisplay"></div>
+                <div style="font-family:'Barlow',sans-serif;font-size:14px;color:var(--muted);" id="hfMyPotaName"></div>
+                <div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);margin-top:2px;" id="hfMyPotaLocation"></div>
+                <div style="margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(105,255,71,0.6);">📍 Marker moved to park — activating from this location</div>
+                <button style="margin-top:6px;background:none;border:none;font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);cursor:pointer;padding:0;text-decoration:underline;opacity:0.6;" onclick="hfClearMyPark()">Clear park — revert to home QTH</button>
               </div>
             </div>
+
+            <!-- Advanced / Manual Coordinates (expandable) -->
+            <details style="margin-top:4px;">
+              <summary style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted);opacity:0.7;cursor:pointer;letter-spacing:0.05em;text-transform:uppercase;list-style:none;display:flex;align-items:center;gap:6px;">
+                <span>▶</span> Advanced / Manual Coordinates
+              </summary>
+              <div style="margin-top:8px;">
+                <div class="address-row" style="margin-bottom:6px;">
+                  <input type="text" id="hfAddrA" placeholder="Address or place name…"
+                    onkeydown="if(event.key==='Enter')hfGeocodeA()">
+                  <button class="addr-btn" onclick="hfGeocodeA()" title="Search">🔍</button>
+                </div>
+                <div class="addr-status" id="hfAddrStatusA"></div>
+                <div class="coord-row">
+                  <div class="field-group">
+                    <label>Latitude</label>
+                    <input type="number" id="hfLatA" value="39.8283" step="0.00001"
+                      onchange="hfSaveStation()">
+                  </div>
+                  <div class="field-group">
+                    <label>Longitude</label>
+                    <input type="number" id="hfLngA" value="-98.5795" step="0.00001"
+                      onchange="hfSaveStation()">
+                  </div>
+                </div>
+              </div>
+            </details>
+
           </div>
         </div>
 
         <!-- Contact Lookup -->
-        <div class="hf-section">
-          <div class="hf-section-title">Heard Station — Site B</div>
-          <div class="site-block">
-            <div class="site-header">
-              <div class="site-dot site-dot-b"></div>
-              <span class="site-label label-b">Callsign Lookup</span>
-            </div>
+        <div class="hf-section" style="padding-bottom:10px;">
+          <div class="hf-section-title site-b">Heard Station — Site B</div>
+          <div class="site-block" style="margin-bottom:0;">
 
             <!-- Callsign field -->
             <div class="field-group" style="margin-bottom:8px;">
@@ -2125,12 +2173,22 @@
             </div>
 
             <!-- POTA field — always visible, optional -->
-            <div class="field-group" style="margin-bottom:10px;">
-              <label>POTA Park <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional — leave blank if not a POTA activation)</span></label>
+            <div class="field-group" style="margin-bottom:8px;">
+              <label>POTA Park <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
               <input type="text" id="hfPotaRef"
                 placeholder="e.g. US-0001"
                 onkeydown="if(event.key==='Enter')hfLookupCallsign()"
                 style="text-transform:uppercase;">
+            </div>
+
+            <!-- Grid Square field — optional, alternative location -->
+            <div class="field-group" style="margin-bottom:10px;">
+              <label>Grid Square <span style="font-size:12px;opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">(optional — overrides callsign QTH)</span></label>
+              <input type="text" id="hfGridInput"
+                placeholder="e.g. EM74rj"
+                onkeydown="if(event.key==='Enter')hfLookupCallsign()"
+                style="text-transform:uppercase;"
+                maxlength="6">
             </div>
 
             <button class="icon-btn" id="hfLookupBtn" onclick="hfLookupCallsign()" style="width:100%;margin-bottom:10px;">🔍 Look Up</button>
@@ -2145,6 +2203,14 @@
               <div class="lic-card-addr" id="hfLicAddr">—</div>
               <div class="lic-card-note" id="hfLicNote"></div>
             </div>
+
+            <!-- Grid Square result card -->
+            <div id="hfGridCard" style="display:none;margin-top:8px;background:rgba(0,229,255,0.04);border:1px solid rgba(0,229,255,0.2);border-radius:6px;padding:10px 12px;">
+              <div style="font-family:'Share Tech Mono',monospace;font-size:15px;font-weight:700;color:#00e5ff;" id="hfGridCardSq"></div>
+              <div style="font-family:'Share Tech Mono',monospace;font-size:13px;color:var(--muted);margin-top:3px;" id="hfGridCardInfo"></div>
+              <div style="margin-top:6px;font-family:'Share Tech Mono',monospace;font-size:11px;color:rgba(0,229,255,0.6);">📍 Plotting center of grid square</div>
+            </div>
+            <div class="addr-status" id="hfGridStatus"></div>
 
             <!-- POTA result card — only shown when park ref resolved -->
             <div id="hfPotaCard" style="display:none;margin-top:8px;background:rgba(105,255,71,0.04);border:1px solid rgba(105,255,71,0.2);border-radius:6px;padding:10px 12px;">
@@ -2163,8 +2229,8 @@
         </div>
 
         <!-- Log Entry Form -->
-        <div class="hf-section">
-          <div class="hf-section-title">Log Entry</div>
+        <div class="hf-section" style="padding-top:14px;">
+          <div class="hf-section-title site-a">Log Entry</div>
 
           <!-- HF Band -->
           <div style="margin-bottom:8px;">
@@ -3477,7 +3543,7 @@ function setFreqBand(band) {
     const nuStr   = diffr.nu.toFixed(2);
     const lossStr = Math.abs(diffr.lossDb).toFixed(1);
     const meterColors = { excellent:'#3DFFA0', good:'#3DFFA0', fair:'#ffe066', poor:'#ff6b35', unlikely:'#ff4444' };
-    const diffrInfoEl = document.getElementById('linkDiffraction');
+    const diffrInfoEl = document.getElementById('linkDiffInfo');
     const fillEl      = document.getElementById('linkMeterFill');
     diffrInfoEl.innerHTML = `ν=${nuStr} · Est. diffraction loss: <strong style="color:${meterColors[grade.grade]}">${lossStr} dB</strong><br>`
       + `Band: ${fb.label} (λ=${fb.lambda.toFixed(2)}m) · Worst obstacle: ${document.getElementById('statClear').textContent}`;
@@ -5218,6 +5284,17 @@ function hfInit() {
       }
       document.getElementById('hfAddrStatusA').textContent = '✓ Home QTH restored';
     }
+    // Restore active park if one was saved
+    if (saved.myPotaRef) {
+      _hfMyParkRef  = saved.myPotaRef;
+      _hfMyParkData = { ref: saved.myPotaRef, name: saved.myPotaName || '' };
+      document.getElementById('hfMyPotaRef').value = saved.myPotaRef;
+      document.getElementById('hfMyPotaRefDisplay').textContent = saved.myPotaRef;
+      document.getElementById('hfMyPotaName').textContent       = saved.myPotaName || '';
+      document.getElementById('hfMyPotaCard').style.display     = 'block';
+      document.getElementById('hfMyPotaStatus').textContent     = `✓ Activating ${saved.myPotaRef}`;
+      document.getElementById('hfMyPotaStatus').className       = 'lic-status ok';
+    }
   }
 
   // ── Init HF map ──
@@ -5263,6 +5340,8 @@ function hfInit() {
   const showAllBtn = document.getElementById('hfShowAllBtn');
   if (showAllBtn) showAllBtn.classList.add('on');
   hfReplotAll();
+  // Background retroactive city/state enrichment for old entries
+  setTimeout(hfEnrichMissingCityState, 1500);
 }
 
 // ── Station persistence ────────────────────────────────────────
@@ -5278,8 +5357,10 @@ function hfSaveStation() {
   const lat      = parseFloat(document.getElementById('hfLatA')?.value);
   const lng      = parseFloat(document.getElementById('hfLngA')?.value);
   const addr     = document.getElementById('hfAddrA')?.value.trim() || '';
+  const myPotaRef = _hfMyParkRef || '';
+  const myPotaName = _hfMyParkData?.name || '';
   if (!isNaN(lat) && !isNaN(lng)) {
-    try { localStorage.setItem(HF_STATION_KEY, JSON.stringify({ callsign, lat, lng, addr })); }
+    try { localStorage.setItem(HF_STATION_KEY, JSON.stringify({ callsign, lat, lng, addr, myPotaRef, myPotaName })); }
     catch(e) { console.warn('Station save failed:', e); }
   }
 }
@@ -5328,6 +5409,114 @@ async function hfLookupMyCallsign() {
   } catch(err) {
     statusEl.textContent = `✗ Lookup failed: ${err.message}`;
     statusEl.className = 'lic-status err';
+  }
+}
+
+// ── My Park lookup (activator) ─────────────────────────────────
+let _hfMyParkRef   = null; // currently activated park ref
+let _hfMyParkData  = null; // park coords/name for log entries
+
+async function hfLookupMyPark() {
+  let ref = document.getElementById('hfMyPotaRef').value.trim().toUpperCase();
+  if (/^\d+$/.test(ref))   ref = 'US-' + ref.padStart(4, '0');
+  if (/^K-\d+$/.test(ref)) ref = 'US-' + ref.slice(2).padStart(4, '0');
+  document.getElementById('hfMyPotaRef').value = ref;
+
+  const statusEl = document.getElementById('hfMyPotaStatus');
+  const cardEl   = document.getElementById('hfMyPotaCard');
+  if (!ref || ref.length < 4) {
+    statusEl.textContent = '⚠ Enter a park reference'; statusEl.className = 'lic-status err'; return;
+  }
+  statusEl.textContent = `⏳ Looking up ${ref}…`; statusEl.className = 'lic-status';
+  document.getElementById('hfMyPotaBtn').disabled = true;
+
+  try {
+    const resp = await fetch(`https://api.pota.app/park/${encodeURIComponent(ref)}`);
+    if (resp.status === 404) throw new Error(`Park ${ref} not found`);
+    if (!resp.ok) throw new Error(`API returned ${resp.status}`);
+    const data = await resp.json();
+
+    const parkName = data.name || data.parkName || '—';
+    const location = [data.locationName, data.entityName].filter(Boolean).join(' — ');
+    const lat = parseFloat(data.latitude), lng = parseFloat(data.longitude);
+
+    document.getElementById('hfMyPotaRefDisplay').textContent = ref;
+    document.getElementById('hfMyPotaName').textContent       = parkName;
+    document.getElementById('hfMyPotaLocation').textContent   = location;
+    cardEl.style.display   = 'block';
+    statusEl.textContent   = `✓ ${ref} — ${parkName}`;
+    statusEl.className     = 'lic-status ok';
+
+    // Move Site A marker to park coords
+    if (!isNaN(lat) && !isNaN(lng)) {
+      document.getElementById('hfLatA').value = lat.toFixed(5);
+      document.getElementById('hfLngA').value = lng.toFixed(5);
+      if (_hfMarkerA) _hfMarkerA.setLatLng([lat, lng]);
+      if (_hfMap) _hfMap.setView([lat, lng], 9);
+      _hfMyParkRef  = ref;
+      _hfMyParkData = { ref, name: parkName, location, lat, lng };
+      hfSaveStation();
+    }
+  } catch(err) {
+    statusEl.textContent = `✗ ${err.message}`; statusEl.className = 'lic-status err';
+  } finally {
+    document.getElementById('hfMyPotaBtn').disabled = false;
+  }
+}
+
+function hfClearMyPark() {
+  _hfMyParkRef  = null;
+  _hfMyParkData = null;
+  document.getElementById('hfMyPotaRef').value        = '';
+  document.getElementById('hfMyPotaCard').style.display = 'none';
+  document.getElementById('hfMyPotaStatus').textContent = '';
+  // Revert marker to saved home QTH
+  const saved = hfLoadStation();
+  if (saved && saved.lat && saved.lng) {
+    document.getElementById('hfLatA').value = saved.lat.toFixed(5);
+    document.getElementById('hfLngA').value = saved.lng.toFixed(5);
+    if (_hfMarkerA) _hfMarkerA.setLatLng([saved.lat, saved.lng]);
+    if (_hfMap) _hfMap.setView([saved.lat, saved.lng], 9);
+  }
+  hfSaveStation();
+}
+
+// ── Retroactive city/state enrichment ─────────────────────────
+// For existing log entries that are missing cityState, look up via the callsign
+// proxy in the background (staggered to avoid rate limits).
+async function hfEnrichMissingCityState() {
+  if (!REPEATER_PROXY) return;
+  const log = hfLoadLog();
+  // Find entries missing cityState (and not POTA entries which use potaLocation)
+  const missing = log.filter(e => !e.cityState && !e.potaRef && e.callsign);
+  if (missing.length === 0) return;
+
+  let changed = false;
+  for (let i = 0; i < missing.length; i++) {
+    const e = missing[i];
+    try {
+      const resp = await fetch(
+        `${REPEATER_PROXY}?callsign=${encodeURIComponent(e.callsign)}&type=licensee`
+      );
+      const data = await resp.json();
+      if (!data.error) {
+        const city  = (data.addr2 || '').trim();
+        const state = (data.state  || '').trim();
+        const cs    = city && state ? `${city}, ${state}` : (city || state || '');
+        if (cs) {
+          // Update this entry in the full log array
+          const idx = log.findIndex(x => x.id === e.id);
+          if (idx !== -1) { log[idx].cityState = cs; changed = true; }
+        }
+      }
+    } catch(_) { /* silently skip */ }
+    // Stagger requests: 300ms between each to respect rate limits
+    if (i < missing.length - 1) await new Promise(r => setTimeout(r, 300));
+  }
+
+  if (changed) {
+    hfSaveLog(log);
+    hfRenderLog(); // re-render with updated city/state
   }
 }
 
@@ -5390,10 +5579,40 @@ async function hfLookupCallsign() {
   document.getElementById('hfPotaRef').value = potaRaw;
   const hasPota = potaRaw.length >= 4;
 
+  // Grid square (optional — overrides location if callsign has no coords or no callsign)
+  const gridRaw = document.getElementById('hfGridInput').value.trim().toUpperCase();
+  const hasGrid = gridRaw.length === 4 || gridRaw.length === 6;
+  const gridCardEl   = document.getElementById('hfGridCard');
+  const gridStatusEl = document.getElementById('hfGridStatus');
+  gridCardEl.style.display  = 'none';
+  gridStatusEl.textContent  = '';
+
   const statusEl = document.getElementById('hfLicStatus');
   const cardEl   = document.getElementById('hfLicCard');
   const potaCardEl = document.getElementById('hfPotaCard');
   const potaStatusEl = document.getElementById('hfPotaStatus');
+
+  // Grid-only mode: no callsign needed if a grid square is provided
+  if (!callsign && hasGrid) {
+    const result = gridSquareToLatLng(gridRaw);
+    if (!result) {
+      gridStatusEl.textContent = `⚠ "${gridRaw}" is not a valid Maidenhead grid square`;
+      gridStatusEl.className = 'lic-status err';
+      return;
+    }
+    const { lat, lng, sizeLat, sizeLng } = result;
+    document.getElementById('hfGridCardSq').textContent   = gridRaw;
+    document.getElementById('hfGridCardInfo').textContent =
+      `Center: ${lat >= 0 ? lat.toFixed(4)+'°N' : Math.abs(lat).toFixed(4)+'°S'}, ` +
+      `${lng >= 0 ? lng.toFixed(4)+'°E' : Math.abs(lng).toFixed(4)+'°W'} · ~${Math.round(Math.max(sizeLat,sizeLng)*69)} mi grid`;
+    gridCardEl.style.display  = 'block';
+    gridStatusEl.textContent  = `✓ Grid square ${gridRaw}`;
+    gridStatusEl.className    = 'lic-status ok';
+    _hfCurrentContact = { callsign: gridRaw, name: `Grid ${gridRaw}`, lat, lng, cityState: '' };
+    hfPlotContact(_hfCurrentContact, false);
+    hfUpdateMapInfo(_hfCurrentContact);
+    return;
+  }
 
   if (!callsign) { statusEl.textContent = '⚠ Enter a callsign'; statusEl.className = 'lic-status err'; return; }
   if (!REPEATER_PROXY) { statusEl.textContent = '⚠ Proxy not configured'; return; }
@@ -5508,12 +5727,28 @@ async function hfLookupCallsign() {
       }
     }
 
+    // ── Grid square override: overrides callsign QTH location ──
+    if (hasGrid && !hasPota) {
+      const gResult = gridSquareToLatLng(gridRaw);
+      if (gResult) {
+        _hfCurrentContact.lat = gResult.lat;
+        _hfCurrentContact.lng = gResult.lng;
+        document.getElementById('hfGridCardSq').textContent   = gridRaw;
+        document.getElementById('hfGridCardInfo').textContent =
+          `Center: ${gResult.lat >= 0 ? gResult.lat.toFixed(4)+'°N' : Math.abs(gResult.lat).toFixed(4)+'°S'}, ` +
+          `${gResult.lng >= 0 ? gResult.lng.toFixed(4)+'°E' : Math.abs(gResult.lng).toFixed(4)+'°W'}`;
+        gridCardEl.style.display  = 'block';
+        gridStatusEl.textContent  = `✓ Location set to grid center`;
+        gridStatusEl.className    = 'lic-status ok';
+      }
+    }
+
     // ── Plot on map ──
     if (_hfCurrentContact.lat && _hfCurrentContact.lng) {
       hfPlotContact(_hfCurrentContact, false);
       hfUpdateMapInfo(_hfCurrentContact);
-    } else if (addrStr && !potaData) {
-      // Fallback geocode only if no POTA park provided coords
+    } else if (addrStr && !potaData && !hasGrid) {
+      // Fallback geocode only if no POTA park and no grid provided coords
       document.getElementById('hfLicNote').textContent = '⏳ Geocoding address…';
       hfGeocodeLicenseeForHf(addrStr, callData.callsign || callsign, name);
     } else {
@@ -5541,6 +5776,8 @@ async function hfGeocodeLicenseeForHf(addrStr, callsign, name) {
     if (_hfCurrentContact) {
       _hfCurrentContact.lat = lat; _hfCurrentContact.lng = lng;
       _hfCurrentContact._licLat = lat; _hfCurrentContact._licLng = lng;
+    } else {
+      _hfCurrentContact = { callsign, name, lat, lng, _licLat: lat, _licLng: lng, cityState: '' };
     }
     noteEl.textContent = `📍 Geocoded from address`;
     hfPlotContact(_hfCurrentContact, false);
@@ -5669,11 +5906,14 @@ function hfLogContact() {
     freq:     freq.toFixed(6),
     mode, rst, notes,
     dist:     fmtDist(d*1000, false),
-    // POTA fields (null if callsign lookup)
+    // Heard station POTA fields (hunter log)
     potaRef:      _hfCurrentContact.potaRef      || null,
     potaName:     _hfCurrentContact.potaName     || null,
     potaLocation: _hfCurrentContact.potaLocation || null,
     potaGrid:     _hfCurrentContact.potaGrid     || null,
+    // My activating park fields (activator log)
+    myPotaRef:  _hfMyParkRef  || null,
+    myPotaName: _hfMyParkData ? _hfMyParkData.name : null,
   };
 
   // Save to storage
@@ -5948,6 +6188,7 @@ function hfLoadEntry(id) {
   _hfCurrentContact = {
     callsign: e.callsign, name: e.name,
     lat: e.lat, lng: e.lng,
+    cityState: e.cityState || '',
     potaRef: e.potaRef || null, potaName: e.potaName || null,
     potaLocation: e.potaLocation || null, potaGrid: e.potaGrid || null,
   };
@@ -6030,22 +6271,56 @@ function hfSwitchMobTab(tab) {
   const hfPanel   = document.querySelector('.hf-panel');
   const hfMapWrap = document.querySelector('.hf-map-wrap');
   const hfLogPanel= document.querySelector('.hf-log-panel');
+  const hdr       = document.querySelector('.header');
+  const modeTabs  = document.querySelector('.mode-tabbar');
+  const topOffset = (hdr ? hdr.offsetHeight : 0) + (modeTabs ? modeTabs.offsetHeight : 0);
 
+  // Hide all panels cleanly — preserve position:absolute so they stay contained in hfMain
   [hfPanel, hfMapWrap, hfLogPanel].forEach(el => {
-    if (el) el.style.display = 'none';
+    if (el) {
+      el.style.display  = 'none';
+      el.style.position = 'absolute';
+      el.style.inset    = '0';
+      el.style.width    = '';
+      el.style.maxWidth = '';
+      el.style.zIndex   = '';
+    }
   });
 
   document.querySelectorAll('#hfMobTabbar .mob-tab').forEach(b => b.classList.remove('active'));
 
   if (tab === 'controls') {
-    if (hfPanel) { hfPanel.style.display = 'block'; hfPanel.style.overflowY = 'auto'; }
+    if (hfPanel) {
+      hfPanel.style.display    = 'block';
+      hfPanel.style.position   = 'absolute';
+      hfPanel.style.inset      = '0';
+      hfPanel.style.overflowY  = 'auto';
+      hfPanel.style.overflowX  = 'hidden';
+    }
     document.getElementById('hfMobTabControls')?.classList.add('active');
   } else if (tab === 'map') {
-    if (hfMapWrap) { hfMapWrap.style.display = 'block'; }
+    if (hfMapWrap) {
+      hfMapWrap.style.display  = 'block';
+      hfMapWrap.style.position = 'absolute';
+      hfMapWrap.style.inset    = '0';
+    }
     document.getElementById('hfMobTabMap')?.classList.add('active');
     setTimeout(() => { if (_hfMap) _hfMap.invalidateSize(); }, 80);
   } else if (tab === 'log') {
-    if (hfLogPanel) { hfLogPanel.style.display = 'flex'; hfLogPanel.style.flexDirection = 'column'; }
+    if (hfLogPanel) {
+      // Use fixed positioning so it spans full viewport width regardless of hfMain grid
+      hfLogPanel.style.display       = 'flex';
+      hfLogPanel.style.flexDirection = 'column';
+      hfLogPanel.style.position      = 'fixed';
+      hfLogPanel.style.top           = topOffset + 'px';
+      hfLogPanel.style.left          = '0';
+      hfLogPanel.style.right         = '0';
+      hfLogPanel.style.bottom        = '72px';
+      hfLogPanel.style.width         = '100%';
+      hfLogPanel.style.maxWidth      = '100%';
+      hfLogPanel.style.overflowY     = 'hidden'; // inner list scrolls
+      hfLogPanel.style.zIndex        = '10';
+    }
     document.getElementById('hfMobTabLog')?.classList.add('active');
   }
 }
@@ -6128,7 +6403,7 @@ function hfExportADIF() {
   const myGrid = (!isNaN(latA) && !isNaN(lngA)) ? hfLatLngToGrid(latA, lngA) : '';
 
   const now = new Date();
-  const programId  = 'N4MXB RF LOS Tool';
+  const programId  = 'N4MXB Ham Radio Mapping Tools';
   const adifVer    = '3.1.7';
   const created    = now.toISOString().slice(0,19).replace('T',' ') + ' UTC';
 
@@ -6161,6 +6436,10 @@ function hfExportADIF() {
     if (e.potaRef) {
       rec += adifField('SIG',      'POTA');
       rec += adifField('SIG_INFO', e.potaRef);
+    }
+    if (e.myPotaRef) {
+      rec += adifField('MY_SIG',      'POTA');
+      rec += adifField('MY_SIG_INFO', e.myPotaRef);
     }
     if (myCall)  rec += adifField('STATION_CALLSIGN', myCall);
     if (myGrid)  rec += adifField('MY_GRIDSQUARE',    myGrid);
