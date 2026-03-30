@@ -135,7 +135,7 @@
   .hf-main {
     flex: 1;
     display: grid;
-    grid-template-columns: var(--panel-w) 1fr var(--hf-log-w, 320px);
+    grid-template-columns: var(--panel-w) 1fr var(--hf-log-w, 380px);
     grid-template-rows: 1fr;
     min-height: 0;
     overflow: hidden;
@@ -253,7 +253,8 @@
     letter-spacing: 0.06em; text-transform: uppercase;
     padding: 10px 8px; border-radius: 6px; cursor: pointer;
     transition: background 0.15s, box-shadow 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    white-space: nowrap;
   }
   .hf-export-btn:hover {
     background: linear-gradient(135deg, rgba(61,255,160,0.18), rgba(0,112,243,0.18));
@@ -290,7 +291,7 @@
   .hf-card-call {
     font-family: 'Share Tech Mono', monospace;
     font-size: 18px; font-weight: 700;
-    color: var(--text); letter-spacing: 0.04em;
+    color: #69ff47; letter-spacing: 0.04em;
   }
   .hf-card-name {
     font-family: 'Barlow', sans-serif;
@@ -2090,10 +2091,8 @@
           <div class="hf-section-title site-a">My Station — Site A</div>
           <div class="site-block">
 
-            <!-- GPS button compact, top of section -->
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);opacity:0.6;letter-spacing:0.04em;">SITE A — YOUR LOCATION</div>
-              <button class="icon-btn" id="hfGpsA" onclick="hfUseMyGps()" style="padding:4px 10px;font-size:12px;white-space:nowrap;">🎯 GPS</button>
+            <div class="action-row">
+              <button class="icon-btn" id="hfGpsA" onclick="hfUseMyGps()">🎯 Use My GPS</button>
             </div>
 
             <div class="field-group" style="margin-bottom:8px;">
