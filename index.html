@@ -128,6 +128,122 @@
     border-bottom-color: #3DFFA0;
   }
 
+  /* ── ABOUT SHELL ── */
+  .about-wrap {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 32px 80px;
+  }
+  .about-hero {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+  }
+  .about-hero-title {
+    font-family: 'Barlow', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--accent-a);
+    letter-spacing: 0.04em;
+    margin-bottom: 10px;
+  }
+  .about-hero-sub {
+    font-size: 17px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+  .about-section {
+    margin-bottom: 52px;
+  }
+  .about-lead {
+    font-size: 16px;
+    line-height: 1.75;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+  .about-section p {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text);
+    opacity: 0.88;
+    margin-bottom: 14px;
+  }
+  .about-h2 {
+    font-family: 'Barlow', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-a);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+  }
+  .about-h3 {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #00e5ff;
+    margin: 28px 0 10px;
+  }
+  .about-steps {
+    padding-left: 24px;
+    margin-bottom: 14px;
+  }
+  .about-steps li {
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text);
+    opacity: 0.88;
+    margin-bottom: 14px;
+    padding-left: 6px;
+  }
+  .about-steps li strong {
+    color: var(--text);
+    opacity: 1;
+  }
+  .about-list {
+    list-style: disc;
+    padding-left: 24px;
+    margin: 10px 0 14px;
+  }
+  .about-list li {
+    font-size: 15px;
+    line-height: 1.7;
+    color: var(--text);
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
+  .about-list li strong { color: var(--text); opacity: 1; }
+  .about-list li em { color: var(--accent-a); font-style: normal; }
+  .about-formula {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: #69ff47;
+    background: rgba(105,255,71,0.06);
+    border-left: 3px solid rgba(105,255,71,0.4);
+    border-radius: 0 4px 4px 0;
+    padding: 10px 16px;
+    margin: 12px 0 16px;
+    letter-spacing: 0.04em;
+  }
+  .about-footer {
+    border-top: 1px solid var(--border);
+    padding-top: 24px;
+    margin-top: 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+  @media (max-width: 600px) {
+    .about-wrap { padding: 24px 16px 60px; }
+    .about-hero-title { font-size: 22px; }
+    .about-formula { font-size: 12px; }
+  }
+
   /* ── HF SHELL ── */
   .hf-shell {
     display: none;
@@ -1584,11 +1700,166 @@
     </div>
   </div>
 
-  <!-- MODE TAB BAR -->
+    <!-- MODE TAB BAR -->
   <div class="mode-tabbar">
     <button class="mode-tab active" id="modeTabVhf" onclick="switchMode('vhf')">📡 VHF / UHF</button>
     <button class="mode-tab" id="modeTabHf" onclick="switchMode('hf')">📻 HF</button>
+    <button class="mode-tab" id="modeTabAbout" onclick="switchMode('about')">ℹ️ About</button>
   </div>
+
+  <!-- ABOUT SHELL -->
+  <div id="aboutShell" style="display:none;flex:1;flex-direction:column;overflow-y:auto;overflow-x:hidden;background:var(--bg);">
+    <div class="about-wrap">
+
+      <!-- ── Hero ── -->
+      <div class="about-hero">
+        <div class="about-hero-title">Mike's Ham Radio Mapping Tools</div>
+        <div class="about-hero-sub">A free, browser-based toolkit for amateur radio operators — no account, no install, no subscription.</div>
+      </div>
+
+      <!-- ── Overview ── -->
+      <section class="about-section">
+        <p class="about-lead">This tool was built by <strong>N4MXB</strong> for the ham radio community. It combines two purpose-built utilities in a single application: a <strong>VHF/UHF RF Line-of-Sight calculator</strong> and an <strong>HF contact logger with mapping</strong>. Both tabs are designed around real operating scenarios — whether you're planning a repeater link, scouting a portable operating site, chasing POTA and SOTA activations, or simply keeping a visual log of your HF contacts.</p>
+        <p>All computation runs locally in your browser. No data is sent to any server except for optional callsign, repeater, POTA, and SOTA lookups, which are proxied through a Cloudflare Worker to handle cross-origin restrictions.</p>
+      </section>
+
+      <!-- ══════════════════════════════════════════════
+           VHF / UHF GUIDE
+      ══════════════════════════════════════════════ -->
+      <section class="about-section">
+        <h2 class="about-h2">📡 VHF / UHF Tab — RF Line-of-Sight Calculator</h2>
+        <p>The VHF/UHF tab calculates whether two stations can communicate directly over a given terrain path. It models earth curvature, real terrain elevation, Fresnel zone obstruction, and knife-edge diffraction loss to give you a link quality assessment along with a visual elevation profile.</p>
+
+        <h3 class="about-h3">How to Use It</h3>
+        <ol class="about-steps">
+          <li>
+            <strong>Set Site A — Your Station.</strong> Enter your address or place name in the Site A field and press Enter, or click <em>Use My GPS</em> to use your device's location. You can also drag the marker directly on the map or click <em>Pick on Map</em>. Set your antenna height above ground level (AGL) in feet.
+          </li>
+          <li>
+            <strong>Set Site B — The Remote Station.</strong> Choose how you want to locate the remote site using the mode buttons:
+            <ul class="about-list">
+              <li><strong>📍 Address</strong> — Type any address, landmark, or place name and press Enter.</li>
+              <li><strong>👤 Licensee</strong> — Enter a ham callsign (e.g. W4ABC). The tool looks up the FCC license record and places the marker at the operator's registered address. Works for amateur licensees; GMRS callsigns will return a link to the FCC ULS search instead.</li>
+              <li><strong>🔲 Grid Sq.</strong> — Enter a 4 or 6 character Maidenhead grid square (e.g. EM74 or EM74rj). The marker is placed at the center of that grid square.</li>
+              <li><strong>📡 Repeater</strong> — Enter a callsign and look up repeater listings from RepeaterBook. Select a specific repeater from the results to place the marker at its coordinates.</li>
+              <li><strong>⛰️ SOTA</strong> — Enter a SOTA summit reference (e.g. W4G/NG-001) or a partial code like NG-001. If a full reference is found, the marker is placed at the summit's exact coordinates. If the input is partial or ambiguous, a <em>Did You Mean?</em> list appears with the closest matching summits based on your current location and the text entered.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>Select Your RF Band.</strong> Choose the frequency band that matches your operating frequency: VHF Low (30–88 MHz), VHF High (136–174 MHz), UHF Low (400–512 MHz), or UHF High (700–900 MHz). This determines the wavelength used in Fresnel zone calculations.
+          </li>
+          <li>
+            <strong>Calculate.</strong> Press the <em>Calculate LOS</em> button. The tool fetches terrain elevation data, plots the path profile, and returns a full link assessment.
+          </li>
+          <li>
+            <strong>Read the Results.</strong> The elevation profile shows your path with a terrain cross-section. The result panel shows distance, path clearance, Fresnel zone radius at the most obstructed point, estimated diffraction loss (if any), and a qualitative link quality rating. Contacts are saved to a history log at the bottom of the panel.
+          </li>
+        </ol>
+
+        <h3 class="about-h3">Optional Fields and Tips</h3>
+        <ul class="about-list">
+          <li>Antenna heights default to 33 ft AGL. Adjust both sites to reflect actual mast or tower heights for accurate results.</li>
+          <li>The Licensee lookup places the marker at the operator's <em>registered address</em>, which may differ from their actual antenna location. Use the map drag or manual coordinate entry to fine-tune.</li>
+          <li>The SOTA lookup places the marker at the summit's GPS coordinates — useful for evaluating whether a hilltop or mountain activation is likely to reach your QTH on VHF/UHF.</li>
+          <li>History entries are saved in your browser's local storage. They persist across sessions on the same device.</li>
+        </ul>
+      </section>
+
+      <!-- ══════════════════════════════════════════════
+           HF GUIDE
+      ══════════════════════════════════════════════ -->
+      <section class="about-section">
+        <h2 class="about-h2">📻 HF Tab — Contact Logger and Mapping</h2>
+        <p>The HF tab is a visual contact logging tool designed around chasing POTA (Parks on the Air) and SOTA (Summits on the Air) activations, as well as general HF operating. It plots contacts on a satellite map with great-circle lines between your station and each heard station, calculates distances, and exports logs in standard formats.</p>
+
+        <h3 class="about-h3">How to Use It</h3>
+        <ol class="about-steps">
+          <li>
+            <strong>Set Up My Station — Site A.</strong> Enter your callsign and click <em>Home QTH</em> to look up your registered address from the FCC database. Click <em>Use My GPS</em> to use your current device location instead — useful when operating portable. If you're activating a POTA park, enter the park reference in the <em>Activating Park</em> field; the map marker will move to the park's coordinates and your park reference will be included in log exports.
+          </li>
+          <li>
+            <strong>Enter the Heard Station — Site B.</strong>
+            <ul class="about-list">
+              <li><strong>👤 Callsign</strong> — Always required. Enter the callsign of the station you heard and press <em>Look Up</em>. The tool retrieves the operator's name, license class, and registered QTH from the FCC database via callook.info.</li>
+              <li><strong>🌲 POTA Park</strong> <em>(optional — overrides callsign QTH)</em> — If the station is a POTA activator, enter their park reference (e.g. US-0001 or just 0001). The tool looks up the park from the POTA API and moves the contact marker to the park's coordinates. The park name and location appear on the log card.</li>
+              <li><strong>⛰️ SOTA Summit</strong> <em>(optional — overrides callsign QTH)</em> — If the station is a SOTA activator, enter the summit reference (e.g. W4G/NG-001 or just NG-001). The tool looks up the summit from the SOTA database and moves the contact marker to the summit's coordinates. Elevation and points are shown on the log card. Partial codes trigger a <em>Did You Mean?</em> list using your station location as a proximity clue.</li>
+              <li><strong>🔲 Grid Square</strong> <em>(optional — overrides callsign QTH)</em> — Enter a Maidenhead grid square if you know the operator's grid but not their exact address.</li>
+            </ul>
+          </li>
+          <li>
+            <strong>All three optional fields run in parallel.</strong> When you press <em>Look Up</em>, the callsign lookup, POTA lookup, and SOTA lookup all run simultaneously. Priority order for location: SOTA overrides POTA overrides Grid Square overrides callsign QTH. The operator's name always comes from the callsign lookup regardless of which location source wins.
+          </li>
+          <li>
+            <strong>Fill in Log Entry details.</strong> Select band, frequency, mode, and RST sent. Add notes if needed. Press <em>Log Contact</em> to save.
+          </li>
+          <li>
+            <strong>Review the Map and Log.</strong> Each contact is plotted with a green dot at the remote station and a great-circle line back to your QTH. The log panel on the right shows all contacts with callsign, name, license class, POTA/SOTA details, distance, band, and timestamp. Click any card to reload that contact.
+          </li>
+          <li>
+            <strong>Export.</strong> Use <em>Export Log — ADIF</em> for import into QRZ logbook, LoTW, HAMRS, or any standard logging software. Use <em>Export Log — CSV</em> for spreadsheets. ADIF includes standard SOTA_REF and SIG/SIG_INFO fields for POTA and SOTA chaser credits.
+          </li>
+        </ol>
+
+        <h3 class="about-h3">Show All Toggle</h3>
+        <p>The <em>Show All</em> toggle in the log header controls whether all contacts are plotted on the map simultaneously or only the currently selected one. With Show All on, every contact in your log is visible as a green dot with a line to your QTH — useful for visualizing your operating session geographically.</p>
+      </section>
+
+      <!-- ══════════════════════════════════════════════
+           TECHNICAL / METHODOLOGY
+      ══════════════════════════════════════════════ -->
+      <section class="about-section">
+        <h2 class="about-h2">⚙️ Models, Methodology, and Data Sources</h2>
+        <p>This section covers the technical approach used in the VHF/UHF calculator for operators who want to understand what's happening under the hood.</p>
+
+        <h3 class="about-h3">Elevation Data</h3>
+        <p>Terrain elevation is sampled along the path between Site A and Site B using the <strong>Open-Elevation API</strong>, which sources data from the SRTM (Shuttle Radar Topography Mission) dataset at approximately 90-meter horizontal resolution. A fallback to <strong>Open-Meteo's elevation API</strong> is used if Open-Elevation is unavailable. Elevation samples are taken at uniform intervals along the great-circle path — approximately one sample per 100–200 meters depending on path length.</p>
+
+        <h3 class="about-h3">Earth Curvature and Effective Earth Radius</h3>
+        <p>A flat-earth approximation is not used. Each terrain sample is corrected for earth curvature using the standard effective earth radius model. The effective earth radius factor k is set to <strong>4/3</strong> (1.333), which is the widely accepted standard for average atmospheric refraction conditions in temperate climates at VHF and UHF frequencies. This k-factor accounts for the slight bending of radio waves downward through the atmosphere, effectively increasing the radio horizon beyond the optical horizon.</p>
+        <p>The curvature correction applied to each terrain sample at distance d from Site A along a total path of length D is:</p>
+        <div class="about-formula">h_correction = (d × (D − d)) / (2 × k × R_e)</div>
+        <p>where R_e is the mean radius of the Earth (6,371 km). This correction is added to the raw terrain elevation before comparing against the line-of-sight ray between the two antenna heights.</p>
+
+        <h3 class="about-h3">Fresnel Zone Clearance</h3>
+        <p>Line-of-sight in the geometric sense (unobstructed ray between antennas) is necessary but not sufficient for reliable VHF/UHF communication. The first Fresnel zone — an ellipsoid of revolution around the direct path — must be at least 60% clear of terrain obstructions to avoid significant diffraction loss.</p>
+        <p>The radius of the first Fresnel zone at any point along the path is:</p>
+        <div class="about-formula">F1 = √(λ × d1 × d2 / (d1 + d2))</div>
+        <p>where λ is the wavelength in meters, d1 is the distance from Site A to the point, and d2 is the distance from that point to Site B. The tool evaluates this at every terrain sample and reports the worst-case clearance as a percentage of F1.</p>
+
+        <h3 class="about-h3">Knife-Edge Diffraction Loss</h3>
+        <p>When terrain obstructs the path, the tool estimates the additional signal loss using the <strong>knife-edge diffraction model</strong> per ITU-R Recommendation P.526. This model treats the obstruction as a perfectly absorbing half-plane and calculates the diffraction loss as a function of the Fresnel-Kirchhoff diffraction parameter ν (nu):</p>
+        <div class="about-formula">ν = h × √(2(d1 + d2) / (λ × d1 × d2))</div>
+        <p>where h is the height of the obstruction above the line of sight (negative if the path clears the obstacle). The diffraction loss J(ν) is then computed using the standard ITU-R P.526 approximation. This provides a conservative estimate — real terrain is rarely a perfect knife-edge, and the actual loss may be lower. For multiple terrain obstructions, the Deygout method is applied, which identifies the dominant obstacle and adds secondary corrections for each additional ridge.</p>
+
+        <h3 class="about-h3">Link Quality Rating</h3>
+        <p>The qualitative link quality indicator (Excellent / Good / Marginal / Obstructed) is derived from a combination of Fresnel zone clearance percentage and estimated diffraction loss. A path with full Fresnel zone clearance and no diffraction loss is rated Excellent. Paths with greater than 60% Fresnel clearance but minor obstructions are Good. Significant Fresnel intrusion with measurable diffraction loss is Marginal. Paths with severe obstruction and high predicted loss are Obstructed.</p>
+
+        <h3 class="about-h3">Mapping</h3>
+        <p>Both the VHF/UHF and HF maps use <strong>Leaflet.js</strong> as the mapping engine. The VHF/UHF map uses OpenStreetMap tiles for terrain context. The HF map uses <strong>Esri World Imagery</strong> (satellite) with a boundaries overlay, which is better suited to visualizing the geographic spread of HF contacts across state and national borders.</p>
+
+        <h3 class="about-h3">Callsign Lookups</h3>
+        <p>Ham radio callsign lookups are performed against <strong>callook.info</strong>, which provides real-time access to FCC ULS license data including operator name, license class, registered address, and Maidenhead grid square. GMRS callsigns (format WXXX###) do not have a public API equivalent and return a direct link to the FCC ULS search for manual lookup.</p>
+
+        <h3 class="about-h3">POTA Integration</h3>
+        <p>Parks on the Air park data is sourced from the official <strong>POTA API</strong> (api.pota.app), which provides park name, location, state/country, grid square, and activity status for all POTA reference numbers worldwide. The tool accepts US-format references (US-0001) as well as numeric shorthand (0001 or K-1).</p>
+
+        <h3 class="about-h3">SOTA Integration</h3>
+        <p>Summit on the Air data is sourced from the official <strong>SOTA API</strong> (api2.sota.org.uk), which provides summit name, elevation, point value, association, and GPS coordinates. Lookups are routed through the Cloudflare Worker proxy and cached at the edge for 30 days — meaning frequently looked-up summits are served from Cloudflare's global network with near-zero latency rather than hitting the SOTA servers on every request. The Did You Mean? feature fetches the full summit list for nearby regions and scores candidates by code match and geographic proximity to your Site A location.</p>
+
+        <h3 class="about-h3">Repeater Data</h3>
+        <p>Repeater lookups use the <strong>RepeaterBook API</strong>, which provides coverage for amateur and GMRS repeaters across the United States and Canada. Results include output frequency, offset, CTCSS/DCS tones, mode, and the repeater's geographic coordinates.</p>
+
+        <h3 class="about-h3">Privacy and Data</h3>
+        <p>No user data is stored server-side. Contact logs are stored exclusively in your browser's local storage and never leave your device. Callsign, park, and summit lookups are the only outbound requests made, and those are proxied through a Cloudflare Worker that does not log query parameters. The tool uses Google Analytics (GA4) to collect anonymous aggregate usage data (page views, session counts) to help guide future development.</p>
+      </section>
+
+      <!-- ── Footer ── -->
+      <div class="about-footer">
+        Built by <strong>N4MXB</strong> &nbsp;·&nbsp; <a href="https://n4mxb.com" style="color:var(--accent-a);text-decoration:none;">n4mxb.com</a> &nbsp;·&nbsp; <a href="https://www.qrz.com/db/N4MXB" target="_blank" rel="noopener" style="color:var(--accent-a);text-decoration:none;">Find me on QRZ</a>
+      </div>
+
+    </div><!-- /about-wrap -->
+  </div><!-- /aboutShell -->
 
   <!-- VHF/UHF SHELL (existing tool) -->
   <div id="vhfShell" style="display:flex;flex:1;flex-direction:column;min-height:0;overflow:hidden;">
@@ -5646,32 +5917,38 @@ const HF_BANDS = {
 
 // ── Mode switch ────────────────────────────────────────────────
 function switchMode(mode) {
-  const vhfShell = document.getElementById('vhfShell');
-  const hfShell  = document.getElementById('hfShell');
-  const vhfBtn   = document.getElementById('modeTabVhf');
-  const hfBtn    = document.getElementById('modeTabHf');
-  const vhfTabbar = document.getElementById('mobTabbar');
-  const hfTabbar  = document.getElementById('hfMobTabbar');
+  const vhfShell   = document.getElementById('vhfShell');
+  const hfShell    = document.getElementById('hfShell');
+  const aboutShell = document.getElementById('aboutShell');
+  const vhfBtn     = document.getElementById('modeTabVhf');
+  const hfBtn      = document.getElementById('modeTabHf');
+  const aboutBtn   = document.getElementById('modeTabAbout');
+  const vhfTabbar  = document.getElementById('mobTabbar');
+  const hfTabbar   = document.getElementById('hfMobTabbar');
+
+  // Deactivate all
+  [vhfBtn, hfBtn, aboutBtn].forEach(b => { if (b) b.classList.remove('active'); });
+  vhfShell.style.display       = 'none';
+  hfShell.classList.remove('active');
+  aboutShell.style.display     = 'none';
+  if (vhfTabbar) vhfTabbar.style.display = 'none';
+  if (hfTabbar)  hfTabbar.style.display  = 'none';
 
   if (mode === 'hf') {
-    vhfShell.style.display = 'none';
     hfShell.classList.add('active');
-    vhfBtn.classList.remove('active');
-    hfBtn.classList.add('active');
+    if (hfBtn) hfBtn.classList.add('active');
     if (isMobile()) {
-      if (vhfTabbar) vhfTabbar.style.display = 'none';
-      if (hfTabbar)  hfTabbar.style.display  = 'flex';
+      if (hfTabbar) hfTabbar.style.display = 'flex';
       hfApplyMobLayout();
     }
-    // Invalidate HF map size after becoming visible
     setTimeout(() => { if (_hfMap) _hfMap.invalidateSize(); }, 80);
+  } else if (mode === 'about') {
+    aboutShell.style.display = 'flex';
+    if (aboutBtn) aboutBtn.classList.add('active');
   } else {
-    hfShell.classList.remove('active');
     vhfShell.style.display = 'flex';
-    hfBtn.classList.remove('active');
-    vhfBtn.classList.add('active');
+    if (vhfBtn) vhfBtn.classList.add('active');
     if (isMobile()) {
-      if (hfTabbar)  hfTabbar.style.display  = 'none';
       if (vhfTabbar) vhfTabbar.style.display = 'flex';
     }
     setTimeout(() => { if (typeof map !== 'undefined' && map) map.invalidateSize(); }, 80);
