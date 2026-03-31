@@ -1,81 +1,143 @@
-How to Use Mike’s RF Line of Sight Tool
+# Mike's Ham Radio Mapping Tools
 
-Live Link: https://myz06vette.github.io/rf-los/
+**A free, browser-based toolkit for amateur radio operators — no account, no install, no subscription.**
 
-Android Version 1.0 available as of 3/4/26, .apk is available in files. Play Store launch to come... 
+---
 
-Site A: The transmitting station. You can use the browser to fetch your current location, enter an address manually, or pick a location on the map using the mouse. You can also provide latitude / longitude coordinates. In addition, you can set your antenna height above ground. 
+This tool was built by **N4MXB** for the ham radio community. It combines two purpose-built utilities in a single application: a **VHF/UHF RF Line-of-Sight calculator** and an **HF contact logger with mapping**. Both tabs are designed around real operating scenarios — whether you're planning a repeater link, scouting a portable operating site, chasing POTA and SOTA activations, or simply keeping a visual log of your HF contacts.
 
-Site B: The receiving station. There are several options here for lookup, and where I think the real power in the tool lies. You may not always have lat/long like other LOS tools. You may just have a ham call sign. Or a grid square. Or, you may want to see the RF path between you and a local repeater to troubleshoot link quality. All of these options are available. In addition, you can also set the receiving antenna height above ground.
+All computation runs locally in your browser. No data is sent to any server except for optional callsign, repeater, POTA, and SOTA lookups, which are proxied through a Cloudflare Worker to handle cross-origin restrictions.
 
-Manual: Provide lat / long or a street address of the station / repeater you’re trying to hit. 
-Repeater Lookup: Provide the repeater’s call-sign. This does a lookup using Repeaterbook for that repeater’s lat/long coordinates. If the repeater owner has provided that info accurately in the Repeaterbook record, we’ll use those coordinates to plot Site B. In some instances, repeater owners use a shared call-sign among more than one repeater. In those cases, the tool will present a drop-down menu for you to select the desired repeater. In all cases where the data is available, the repeater’s input and output frequency, offset, and tone(s) will also be provided. We cannot guarantee the accuracy of the lat/long data for repeater location, since that is provided (or not provided) by the repeater owner. In some cases, they intentionally obscure the exact location, so you may need to pick a point manually to get more accurate data. 
-Licensee Lookup: Provide the FCC amateur call-sign and we’ll lookup the registered address, lat/long, and maidenhead grid square of the licenseholder. Then, this data will be used to plot Site B. 
-Grid Square: Useful for POTA / SOTA activations. Provide the 4 or 6-digit maidenhead grid square and we’ll plot the centerpoint of that grid square as Site B. 
+---
 
-Transmitter Power / Antenna Gain (Optional)
+## 📡 VHF / UHF Tab — RF Line-of-Sight Calculator
 
-TX Output: Enter power output (in watts) of your transmitter. 
-Line Loss: Enter the line loss in either dB or watts. You can test this with a simple, inexpensive meter like the Surecom SW-102 by placing it at the end of your coax run at the connection to the antenna, and transmitting on your desired power setting. 
-TX Antenna: Select an antenna from the list of options, or enter a custom gain. This allows the tool to calculate your total ERP. 
-Receive Station Sensitivity: If you know the type of radio of the other station you’re attempting to contact, you can select that here. This will attempt to calculate the likelihood of a successful link and the receiving station’s ability to hear your contact. 
+The VHF/UHF tab calculates whether two stations can communicate directly over a given terrain path. It models earth curvature, real terrain elevation, Fresnel zone obstruction, and knife-edge diffraction loss to give you a link quality assessment along with a visual elevation profile.
 
-RF Band: Select from 1 of 4 RF bands for your contact. 
+### How to Use It
 
-VHF Lo: This is the radio spectrum between 30 and 88 Mhz. Useful for 6 and 10 meter HF, although in practice, this tool isn’t specifically designed with the nuances of HF in mind, so results and projections may vary. 
-VHF Hi: This would be the 2-meter spectrum between 136 and 174mhz. This would also include business band LMR, marine VHF, and MURS.
-UHF Lo: This would include 70-centimeter spectrum between 400 and 512 mhz. This would also include GMRS and business band LMR. 
-UHF Hi: This is 700 - 900 mhz spectrum, useful for 7/800 mhz, and although slightly outside the stated range, could be marginally useful for predicting Meshtastic contacts on the 915 mhz ISM band. Your mileage may vary. 
- 
-How to Read the Results
+1. **Set Site A — Your Station.** Enter your address or place name in the Site A field and press Enter, or click *Use My GPS* to use your device's location. You can also drag the marker directly on the map or click *Pick on Map*. Set your antenna height above ground level (AGL) in feet.
 
-Up front, the tool will give you a plain-English predicted outcome using all available RF path data between the plotted two points. Possible outcomes that can be displayed: 
+2. **Set Site B — The Remote Station.** Choose how you want to locate the remote site using the mode buttons:
 
-Excellent: Full line of sight, first Fresnel zone completely clear (ν ≤ −0.78)
-Good: LOS clear but with minor or partial Fresnel zone intrusion (ν ≤ 0.5)
-Fair: Marginal LOS or shallow diffraction path — signal likely usable but reduced (ν ≤ 1.5)
-Poor: Heavy diffraction — marginal or intermittent contact (ν ≤ 2.5)
-Unlikely: Severe obstruction — contact improbable (ν > 2.5)
+   - 📍 **Address** — Type any address, landmark, or place name and press Enter.
+   - 👤 **Licensee** — Enter a ham callsign (e.g. W4ABC). The tool looks up the FCC license record and places the marker at the operator's registered address. Works for amateur licensees; GMRS callsigns will return a link to the FCC ULS search instead.
+   - 🔲 **Grid Sq.** — Enter a 4 or 6 character Maidenhead grid square (e.g. EM74 or EM74rj). The marker is placed at the center of that grid square.
+   - 📡 **Repeater** — Enter a callsign and look up repeater listings from RepeaterBook. Select a specific repeater from the results to place the marker at its coordinates.
+   - ⛰️ **SOTA** — Enter a SOTA summit reference (e.g. W4G/NG-001) or a partial code like NG-001. If a full reference is found, the marker is placed at the summit's exact coordinates. If the input is partial or ambiguous, a *Did You Mean?* list appears with the closest matching summits based on your current location and the text entered.
 
-ν (nu) is the Fresnel-Kirchhoff diffraction parameter from ITU-R P.526. Values below zero mean terrain is actually below the line of sight; the more positive it gets, the deeper the obstruction.
+3. **Select Your RF Band.** Choose the frequency band that matches your operating frequency: VHF Low (30–88 MHz), VHF High (136–174 MHz), UHF Low (400–512 MHz), or UHF High (700–900 MHz). This determines the wavelength used in Fresnel zone calculations.
 
-A few additional nuances about how the tool presents the Results information:
+4. **Calculate.** Press the *Calculate LOS* button. The tool fetches terrain elevation data, plots the path profile, and returns a full link assessment.
 
-GOOD covers two distinct sub-cases internally (minor vs. partial Fresnel intrusion) but both display the same label and green indicator.
+5. **Read the Results.** The elevation profile shows your path with a terrain cross-section. The result panel shows distance, path clearance, Fresnel zone radius at the most obstructed point, estimated diffraction loss (if any), and a qualitative link quality rating. Contacts are saved to a history log at the bottom of the panel.
 
-FAIR similarly covers two sub-cases: one where LOS technically exists but is marginal, and one where it's a true diffraction path.
+### Optional Fields and Tips
 
-The terrain-corrected link budget (Deygout + roughness penalty) can show a failing budget even on a GOOD or EXCELLENT geometry. Those are independent assessments. 
+- Antenna heights default to 33 ft AGL. Adjust both sites to reflect actual mast or tower heights for accurate results.
+- The Licensee lookup places the marker at the operator's *registered address*, which may differ from their actual antenna location. Use the map drag or manual coordinate entry to fine-tune.
+- The SOTA lookup places the marker at the summit's GPS coordinates — useful for evaluating whether a hilltop or mountain activation is likely to reach your QTH on VHF/UHF.
+- History entries are saved in your browser's local storage. They persist across sessions on the same device.
 
-Link Quality Estimate: The overall assessment bar and label (EXCELLENT / GOOD / FAIR / POOR / UNLIKELY) at the top of the results. The colored progress bar is a visual indicator of signal path quality; green for clear paths, sliding through yellow and orange to red for heavily obstructed ones. This is the tool’s “best estimate” at your likelihood of making contact.
+---
 
-ν (nu) · Est. diffraction loss
-ν is a dimensionless number (the Fresnel-Kirchhoff diffraction parameter) that describes how severely terrain interrupts the signal path. Negative values mean terrain is safely below the line of sight. Values above zero mean terrain is intruding, and the higher the number, the worse the obstruction. The diffraction loss figure (in dB) is how much signal strength is estimated to be lost due to that terrain intrusion, calculated using the ITU-R P.526 knife-edge model. 
+## 📻 HF Tab — Contact Logger and Mapping
 
-Band · Worst obstacle
-The frequency band you've selected (e.g. UHF High), which affects how diffraction loss is calculated since lower frequencies bend around obstacles better than higher ones. "Worst obstacle" is how many feet the highest terrain point sits above or below the straight line-of-sight between your two antennas.
+The HF tab is a visual contact logging tool designed around chasing POTA (Parks on the Air) and SOTA (Summits on the Air) activations, as well as general HF operating. It plots contacts on a satellite map with great-circle lines between your station and each heard station, calculates distances, and exports logs in standard formats.
 
-Path Distance: 
-The straight-line over-ground distance between Site A and Site B, shown in both miles and kilometers.
+### How to Use It
 
-Bearing: 
-The compass direction from Site A to Site B, in degrees (0° = North, 90° = East, 180° = South, 270° = West).
+1. **Set Up My Station — Site A.** Enter your callsign and click *Home QTH* to look up your registered address from the FCC database. Click *Use My GPS* to use your current device location instead — useful when operating portable. If you're activating a POTA park, enter the park reference in the *Activating Park* field; the map marker will move to the park's coordinates and your park reference will be included in log exports.
 
-Elev at A / Elev at B
-The ground elevation at each site as reported by the terrain dataset. This is the elevation of the ground itself, not including your antenna height above ground (AGL).
+2. **Enter the Heard Station — Site B.**
 
-Max Terrain: 
-The highest ground elevation found anywhere along the path between the two sites. This is the peak that matters most for obstruction analysis.
+   - 👤 **Callsign** — Always required. Enter the callsign of the station you heard and press *Look Up*. The tool retrieves the operator's name, license class, and registered QTH from the FCC database via callook.info.
+   - 🌲 **POTA Park** *(optional — overrides callsign QTH)* — If the station is a POTA activator, enter their park reference (e.g. US-0001 or just 0001). The tool looks up the park from the POTA API and moves the contact marker to the park's coordinates. The park name and location appear on the log card.
+   - ⛰️ **SOTA Summit** *(optional — overrides callsign QTH)* — If the station is a SOTA activator, enter the summit reference (e.g. W4G/NG-001 or just NG-001). The tool looks up the summit from the SOTA database and moves the contact marker to the summit's coordinates. Elevation and points are shown on the log card. Partial codes trigger a *Did You Mean?* list using your station location as a proximity clue.
+   - 🔲 **Grid Square** *(optional — overrides callsign QTH)* — Enter a Maidenhead grid square if you know the operator's grid but not their exact address.
 
-Earth Bulge: 
-Because the Earth is curved, the midpoint of a long path is physically higher relative to a straight line drawn between the two endpoints. This value is how much the Earth's curvature "bulges up" into your signal path at its worst point. The tool uses a 4/3 Earth radius factor (the standard RF engineering approximation that accounts for typical atmospheric refraction bending the signal slightly downward, effectively making the Earth appear less curved than it really is).
+3. **All three optional fields run in parallel.** When you press *Look Up*, the callsign lookup, POTA lookup, and SOTA lookup all run simultaneously. Priority order for location: SOTA overrides POTA overrides Grid Square overrides callsign QTH. The operator's name always comes from the callsign lookup regardless of which location source wins.
 
-Min Clearance: 
-The tightest margin between your line of sight and the terrain (including Earth bulge) at any point along the path. Positive means your signal clears that point; negative (shown in orange/red with "BELOW LOS") means terrain is physically above your line of sight at that point, causing diffraction or blockage.
+4. **Fill in Log Entry details.** Select band, frequency, mode, and RST sent. Add notes if needed. Press *Log Contact* to save.
 
-Diffraction Loss (Est):
-The estimated signal loss in decibels caused by terrain obstructing the path, calculated using the single knife-edge diffraction model. This is a theoretical lower bound; real-world loss is often higher, especially over broad ridges or multiple successive hills. This figure feeds directly into the link budget's terrain loss row.
+5. **Review the Map and Log.** Each contact is plotted with a green dot at the remote station and a great-circle line back to your QTH. The log panel on the right shows all contacts with callsign, name, license class, POTA/SOTA details, distance, band, and timestamp. Click any card to reload that contact.
 
-Elevation Profile Chart 
+6. **Export.** Use *Export Log — ADIF* for import into QRZ logbook, LoTW, HAMRS, or any standard logging software. Use *Export Log — CSV* for spreadsheets. ADIF includes standard `SOTA_REF` and `SIG`/`SIG_INFO` fields for POTA and SOTA chaser credits.
 
-This interactive chart shows the elevation of Site A and Site B on opposing ends of the graph, with the terrain between those two points visualized along the direct path. Put simply: this is how the terrain levels vary along the entire “as the crow flies” path. You can slide your mouse along the path to see specific elevation data. As you do so, you’ll notice an indicator moves along the RF path in the map view above, which is useful to show you exactly where obstructions are. 
+### Show All Toggle
+
+The *Show All* toggle in the log header controls whether all contacts are plotted on the map simultaneously or only the currently selected one. With Show All on, every contact in your log is visible as a green dot with a line to your QTH — useful for visualizing your operating session geographically.
+
+---
+
+## ⚙️ Models, Methodology, and Data Sources
+
+### Elevation Data
+
+Terrain elevation is sampled along the path between Site A and Site B using the **Open-Elevation API**, which sources data from the SRTM (Shuttle Radar Topography Mission) dataset at approximately 90-meter horizontal resolution. A fallback to **Open-Meteo's elevation API** is used if Open-Elevation is unavailable. Elevation samples are taken at uniform intervals along the great-circle path — approximately one sample per 100–200 meters depending on path length.
+
+### Earth Curvature and Effective Earth Radius
+
+A flat-earth approximation is not used. Each terrain sample is corrected for earth curvature using the standard effective earth radius model. The effective earth radius factor k is set to **4/3 (1.333)**, which is the widely accepted standard for average atmospheric refraction conditions in temperate climates at VHF and UHF frequencies. This k-factor accounts for the slight bending of radio waves downward through the atmosphere, effectively increasing the radio horizon beyond the optical horizon.
+
+The curvature correction applied to each terrain sample at distance d from Site A along a total path of length D is:
+
+```
+h_correction = (d × (D − d)) / (2 × k × R_e)
+```
+
+where R_e is the mean radius of the Earth (6,371 km). This correction is added to the raw terrain elevation before comparing against the line-of-sight ray between the two antenna heights.
+
+### Fresnel Zone Clearance
+
+Line-of-sight in the geometric sense (unobstructed ray between antennas) is necessary but not sufficient for reliable VHF/UHF communication. The first Fresnel zone — an ellipsoid of revolution around the direct path — must be at least 60% clear of terrain obstructions to avoid significant diffraction loss.
+
+The radius of the first Fresnel zone at any point along the path is:
+
+```
+F1 = √(λ × d1 × d2 / (d1 + d2))
+```
+
+where λ is the wavelength in meters, d1 is the distance from Site A to the point, and d2 is the distance from that point to Site B. The tool evaluates this at every terrain sample and reports the worst-case clearance as a percentage of F1.
+
+### Knife-Edge Diffraction Loss
+
+When terrain obstructs the path, the tool estimates the additional signal loss using the **knife-edge diffraction model** per ITU-R Recommendation P.526. This model treats the obstruction as a perfectly absorbing half-plane and calculates the diffraction loss as a function of the Fresnel-Kirchhoff diffraction parameter ν (nu):
+
+```
+ν = h × √(2(d1 + d2) / (λ × d1 × d2))
+```
+
+where h is the height of the obstruction above the line of sight (negative if the path clears the obstacle). The diffraction loss J(ν) is then computed using the standard ITU-R P.526 approximation. This provides a conservative estimate — real terrain is rarely a perfect knife-edge, and the actual loss may be lower. For multiple terrain obstructions, the Deygout method is applied, which identifies the dominant obstacle and adds secondary corrections for each additional ridge.
+
+### Link Quality Rating
+
+The qualitative link quality indicator (Excellent / Good / Marginal / Obstructed) is derived from a combination of Fresnel zone clearance percentage and estimated diffraction loss. A path with full Fresnel zone clearance and no diffraction loss is rated Excellent. Paths with greater than 60% Fresnel clearance but minor obstructions are Good. Significant Fresnel intrusion with measurable diffraction loss is Marginal. Paths with severe obstruction and high predicted loss are Obstructed.
+
+### Mapping
+
+Both the VHF/UHF and HF maps use **Leaflet.js** as the mapping engine. The VHF/UHF map uses OpenStreetMap tiles for terrain context. The HF map uses **Esri World Imagery** (satellite) with a boundaries overlay, which is better suited to visualizing the geographic spread of HF contacts across state and national borders.
+
+### Callsign Lookups
+
+Ham radio callsign lookups are performed against **callook.info**, which provides real-time access to FCC ULS license data including operator name, license class, registered address, and Maidenhead grid square. GMRS callsigns (format WXXX###) do not have a public API equivalent and return a direct link to the FCC ULS search for manual lookup.
+
+### POTA Integration
+
+Parks on the Air park data is sourced from the official **POTA API** (api.pota.app), which provides park name, location, state/country, grid square, and activity status for all POTA reference numbers worldwide. The tool accepts US-format references (US-0001) as well as numeric shorthand (0001 or K-1).
+
+### SOTA Integration
+
+Summit on the Air data is sourced from the official **SOTA API** (api2.sota.org.uk), which provides summit name, elevation, point value, association, and GPS coordinates. Lookups are routed through the Cloudflare Worker proxy and cached at the edge for 30 days — meaning frequently looked-up summits are served from Cloudflare's global network with near-zero latency rather than hitting the SOTA servers on every request. The Did You Mean? feature fetches the full summit list for nearby regions and scores candidates by code match and geographic proximity to your Site A location.
+
+### Repeater Data
+
+Repeater lookups use the **RepeaterBook API**, which provides coverage for amateur and GMRS repeaters across the United States and Canada. Results include output frequency, offset, CTCSS/DCS tones, mode, and the repeater's geographic coordinates.
+
+### Privacy and Data
+
+No user data is stored server-side. Contact logs are stored exclusively in your browser's local storage and never leave your device. Callsign, park, and summit lookups are the only outbound requests made, and those are proxied through a Cloudflare Worker that does not log query parameters. The tool uses Google Analytics (GA4) to collect anonymous aggregate usage data (page views, session counts) to help guide future development.
+
+---
+
+Built by **N4MXB** · [n4mxb.com](https://n4mxb.com) · [Find me on QRZ](https://www.qrz.com/db/N4MXB)
